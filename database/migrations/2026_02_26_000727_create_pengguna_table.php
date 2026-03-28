@@ -12,22 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('pengguna', function (Blueprint $table) {
-            $table->bigIncrements('id_pengguna');     
-            $table->unsignedBigInteger('id_role');     
-            $table->string('nama_pengguna', 100);     
-            $table->string('nama_lengkap', 150);      
-            $table->string('email', 150);             
-            $table->string('password', 255);          
-            $table->string('no_telepon', 20);         
-            $table->enum('jenis_kelamin', ['L', 'P']);
-            $table->text('alamat'); 
-            $table->timestamps();
+            $table->bigIncrements('id_pengguna');
+            $table->unsignedBigInteger('id_role'); 
+            $table->string('nama_pengguna', 100);
+            $table->string('email', 150);
+            $table->string('password', 255);
+            $table->enum('Jenis_akun', ['Perusahaan', 'Pribadi']);
 
             $table->foreign('id_role')
                   ->references('id_role')
                   ->on('role')
                   ->onDelete('restrict')
-                  ->onUpdate('cascade');
+                  ->onUpdate('cascade'); 
         });
     }
 
