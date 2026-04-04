@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('pengguna', function (Blueprint $table) {
             $table->bigIncrements('id_pengguna');
             $table->unsignedBigInteger('id_role'); 
+            $table->unsignedBigInteger('id_divisi'); 
             $table->string('nama_pengguna', 100);
             $table->string('email', 150);
             $table->string('password', 255);
@@ -22,6 +23,12 @@ return new class extends Migration
             $table->foreign('id_role')
                   ->references('id_role')
                   ->on('role')
+                  ->onDelete('restrict')
+                  ->onUpdate('cascade'); 
+
+            $table->foreign('id_divisi')
+                  ->references('id_divisi')
+                  ->on('divisi')
                   ->onDelete('restrict')
                   ->onUpdate('cascade'); 
         });
