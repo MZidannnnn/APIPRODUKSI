@@ -12,7 +12,7 @@ class pengguna extends Authenticatable
 
     protected $table      = 'pengguna';
     protected $primaryKey = 'id_pengguna';
-    public    $timestamps = false;
+    public    $timestamps = true;
 
     protected $fillable = [
         'id_role',
