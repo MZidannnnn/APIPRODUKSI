@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DivisiController;
+use App\Http\Controllers\JenisPembayaranController;
 use Illuminate\Support\Facades\Route;
 
+// route publik bisa diakses semua orang(belum login)
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
@@ -12,13 +14,18 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 });
 
+// route untuk hak akses admin dan super admin
+Route::middleware(['auth', 'checkRole:2,3'])->group(function () {
+    Route::resource('divisi', DivisiController::class);
+    Route::resource('jenis-pembayaran', JenisPembayaranController::class);
+});
+
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     // Route::get('/dashboard', [AuthController::class, 'index1'])->name('dashboard'); ini route tes
 });
 
 
-Route::resource('divisi', DivisiController::class);
 
 Route::get('/', function () {
     return view('welcome');
