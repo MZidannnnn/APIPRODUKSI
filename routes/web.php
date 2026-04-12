@@ -3,6 +3,8 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DivisiController;
 use App\Http\Controllers\JenisPembayaranController;
+use App\Http\Controllers\SatuanHargaController;
+use App\Http\Controllers\StatusPesananController;
 use Illuminate\Support\Facades\Route;
 
 // route publik bisa diakses semua orang(belum login)
@@ -18,6 +20,8 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth', 'checkRole:2,3'])->group(function () {
     Route::resource('divisi', DivisiController::class);
     Route::resource('jenis-pembayaran', JenisPembayaranController::class);
+    Route::resource('status-pesanan', StatusPesananController::class);
+    Route::resource('satuan-harga', SatuanHargaController::class);
 });
 
 Route::middleware('auth')->group(function () {
