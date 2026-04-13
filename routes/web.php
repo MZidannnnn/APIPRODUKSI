@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DivisiController;
 use App\Http\Controllers\JenisPembayaranController;
+use App\Http\Controllers\KategoriUsahaController;
 use App\Http\Controllers\SatuanHargaController;
 use App\Http\Controllers\StatusPesananController;
 use Illuminate\Support\Facades\Route;
@@ -18,10 +19,11 @@ Route::middleware('guest')->group(function () {
 
 // route untuk hak akses admin dan super admin
 Route::middleware(['auth', 'checkRole:2,3'])->group(function () {
-    Route::resource('divisi', DivisiController::class);
-    Route::resource('jenis-pembayaran', JenisPembayaranController::class);
-    Route::resource('status-pesanan', StatusPesananController::class);
-    Route::resource('satuan-harga', SatuanHargaController::class);
+    Route::resource('Divisi', DivisiController::class);
+    Route::resource('JenisPembayaran', JenisPembayaranController::class);
+    Route::resource('StatusPesanan', StatusPesananController::class);
+    Route::resource('SatuanHarga', SatuanHargaController::class);
+    Route::resource('KategoriUsaha', KategoriUsahaController::class);
 });
 
 Route::middleware('auth')->group(function () {
