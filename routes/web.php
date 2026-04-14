@@ -19,11 +19,12 @@ Route::middleware('guest')->group(function () {
 
 // route untuk hak akses admin dan super admin
 Route::middleware(['auth', 'checkRole:2,3'])->group(function () {
-    Route::resource('Divisi', DivisiController::class);
-    Route::resource('JenisPembayaran', JenisPembayaranController::class);
-    Route::resource('StatusPesanan', StatusPesananController::class);
-    Route::resource('SatuanHarga', SatuanHargaController::class);
-    Route::resource('KategoriUsaha', KategoriUsahaController::class);
+    Route::resource('divisi', DivisiController::class);
+    Route::resource('jenisPembayaran', JenisPembayaranController::class);
+    Route::resource('statusPesanan', StatusPesananController::class);
+    Route::resource('satuanHarga', SatuanHargaController::class);
+    Route::resource('kategoriUsaha', KategoriUsahaController::class);
+    Route::resource('itemProduksi', KategoriUsahaController::class);
 });
 
 Route::middleware('auth')->group(function () {

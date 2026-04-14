@@ -8,6 +8,7 @@ class KategoriUsaha extends Model
 {
     protected $table = 'kategori_usaha';
     protected $primaryKey = 'id_kategori';
+    public $timestamps = true;
     protected $fillable = [
         'id_jenis_pembayaran',
         'nama_kategori',

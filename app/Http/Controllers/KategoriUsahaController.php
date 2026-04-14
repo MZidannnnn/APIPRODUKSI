@@ -31,7 +31,7 @@ class KategoriUsahaController extends Controller
     {
         $validated = $request->validate([
             'id_jenis_pembayaran' => 'required|exists:jenis_pembayaran,id_jenis_pembayaran',
-            'nama_kategori' => 'required|string|max:100|unique:kategori_usaha,nama_kategori',
+            'nama_kategori' => 'required|string|max:100',
             'jenis_harga' => 'required|in:Harga Tetap,Harga Kostum',
             'deskripsi' => 'nullable|string',
         ]);
