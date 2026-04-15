@@ -19,6 +19,6 @@ class ItemProduksi extends Model
 
     public function kategoriUsaha()
     {
-        return $this->belongsTo(KategoriUsaha::class, 'id_kategori');
+        return $this->belongsTo(KategoriUsaha::class, 'id_kategori', 'id_kategori');
     }
 }

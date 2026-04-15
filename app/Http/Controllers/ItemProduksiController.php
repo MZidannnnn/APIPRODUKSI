@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\ItemProduksi;
+use App\Models\KategoriUsaha;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ItemProduksiController extends Controller
 {
@@ -12,7 +14,7 @@ class ItemProduksiController extends Controller
      */
     public function index()
     {
-        $itemProduksi = ItemProduksi::all();
+        $itemProduksi = ItemProduksi::with('kategoriUsaha')->get();
         return view('ItemProduksi.index', compact('itemProduksi'));
     }
 
@@ -21,6 +23,7 @@ class ItemProduksiController extends Controller
      */
     public function create()
     {
+        $kategoriUsaha = KategoriUsaha::all();
         return view('ItemProduksi.create');
     }
 
@@ -33,15 +36,22 @@ class ItemProduksiController extends Controller
             'id_kategori' => 'required|exists:kategori_usaha,id_kategori',
             'nama_item' => 'required|string|max:100',
             'deskripsi_item' => 'nullable|string',
-            'gambar_item' => 'required|string|max:255',
+            'gambar_item' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status_aktif' => 'required|in:Aktif,Non-aktif',
         ]);
-            
+
+        // Handle upload gambar
+        if ($request->hasFile('gambar_item')) {
+            $file = $request->file('gambar_item');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->storeAs('item_produksi', $filename, 'public');
+            $validated['gambar_item'] = 'item_produksi/' . $filename;
+        }
 
         ItemProduksi::create($validated);
 
         return redirect()->route('ItemProduksi.index')
-                        ->with('success', 'Item Produksi berhasil ditambahkan');
+            ->with('success', 'Item Produksi berhasil ditambahkan');
     }
 
     /**
@@ -57,6 +67,7 @@ class ItemProduksiController extends Controller
      */
     public function edit(ItemProduksi $itemProduksi)
     {
+        $kategoriUsaha = KategoriUsaha::all();
         return view('ItemProduksi.edit', compact('itemProduksi'));
     }
 
@@ -69,14 +80,27 @@ class ItemProduksiController extends Controller
             'id_kategori' => 'required|exists:kategori_usaha,id_kategori',
             'nama_item' => 'required|string|max:100',
             'deskripsi_item' => 'nullable|string',
-            'gambar_item' => 'required|string|max:255',
+            'gambar_item' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status_aktif' => 'required|in:Aktif,Non-aktif',
         ]);
+
+        // Untuk update method
+        if ($request->hasFile('gambar_item')) {
+            // Hapus gambar lama jika ada
+            if ($itemProduksi->gambar_item && Storage::disk('public')->exists($itemProduksi->gambar_item)) {
+                Storage::disk('public')->delete($itemProduksi->gambar_item);
+            }
+
+            $file = $request->file('gambar_item');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->storeAs('item_produksi', $filename, 'public');
+            $validated['gambar_item'] = 'item_produksi/' . $filename;
+        }
 
         $itemProduksi->update($validated);
 
         return redirect()->route('ItemProduksi.index')
-                        ->with('success', 'Item Produksi berhasil diperbarui');
+            ->with('success', 'Item Produksi berhasil diperbarui');
     }
 
     /**
@@ -84,9 +108,14 @@ class ItemProduksiController extends Controller
      */
     public function destroy(ItemProduksi $itemProduksi)
     {
+        // Hapus gambar jika ada
+        if ($itemProduksi->gambar_item && Storage::disk('public')->exists($itemProduksi->gambar_item)) {
+            Storage::disk('public')->delete($itemProduksi->gambar_item);
+        }
+
         $itemProduksi->delete();
 
         return redirect()->route('ItemProduksi.index')
-                        ->with('success', 'Item Produksi berhasil dihapus');
+            ->with('success', 'Item Produksi berhasil dihapus');
     }
 }
