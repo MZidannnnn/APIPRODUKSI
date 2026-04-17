@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DetailProduk;
 use App\Models\ItemProduksi;
 use App\Models\KategoriUsaha;
+use App\Models\SatuanHarga;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -14,7 +16,7 @@ class ItemProduksiController extends Controller
      */
     public function index()
     {
-        $itemProduksi = ItemProduksi::with('kategoriUsaha')->get();
+        $itemProduksi = ItemProduksi::with('kategoriUsaha', 'detailProduk')->get();
         return view('ItemProduksi.index', compact('itemProduksi'));
     }
 
@@ -24,7 +26,8 @@ class ItemProduksiController extends Controller
     public function create()
     {
         $kategoriUsaha = KategoriUsaha::all();
-        return view('ItemProduksi.create');
+        $satuanHarga = SatuanHarga::all();
+        return view('ItemProduksi.create', compact('kategoriUsaha', 'satuanHarga'));
     }
 
     /**
@@ -38,6 +41,11 @@ class ItemProduksiController extends Controller
             'deskripsi_item' => 'nullable|string',
             'gambar_item' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status_aktif' => 'required|in:Aktif,Non-aktif',
+
+            // detail produk
+            'id_satuan' => 'required|exists:satuan_harga,id_satuan',
+            'ukuran' => 'required|string|max:50',
+            'harga_dasar' => 'required|numeric|min:0',
         ]);
 
         // Handle upload gambar
@@ -48,7 +56,22 @@ class ItemProduksiController extends Controller
             $validated['gambar_item'] = 'item_produksi/' . $filename;
         }
 
-        ItemProduksi::create($validated);
+        // save item produksi
+        $itemProduksi = ItemProduksi::create([
+            'id_kategori' => $validated['id_kategori'],
+            'nama_item' => $validated['nama_item'],
+            'deskripsi_item' => $validated['deskripsi_item'],
+            'gambar_item' => $validated['gambar_item'] ?? null,
+            'status_aktif' => $validated['status_aktif'],
+        ]);
+
+        // Save DetailProduk
+        DetailProduk::create([
+            'id_item_produksi' => $itemProduksi->id_item_produksi,
+            'id_satuan' => $validated['id_satuan'],
+            'ukuran' => $validated['ukuran'],
+            'harga_dasar' => $validated['harga_dasar'],
+        ]);
 
         return redirect()->route('ItemProduksi.index')
             ->with('success', 'Item Produksi berhasil ditambahkan');
@@ -59,6 +82,7 @@ class ItemProduksiController extends Controller
      */
     public function show(ItemProduksi $itemProduksi)
     {
+        $itemProduksi->load('kategoriUsaha', 'detailProduk.satuanHarga');
         return view('ItemProduksi.show', compact('itemProduksi'));
     }
 
@@ -67,8 +91,10 @@ class ItemProduksiController extends Controller
      */
     public function edit(ItemProduksi $itemProduksi)
     {
+        $itemProduksi->load('detailProduk');
         $kategoriUsaha = KategoriUsaha::all();
-        return view('ItemProduksi.edit', compact('itemProduksi'));
+        $satuanHarga = SatuanHarga::all();
+        return view('ItemProduksi.edit', compact('itemProduksi', 'kategoriUsaha', 'satuanHarga'));
     }
 
     /**
@@ -82,6 +108,11 @@ class ItemProduksiController extends Controller
             'deskripsi_item' => 'nullable|string',
             'gambar_item' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status_aktif' => 'required|in:Aktif,Non-aktif',
+
+            // detail produk
+            'id_satuan' => 'required|exists:satuan_harga,id_satuan',
+            'ukuran' => 'required|string|max:50',
+            'harga_dasar' => 'required|numeric|min:0',
         ]);
 
         // Untuk update method
@@ -97,7 +128,28 @@ class ItemProduksiController extends Controller
             $validated['gambar_item'] = 'item_produksi/' . $filename;
         }
 
-        $itemProduksi->update($validated);
+        // Update ItemProduksi
+        $itemProduksi->update([
+            'id_kategori' => $validated['id_kategori'],
+            'nama_item' => $validated['nama_item'],
+            'deskripsi_item' => $validated['deskripsi_item'],
+            'status_aktif' => $validated['status_aktif'],
+        ]);
+
+        if (isset($validated['gambar_item'])) {
+            $itemProduksi->gambar_item = $validated['gambar_item'];
+            $itemProduksi->save();
+        }
+
+        // Update DetailProduk
+        $detailProduk = $itemProduksi->detailProduk;
+        if ($detailProduk) {
+            $detailProduk->update([
+                'id_satuan' => $validated['id_satuan'],
+                'ukuran' => $validated['ukuran'],
+                'harga_dasar' => $validated['harga_dasar'],
+            ]);
+        }
 
         return redirect()->route('ItemProduksi.index')
             ->with('success', 'Item Produksi berhasil diperbarui');
@@ -111,6 +163,11 @@ class ItemProduksiController extends Controller
         // Hapus gambar jika ada
         if ($itemProduksi->gambar_item && Storage::disk('public')->exists($itemProduksi->gambar_item)) {
             Storage::disk('public')->delete($itemProduksi->gambar_item);
+        }
+
+        // Hapus DetailProduk terkait jika ada
+        if ($itemProduksi->detailProduk) {
+            $itemProduksi->detailProduk->delete();
         }
 
         $itemProduksi->delete();

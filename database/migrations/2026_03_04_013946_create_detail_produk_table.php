@@ -22,7 +22,7 @@ return new class extends Migration
             $table->foreign('id_item_produksi')
                 ->references('id_item_produksi')
                 ->on('item_produksi')
-                ->onDelete('restrict')
+                ->onDelete('cascade')
                 ->onUpdate('cascade');
 
             $table->foreign('id_satuan')

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DivisiController;
+use App\Http\Controllers\ItemProduksiController;
 use App\Http\Controllers\JenisPembayaranController;
 use App\Http\Controllers\KategoriUsahaController;
 use App\Http\Controllers\SatuanHargaController;
@@ -24,7 +25,7 @@ Route::middleware(['auth', 'checkRole:2,3'])->group(function () {
     Route::resource('statusPesanan', StatusPesananController::class);
     Route::resource('satuanHarga', SatuanHargaController::class);
     Route::resource('kategoriUsaha', KategoriUsahaController::class);
-    Route::resource('itemProduksi', KategoriUsahaController::class);
+    Route::resource('itemProduksi', ItemProduksiController::class);
 });
 
 Route::middleware('auth')->group(function () {
