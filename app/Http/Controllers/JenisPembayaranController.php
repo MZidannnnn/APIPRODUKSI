@@ -81,3 +81,4 @@ class JenisPembayaranController extends Controller
                         ->with('success', 'Jenis Pembayaran berhasil dihapus');
     }
 }
+
