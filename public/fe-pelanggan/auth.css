@@ -1,0 +1,191 @@
+/* RESET */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #ffffff;
+}
+
+/* CONTAINER */
+.auth-container {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* BACKGROUND */
+.asset-corner {
+    position: absolute;
+    z-index: 1;
+}
+
+.top-left { top: 0; left: 0; width: 150px; }
+.top-right { top: 0; right: 0; width: 220px; }
+.bottom-left { bottom: 0; left: 0; width: 120px; }
+.bottom-right { bottom: 0; right: 0; width: 120px; }
+
+/* BOX */
+.auth-box {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+    text-align: center;
+}
+
+/* LOGO */
+.logo-main {
+    width: 120px;
+    margin: 0 auto 20px;
+    display: block;
+}
+
+/* TITLE */
+.auth-title {
+    margin-bottom: 30px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* LABEL */
+.label-text {
+    text-align: left;
+    font-size: 12px;
+    margin-bottom: 5px;
+    color: #666;
+}
+
+/* INPUT */
+.auth-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #f9f9f9;
+    transition: 0.2s;
+}
+
+.auth-input:focus {
+    border-color: #00753b;
+    outline: none;
+    background: #fff;
+}
+
+/* FIX ICON */
+.password-wrapper {
+    position: relative;
+    /* Hilangkan margin-bottom jika ingin rapat dengan "Lupa Password", 
+       tapi biarkan jika ingin ada jarak antar input */
+    margin-top: 15px; 
+}
+
+.password-wrapper .auth-input {
+    padding-right: 45px; /* Memberi ruang agar teks tidak tertutup ikon */
+    margin-bottom: 0;    /* Reset margin agar tidak merusak posisi ikon */
+}
+
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;            /* Letakkan di tengah tinggi wrapper */
+    transform: translateY(-50%); /* Geser ke atas tepat di tengah */
+    color: #bbb;
+    cursor: pointer;
+    font-size: 16px;     /* Ukuran ikon sedikit diperbesar agar jelas */
+    z-index: 15;         /* Pastikan di atas input */
+    display: flex;
+    align-items: center;
+}
+
+/* Pastikan input normal tetap punya jarak bawah */
+.auth-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #f9f9f9;
+    transition: 0.2s;
+    margin-bottom: 15px; /* Jarak antar field */
+}
+
+/* BUTTON */
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    background-color: #00753b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+/* LINK */
+.auth-link {
+    font-size: 14px;
+    color: #666;
+    margin-top: 20px;
+}
+
+.auth-link a {
+    font-weight: bold;
+    color: black;
+    text-decoration: underline;
+}
+
+.auth-link a:hover {
+    color: #00753b;
+}
+
+/* FORGOT PASSWORD */
+.forgot-password {
+    font-size: 11px;
+    color: #999;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 10px;
+    text-align: right;
+}
+
+/* GENDER */
+.gender-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.gender-option {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    color: #999;
+    cursor: pointer;
+    text-align: center;
+}
+
+.gender-option input {
+    display: none;
+}
+
+.gender-option:has(input:checked) {
+    border-color: #00753b;
+    color: #00753b;
+    background: #e6f1ec;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+    .asset-corner { width: 80px; }
+}

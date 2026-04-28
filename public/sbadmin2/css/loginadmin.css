@@ -1,0 +1,99 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f7fa; /* Warna background abu-abu muda */
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-card {
+    background: white;
+    width: 100%;
+    max-width: 450px;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+.logo-admin {
+    width: 150px;
+    margin-bottom: 20px;
+}
+
+.title {
+    font-size: 20px;
+    color: #3e4b5b;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    position: relative;
+    text-align: left;
+}
+
+.admin-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #dce1e7;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.admin-input:focus {
+    outline: none;
+    border-color: #5e72e4;
+    box-shadow: 0 0 0 3px rgba(94, 114, 228, 0.1);
+}
+
+/* Eye Icon untuk Password */
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #adb5bd;
+}
+
+.btn-admin-login {
+    width: 100%;
+    padding: 12px;
+    background-color: #5e72e4; /* Warna biru sesuai gambar */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: 0.3s;
+}
+
+.btn-admin-login:hover {
+    background-color: #435be3;
+}
+
+/* Responsive Mobile */
+@media (max-width: 480px) {
+    .login-card {
+        margin: 20px;
+        padding: 30px 20px;
+    }
+}

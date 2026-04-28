@@ -38,3 +38,27 @@ Route::middleware('auth')->group(function () {
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/login-tes', function () {
+    return view('auth.login');
+});
+
+Route::get('/loginadmin', function () {
+    return view('auth.loginadmin');
+});
+
+route::get('/dashboard', function () {
+    return view('pelanggan.dashboard');
+});
+
+Route::get('/test-admin', function () {
+    return view('dashboard', [
+        'role' => 'Admin'
+    ]);
+});
+
+Route::get('/test-superadmin', function () {
+    return view('dashboard', [
+        'role' => 'Super-Admin'
+    ]);
+});
