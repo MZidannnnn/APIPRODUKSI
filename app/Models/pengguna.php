@@ -16,11 +16,10 @@ class pengguna extends Authenticatable
 
     protected $fillable = [
         'id_role',
-        'id_divisi',
+        'id_kategori',
         'nama_pengguna',
         'email',
         'password',
-        'Jenis_akun',
     ];
 
     protected $hidden = [
@@ -37,17 +36,20 @@ class pengguna extends Authenticatable
     protected $casts = [
         'id_pengguna' => 'integer',
         'id_role'     => 'integer',
-        'id_divisi'   => 'integer',
-        'Jenis_akun'  => 'string',
+        'id_kategori'   => 'integer',
     ];
 
-    const JENIS_PERUSAHAAN = 'Perusahaan';
-    const JENIS_PRIBADI    = 'Pribadi';
+
 
     // public function role()
     // {
     //     return $this->belongsTo(Role::class, 'id_role', 'id_role');
     // }
+
+    public function kategori()
+    {
+        return $this->belongsTo(KategoriUsaha::class, 'id_kategori', 'id_kategori');
+    }
 
     // public function divisi()
     // {
@@ -64,19 +66,6 @@ class pengguna extends Authenticatable
         return ucwords(strtolower($value));
     }
 
-       public function scopePerusahaan($query)
-    {
-        return $query->where('Jenis_akun', self::JENIS_PERUSAHAAN);
-    }
-
-    /**
-     * Filter hanya akun Pribadi
-     */
-    public function scopePribadi($query)
-    {
-        return $query->where('Jenis_akun', self::JENIS_PRIBADI);
-    }
-
     /**
      * Filter berdasarkan role 
      */
@@ -86,10 +75,10 @@ class pengguna extends Authenticatable
     }
 
     /**
-     * Filter berdasarkan divisi 
+     * Filter berdasarkan kategori 
      */
-    public function scopeByDivisi($query, int $idDivisi)
+    public function scopeByKategori($query, int $idKategori)
     {
-        return $query->where('id_divisi', $idDivisi);
+        return $query->where('id_kategori', $idKategori);
     }
 }

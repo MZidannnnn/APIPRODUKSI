@@ -29,11 +29,11 @@
         <form action="{{ route('register') }}" method="POST">
             @csrf
 
-            <input type="text" name="username" placeholder="Username/Company" class="auth-input" required>
+            <input type="text" name="nama_pengguna" placeholder="Username" class="auth-input" required>
 
             <input type="email" name="email" placeholder="Email" class="auth-input" required>
 
-            <p class="label-text">Jenis Kelamin</p>
+            {{-- <p class="label-text">Jenis Kelamin</p>
 
             <div class="gender-container">
                 <label class="gender-option">
@@ -44,7 +44,7 @@
                     <input type="radio" name="gender" value="P">
                     Perempuan
                 </label>
-            </div>
+            </div> --}}
 
             <!-- PASSWORD -->
             <div class="password-wrapper">

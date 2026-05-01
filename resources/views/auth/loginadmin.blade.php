@@ -15,7 +15,7 @@
         <h1 class="title">Advisel Pramana Company System</h1>
         <p class="subtitle">Login</p>
 
-        <form action="#" method="POST">
+        <form action="{{ route('login-admin') }}" method="POST">
             @csrf
             
             <div class="form-group">

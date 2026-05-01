@@ -18,9 +18,12 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-    public function index1()
+    /**
+     * Tampilkan form register
+     */
+    public function showDashboard()
     {
-        return view('dashboard');
+        return view('pelanggan.dashboard');
     }
 
     /**
@@ -33,20 +36,19 @@ class AuthController extends Controller
             'nama_pengguna' => ['required', 'string', 'max:100'],
             'email' => ['required', 'string', 'email', 'max:150', 'unique:pengguna'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-           
+
         ]);
 
         // Role untuk klien = 1 (dari tabel role)
-        $role_klien = 1; // Sesuaikan dengan id_role klien di tabel role
+        $role_klien = 3; // Sesuaikan dengan id_role klien di tabel role
 
         // Buat akun baru (id_divisi dikosongkan)
         $pengguna = pengguna::create([
             'id_role' => $role_klien,
-            'id_divisi' => null, // Kosong untuk klien
+            'id_kategori' => null, // Kosong untuk klien
             'nama_pengguna' => $validated['nama_pengguna'],
             'email' => $validated['email'],
             'password' => $validated['password'],
-            'Jenis_akun' => 'Pribadi',
         ]);
 
         event(new Registered($pengguna));
@@ -59,9 +61,17 @@ class AuthController extends Controller
     /**
      * Tampilkan form login
      */
-    public function showLogin()
+    public function showLoginPelanggan()
     {
         return view('auth.login');
+    }
+
+    /**
+     * Tampilkan form login
+     */
+    public function showLoginAdmin()
+    {
+        return view('auth.loginadmin');
     }
 
     /**
@@ -70,19 +80,64 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
+            'nama_pengguna' => ['required'],
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            $request->session()->regenerate();
-            return redirect()->intended(route('dashboard'))->with('success', 'Login berhasil!');
+        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+            return back()->withErrors([
+                'nama_pengguna' => 'Username atau password salah.',
+            ])->onlyInput('nama_pengguna');
         }
 
+        $request->session()->regenerate();
+        $user = Auth::user();
+
+        if ((int) $user->id_role === 3) {
+            return redirect()->route('dashboard')->with('success', 'Login berhasil!');
+        }
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         return back()->withErrors([
-            'email' => 'Email atau password salah.',
+            'nama_pengguna' => 'Role tidak diizinkan.',
+        ])->onlyInput('nama_pengguna');
+    }
+
+
+    /**
+     * Handle login
+     */
+    public function loginAdmin(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required'],
+            'password' => ['required'],
+        ]);
+
+        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+            return back()->withErrors([
+                'email' => 'email atau password salah.',
+            ])->onlyInput('email');
+        }
+
+        $request->session()->regenerate();
+        $user = Auth::user();
+
+        if ((int) $user->id_role === 2) {
+            return redirect()->route('dashboard')->with('success', 'Login berhasil!');
+        }
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return back()->withErrors([
+            'email' => 'Role tidak diizinkan.',
         ])->onlyInput('email');
-    }    
+    }
 
     /**
      * Handle logout

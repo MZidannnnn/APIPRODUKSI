@@ -31,7 +31,7 @@
 
             <input 
                 type="text" 
-                name="username" 
+                name="nama_pengguna" 
                 placeholder="Username" 
                 class="auth-input" 
                 required
