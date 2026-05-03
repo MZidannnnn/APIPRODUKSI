@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('pesanan', function (Blueprint $table) {
             $table->bigIncrements('id_pesanan');
             $table->unsignedBigInteger('id_pengguna');
+            $table->unsignedBigInteger('id_detail_produk');
             $table->unsignedBigInteger('id_status_pesanan');
             $table->date('tanggal_pesan');
             $table->string('nama_penerima', 100);
@@ -31,6 +32,12 @@ return new class extends Migration
             $table->foreign('id_status_pesanan')
                 ->references('id_status_pesanan')
                 ->on('status_pesanan')
+                ->onDelete('restrict')
+                ->onUpdate('cascade');
+
+            $table->foreign('id_detail_produk')
+                ->references('id_detail_produk')
+                ->on('detail_produk')
                 ->onDelete('restrict')
                 ->onUpdate('cascade');
         });

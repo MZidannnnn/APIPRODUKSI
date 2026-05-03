@@ -1,38 +1,44 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DivisiController;
 use App\Http\Controllers\ItemProduksiController;
 use App\Http\Controllers\JenisPembayaranController;
 use App\Http\Controllers\KategoriUsahaController;
+use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\PenggunaController;
+use App\Http\Controllers\PesananController;
 use App\Http\Controllers\SatuanHargaController;
 use App\Http\Controllers\StatusPesananController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AuthController::class, 'showDashboard'])->name('dashboard');
+Route::post('/midtrans/notification', [PembayaranController::class, 'notification']);
 
 // route publik bisa diakses semua orang(belum login)
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
-    
+
     Route::get('/login', [AuthController::class, 'showLoginPelanggan'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
     Route::get('/login-admin', [AuthController::class, 'showLoginAdmin'])->name('login-admin');
     Route::post('/login-admin', [AuthController::class, 'loginAdmin']);
-
-    
 });
 
 
 Route::middleware('auth')->group(function () {
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/pesanan/checkout', function () {
+        return view('pesanan.checkout');
+    })->name('pesanan.checkout');
+    Route::post('/pesanan/beli', [PesananController::class, 'beliSekarang'])->name('pesanan.beli');
+    Route::post('/pembayaran/midtrans', [PembayaranController::class, 'createTransaction'])->name('pembayaran.midtrans');
+    // callback dari Midtrans (webhook)
+    
 });
 
 // route untuk hak akses admin dan super admin
 Route::middleware(['auth', 'checkRole:1,2'])->group(function () {
-    Route::resource('divisi', DivisiController::class);
     Route::resource('jenisPembayaran', JenisPembayaranController::class);
     Route::resource('statusPesanan', StatusPesananController::class);
     Route::resource('satuanHarga', SatuanHargaController::class);

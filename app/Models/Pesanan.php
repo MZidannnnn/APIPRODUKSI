@@ -12,6 +12,7 @@ class Pesanan extends Model
 
     protected $fillable = [
         'id_pengguna',
+        'id_detail_produk',
         'id_status_pesanan',
         'tanggal_pesan',
         'nama_penerima',
@@ -36,20 +37,25 @@ class Pesanan extends Model
         return $this->belongsTo(StatusPesanan::class, 'id_status_pesanan', 'id_status_pesanan');
     }
 
+    public function detailProduk()
+    {
+        return $this->belongsTo(DetailProduk::class, 'id_detail_produk', 'id_detail_produk');
+    }
+
     // public function rincianPesanan()
     // {
     //     return $this->hasMany(RincianPesanan::class, 'id_pesanan', 'id_pesanan');
     // }
 
-    // public function pembayaran()
-    // {
-    //     return $this->hasMany(Pembayaran::class, 'id_pesanan', 'id_pesanan');
-    // }
+    public function pembayaran()
+    {
+        return $this->hasMany(Pembayaran::class, 'id_pesanan', 'id_pesanan');
+    }
 
     // public function persetujuanHarga()
     // {
     //     return $this->hasOne(PersetujuanHarga::class, 'id_pesanan', 'id_pesanan');
-    // }
+    // }/
 
     // HELPER METHODS
     public function totalDP()

@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pesanan;
+use App\Models\DetailProduk;
 use App\Models\Pengguna;
+use App\Models\Pesanan;
 use App\Models\StatusPesanan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PesananController extends Controller
 {
@@ -98,5 +100,44 @@ class PesananController extends Controller
 
         return redirect()->route('pesanan.index')
                         ->with('success', 'Pesanan berhasil dihapus');
+    }
+
+    // POST /pesanan/beli
+    public function beliSekarang(Request $request)
+    {
+        $validated = $request->validate([
+            'id_detail_produk' => 'required|exists:detail_produk,id_detail_produk',
+            'nama_penerima' => 'required|string|max:100',
+            'alamat_penerima' => 'required|string',
+            'No_hp_penerima' => 'required|string|max:20',
+        ]);
+
+        $detail = DetailProduk::findOrFail($validated['id_detail_produk']);
+
+        // sesuaikan ID status "Menunggu Pembayaran"
+        $statusMenunggu = StatusPesanan::where('nama_status_pesanan', 'Menunggu Pembayaran')->first();
+
+        $pesanan = Pesanan::create([
+            'id_pengguna' => Auth::id(), // pastikan guard sesuai
+            'id_detail_produk' => $detail->id_detail_produk,
+            'id_status_pesanan' => $statusMenunggu ? $statusMenunggu->id_status_pesanan : 1,
+            'tanggal_pesan' => now()->toDateString(),
+            'nama_penerima' => $validated['nama_penerima'],
+            'alamat_penerima' => $validated['alamat_penerima'],
+            'No_hp_penerima' => $validated['No_hp_penerima'],
+            'total_harga' => $detail->harga_dasar,
+        ]);
+
+        return response()->json([
+            'message' => 'Pesanan dibuat',
+            'id_pesanan' => $pesanan->id_pesanan,
+        ]);
+    }
+
+    // GET /pesanan/{pesanan}
+    public function shows(Pesanan $pesanan)
+    {
+        $pesanan->load('detailProduk', 'statusPesanan');
+        return response()->json($pesanan);
     }
 }
