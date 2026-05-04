@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('nama_pengguna', 100);
             $table->string('email', 150);
             $table->string('password', 255);
+            $table->rememberToken();
             $table->timestamps();
 
             $table->foreign('id_role')

@@ -43,7 +43,7 @@ class PembayaranController extends Controller
         $snapToken = Snap::getSnapToken($params);
 
         // simpan pembayaran
-        Pembayaran::create([
+        $pembayaran = Pembayaran::create([
             'id_pesanan' => $pesanan->id_pesanan,
             'jumlah_bayar' => $pesanan->total_harga,
             'order_id' => $orderId,
@@ -52,6 +52,7 @@ class PembayaranController extends Controller
 
         return response()->json([
             'snap_token' => $snapToken,
+            'id_pembayaran' => $pembayaran->id_pembayaran,
         ]);
     }
 
@@ -99,5 +100,26 @@ class PembayaranController extends Controller
         }
 
         return response()->json(['message' => 'OK']);
+    }
+
+    public function showUploadForm(Pembayaran $pembayaran)
+    {
+        return view('pembayaran.upload_bukti', compact('pembayaran'));
+    }
+
+    // proses upload
+    public function uploadBukti(Request $request, Pembayaran $pembayaran)
+    {
+        $validated = $request->validate([
+            'bukti_bayar' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+        ]);
+
+        $path = $request->file('bukti_bayar')->store('bukti-bayar', 'public');
+
+        $pembayaran->update([
+            'bukti_bayar' => $path,
+        ]);
+
+        return back()->with('success', 'Bukti bayar berhasil diupload');
     }
 }

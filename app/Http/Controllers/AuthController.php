@@ -6,6 +6,10 @@ use App\Models\pengguna;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 
 class AuthController extends Controller
@@ -150,4 +154,66 @@ class AuthController extends Controller
 
         return redirect('/');
     }
+
+    public function showForgotPasswordForm()
+{
+    return view('auth.forgot-password');
+}
+
+public function sendResetLinkEmail(Request $request)
+{
+    Log::info('Proses lupa password dimulai', ['email' => $request->email]);
+
+    $request->validate([
+        'email' => ['required', 'email'],
+    ]);
+
+    $status = Password::sendResetLink(
+        $request->only('email')
+    );
+
+    Log::info('Status kirim reset link', ['status' => $status]);
+
+    return $status === Password::RESET_LINK_SENT
+        ? back()->with('status', __($status))
+        : back()->withErrors(['email' => __($status)]);
+}
+
+public function resetPassword(Request $request)
+{
+    Log::info('Proses reset password dimulai', ['email' => $request->email]);
+
+    $request->validate([
+        'token' => ['required'],
+        'email' => ['required', 'email'],
+        'password' => ['required', 'min:8', 'confirmed'],
+    ]);
+
+    $status = Password::reset(
+        $request->only('email', 'password', 'password_confirmation', 'token'),
+        function ($user, $password) {
+            $user->password = $password;
+            $user->setRememberToken(Str::random(60));
+            $user->save();
+
+            event(new PasswordReset($user));
+        }
+    );
+
+    Log::info('Status reset password', ['status' => $status]);
+
+    return $status === Password::PASSWORD_RESET
+        ? redirect()->route('login')->with('status', __($status))
+        : back()->withErrors(['email' => [__($status)]]);
+}
+
+public function showResetForm(Request $request, string $token)
+{
+    return view('auth.reset-password', [
+        'token' => $token,
+        'email' => $request->query('email'),
+    ]);
+}
+
+
 }

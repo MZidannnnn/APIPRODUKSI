@@ -23,6 +23,12 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::get('/login-admin', [AuthController::class, 'showLoginAdmin'])->name('login-admin');
     Route::post('/login-admin', [AuthController::class, 'loginAdmin']);
+
+    // route untuk lupa password
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 });
 
 
@@ -31,10 +37,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/pesanan/checkout', function () {
         return view('pesanan.checkout');
     })->name('pesanan.checkout');
+
     Route::post('/pesanan/beli', [PesananController::class, 'beliSekarang'])->name('pesanan.beli');
-    Route::post('/pembayaran/midtrans', [PembayaranController::class, 'createTransaction'])->name('pembayaran.midtrans');
     // callback dari Midtrans (webhook)
-    
+    Route::post('/pembayaran/midtrans', [PembayaranController::class, 'createTransaction'])->name('pembayaran.midtrans');
+   
+    // form upload bukti bayar
+    Route::get('/pembayaran/{pembayaran}/upload-bukti', [PembayaranController::class, 'showUploadForm'])
+        ->name('pembayaran.upload.form');
+
+    // proses upload
+    Route::post('/pembayaran/{pembayaran}/upload-bukti', [PembayaranController::class, 'uploadBukti'])
+        ->name('pembayaran.upload');
 });
 
 // route untuk hak akses admin dan super admin

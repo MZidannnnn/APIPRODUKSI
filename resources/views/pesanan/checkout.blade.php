@@ -62,6 +62,7 @@
             });
 
             const bayar = await resBayar.json();
+            const pembayaranId = bayar.id_pembayaran;
             if (!bayar.snap_token) {
                 alert("Gagal buat transaksi");
                 return;
@@ -72,10 +73,12 @@
                 onSuccess: function (result) {
                     alert("Pembayaran sukses");
                     console.log(result);
+                    window.location.href = `/pembayaran/${pembayaranId}/upload-bukti`;
                 },
                 onPending: function (result) {
                     alert("Pembayaran pending");
                     console.log(result);
+                    window.location.href = `/pembayaran/${pembayaranId}/upload-bukti`;
                 },
                 onError: function (result) {
                     alert("Pembayaran gagal");

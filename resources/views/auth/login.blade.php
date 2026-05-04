@@ -49,7 +49,7 @@
                 >
                 <i class="toggle-password fa fa-eye" onclick="togglePassword('loginPassword', this)"></i>
 
-                 <a href="#" class="forgot-password">Lupa Password?</a>
+                 <a href="{{ route('password.request') }}" class="forgot-password">Lupa Password?</a>
             </div>
 
            
