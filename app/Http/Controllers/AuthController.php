@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\pengguna;
+use App\Models\ItemProduksi;
+use App\Models\KategoriUsaha;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,9 +27,22 @@ class AuthController extends Controller
     /**
      * Tampilkan form register
      */
-    public function showDashboard()
+    public function showDashboard(Request $request)
     {
-        return view('pelanggan.dashboard');
+        $kategoriUsaha = KategoriUsaha::all();
+    $selectedKategoriId = $request->query('kategori');
+
+    $itemProduksi = ItemProduksi::with(['kategoriUsaha', 'detailProduk.satuanHarga'])
+        ->when($selectedKategoriId, function ($query) use ($selectedKategoriId) {
+            $query->where('id_kategori', $selectedKategoriId);
+        })
+        ->get();
+
+    return view('pelanggan.dashboard', compact(
+        'kategoriUsaha',
+        'itemProduksi',
+        'selectedKategoriId'
+    ));
     }
 
     /**
