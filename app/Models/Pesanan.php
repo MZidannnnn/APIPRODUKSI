@@ -58,23 +58,29 @@ class Pesanan extends Model
     // }/
 
     // HELPER METHODS
+
     public function totalDP()
     {
         return $this->pembayaran()
-            ->where('tipe_pembayaran', 'DP')
+            ->where('tahap_pembayaran', 'DP')
+            ->where('status_bayar', 'Lunas')
             ->sum('jumlah_bayar');
     }
 
     public function totalPelunasan()
     {
         return $this->pembayaran()
-            ->where('tipe_pembayaran', 'Pelunasan')
+            ->where('tahap_pembayaran', 'Pelunasan')
+            ->where('status_bayar', 'Lunas')
             ->sum('jumlah_bayar');
     }
 
     public function sisaBayar()
     {
-        $sudahBayar = $this->pembayaran()->sum('jumlah_bayar');
+        $sudahBayar = $this->pembayaran()
+            ->where('status_bayar', 'Lunas')
+            ->sum('jumlah_bayar');
+
         return $this->total_harga - $sudahBayar;
     }
 

@@ -30,19 +30,19 @@ class AuthController extends Controller
     public function showDashboard(Request $request)
     {
         $kategoriUsaha = KategoriUsaha::all();
-    $selectedKategoriId = $request->query('kategori');
+        $selectedKategoriId = $request->query('kategori');
 
-    $itemProduksi = ItemProduksi::with(['kategoriUsaha', 'detailProduk.satuanHarga'])
-        ->when($selectedKategoriId, function ($query) use ($selectedKategoriId) {
-            $query->where('id_kategori', $selectedKategoriId);
-        })
-        ->get();
+        $itemProduksi = ItemProduksi::with(['kategoriUsaha', 'detailProduk.satuanHarga'])
+            ->when($selectedKategoriId, function ($query) use ($selectedKategoriId) {
+                $query->where('id_kategori', $selectedKategoriId);
+            })
+            ->get();
 
-    return view('pelanggan.dashboard', compact(
-        'kategoriUsaha',
-        'itemProduksi',
-        'selectedKategoriId'
-    ));
+        return view('pelanggan.dashboard', compact(
+            'kategoriUsaha',
+            'itemProduksi',
+            'selectedKategoriId'
+        ));
     }
 
     /**
@@ -52,7 +52,7 @@ class AuthController extends Controller
     {
         // Validasi
         $validated = $request->validate([
-            'nama_pengguna' => ['required', 'string', 'max:100'],
+            'nama_pengguna' => ['required', 'string', 'max:100', 'unique:pengguna'],
             'email' => ['required', 'string', 'email', 'max:150', 'unique:pengguna'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
 
@@ -171,64 +171,62 @@ class AuthController extends Controller
     }
 
     public function showForgotPasswordForm()
-{
-    return view('auth.forgot-password');
-}
+    {
+        return view('auth.forgot-password');
+    }
 
-public function sendResetLinkEmail(Request $request)
-{
-    Log::info('Proses lupa password dimulai', ['email' => $request->email]);
+    public function sendResetLinkEmail(Request $request)
+    {
+        Log::info('Proses lupa password dimulai', ['email' => $request->email]);
 
-    $request->validate([
-        'email' => ['required', 'email'],
-    ]);
+        $request->validate([
+            'email' => ['required', 'email'],
+        ]);
 
-    $status = Password::sendResetLink(
-        $request->only('email')
-    );
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
 
-    Log::info('Status kirim reset link', ['status' => $status]);
+        Log::info('Status kirim reset link', ['status' => $status]);
 
-    return $status === Password::RESET_LINK_SENT
-        ? back()->with('status', __($status))
-        : back()->withErrors(['email' => __($status)]);
-}
+        return $status === Password::RESET_LINK_SENT
+            ? back()->with('status', __($status))
+            : back()->withErrors(['email' => __($status)]);
+    }
 
-public function resetPassword(Request $request)
-{
-    Log::info('Proses reset password dimulai', ['email' => $request->email]);
+    public function resetPassword(Request $request)
+    {
+        Log::info('Proses reset password dimulai', ['email' => $request->email]);
 
-    $request->validate([
-        'token' => ['required'],
-        'email' => ['required', 'email'],
-        'password' => ['required', 'min:8', 'confirmed'],
-    ]);
+        $request->validate([
+            'token' => ['required'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'min:8', 'confirmed'],
+        ]);
 
-    $status = Password::reset(
-        $request->only('email', 'password', 'password_confirmation', 'token'),
-        function ($user, $password) {
-            $user->password = $password;
-            $user->setRememberToken(Str::random(60));
-            $user->save();
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->password = $password;
+                $user->setRememberToken(Str::random(60));
+                $user->save();
 
-            event(new PasswordReset($user));
-        }
-    );
+                event(new PasswordReset($user));
+            }
+        );
 
-    Log::info('Status reset password', ['status' => $status]);
+        Log::info('Status reset password', ['status' => $status]);
 
-    return $status === Password::PASSWORD_RESET
-        ? redirect()->route('login')->with('status', __($status))
-        : back()->withErrors(['email' => [__($status)]]);
-}
+        return $status === Password::PASSWORD_RESET
+            ? redirect()->route('login')->with('status', __($status))
+            : back()->withErrors(['email' => [__($status)]]);
+    }
 
-public function showResetForm(Request $request, string $token)
-{
-    return view('auth.reset-password', [
-        'token' => $token,
-        'email' => $request->query('email'),
-    ]);
-}
-
-
+    public function showResetForm(Request $request, string $token)
+    {
+        return view('auth.reset-password', [
+            'token' => $token,
+            'email' => $request->query('email'),
+        ]);
+    }
 }
