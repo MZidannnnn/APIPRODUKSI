@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pembayaran;
-use App\Models\StatusPesanan;
 use App\Models\Pesanan;
 use Illuminate\Http\Request;
 use Midtrans\Snap;
@@ -16,60 +15,22 @@ class PembayaranController extends Controller
     {
         $validated = $request->validate([
             'id_pesanan' => 'required|exists:pesanan,id_pesanan',
-            'tahap_pembayaran' => 'required|in:DP,Pelunasan',
         ]);
 
         $pesanan = Pesanan::with('pengguna')->findOrFail($validated['id_pesanan']);
-        $tahap = $validated['tahap_pembayaran'];
 
-        if ($tahap === 'DP') {
-            $dpExists = $pesanan->pembayaran()
-                ->where('tahap_pembayaran', 'DP')
-                ->whereIn('status_bayar', ['Pending', 'Lunas'])
-                ->exists();
-
-            if ($dpExists) {
-                return response()->json(['message' => 'DP sudah dibuat'], 422);
-            }
-
-            $grossAmount = (int) round($pesanan->total_harga * 0.5);
-        } else {
-            $dpPending = $pesanan->pembayaran()
-                ->where('tahap_pembayaran', 'DP')
-                ->where('status_bayar', 'Pending')
-                ->exists();
-
-            if ($dpPending) {
-                return response()->json(['message' => 'DP masih pending'], 422);
-            }
-
-            $pelunasanExists = $pesanan->pembayaran()
-                ->where('tahap_pembayaran', 'Pelunasan')
-                ->whereIn('status_bayar', ['Pending', 'Lunas'])
-                ->exists();
-
-            if ($pelunasanExists) {
-                return response()->json(['message' => 'Pelunasan sudah dibuat'], 422);
-            }
-
-            $grossAmount = (int) max(0, $pesanan->sisaBayar());
-            if ($grossAmount <= 0) {
-                return response()->json(['message' => 'Sisa bayar sudah 0'], 422);
-            }
-        }
-
+        // konfig midtrans
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = (bool) config('midtrans.is_production');
         Config::$isSanitized = true;
         Config::$is3ds = true;
 
-        $suffix = $tahap === 'DP' ? 'DP' : 'PEL';
-        $orderId = 'ORDER-' . $pesanan->id_pesanan . '-' . $suffix . '-' . time();
+        $orderId = 'ORDER-' . $pesanan->id_pesanan . '-' . time();
 
         $params = [
             'transaction_details' => [
                 'order_id' => $orderId,
-                'gross_amount' => $grossAmount,
+                'gross_amount' => (int) $pesanan->total_harga,
             ],
             'customer_details' => [
                 'first_name' => $pesanan->nama_penerima,
@@ -84,8 +45,7 @@ class PembayaranController extends Controller
 
         $pembayaran = Pembayaran::create([
             'id_pesanan' => $pesanan->id_pesanan,
-            'tahap_pembayaran' => $tahap,
-            'jumlah_bayar' => $grossAmount,
+            'jumlah_bayar' => $pesanan->total_harga,
             'order_id' => $orderId,
             'status_bayar' => 'Pending',
         ]);
@@ -125,20 +85,18 @@ class PembayaranController extends Controller
             'transaction_id' => $transactionId,
             'jumlah_bayar' => $grossAmount ?? $pembayaran->jumlah_bayar,
             'payload' => $payload,
-            'paid_at' => $statusBayar === 'Lunas' ? now() : null,
         ]);
 
         if ($statusBayar === 'Lunas') {
             $pesanan = $pembayaran->pesanan;
             if ($pesanan) {
-                $targetStatus = $pembayaran->tahap_pembayaran === 'DP' ? 'Diproses' : 'Selesai';
-                $status = StatusPesanan::where('nama_status_pesanan', $targetStatus)->first();
-
-                if ($status) {
-                    $pesanan->update(['id_status_pesanan' => $status->id_status_pesanan]);
+                $statusSelesai = \App\Models\StatusPesanan::where('nama_status', 'Lunas')->first();
+                if ($statusSelesai) {
+                    $pesanan->update(['id_status_pesanan' => $statusSelesai->id_status_pesanan]);
                 }
             }
         }
+
 
         return response()->json(['message' => 'OK']);
     }

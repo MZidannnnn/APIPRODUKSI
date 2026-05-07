@@ -12,7 +12,6 @@ class Pembayaran extends Model
 
     protected $fillable = [
         'id_pesanan',
-        'tahap_pembayaran',
         'jumlah_bayar',
         'metode_bayar',
         'payment_type',
@@ -21,13 +20,13 @@ class Pembayaran extends Model
         'bukti_bayar',
         'status_bayar',
         'payload',
-        'paid_at',
+       
     ];
 
     protected $casts = [
         'jumlah_bayar' => 'decimal:2',
         'payload' => 'array',
-        'paid_at' => 'datetime',
+        
     ];
 
     public function pesanan()
