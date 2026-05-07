@@ -29,7 +29,7 @@ class AuthController extends Controller
      */
     public function showDashboard(Request $request)
     {
-        $kategoriUsaha = KategoriUsaha::all();
+    $kategoriUsaha = KategoriUsaha::all();
     $selectedKategoriId = $request->query('kategori');
 
     $itemProduksi = ItemProduksi::with(['kategoriUsaha', 'detailProduk.satuanHarga'])
@@ -61,7 +61,7 @@ class AuthController extends Controller
         // Role untuk klien = 1 (dari tabel role)
         $role_klien = 3; // Sesuaikan dengan id_role klien di tabel role
 
-        // Buat akun baru (id_divisi dikosongkan)
+        // Buat akun baru (id_kategori dikosongkan)
         $pengguna = pengguna::create([
             'id_role' => $role_klien,
             'id_kategori' => null, // Kosong untuk klien
@@ -78,7 +78,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Tampilkan form login
+     * Tampilkan form login Pelanggan
      */
     public function showLoginPelanggan()
     {
@@ -86,7 +86,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Tampilkan form login
+     * Tampilkan form login Admin dan Super Admin
      */
     public function showLoginAdmin()
     {
@@ -94,7 +94,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle login
+     * Handle login Pelanggan
      */
     public function login(Request $request)
     {
@@ -127,35 +127,53 @@ class AuthController extends Controller
 
 
     /**
-     * Handle login
+     * Handle login Admin dan Super Admin
      */
-    public function loginAdmin(Request $request)
+        public function loginAdmin(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required'],
-            'password' => ['required'],
+        // VALIDASI
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|min:8'
+        ], [
+            'email.required' => 'Email wajib diisi',
+            'email.email' => 'Format email tidak valid',
+            'password.required' => 'Password wajib diisi',
+            'password.min' => 'Password minimal 8 karakter',
         ]);
 
-        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
-            return back()->withErrors([
-                'email' => 'email atau password salah.',
-            ])->onlyInput('email');
+        // CEK USER BERDASARKAN EMAIL
+        $user = pengguna::where('email', $request->email)->first();
+
+        // JIKA USER TIDAK ADA
+         if (!$user) {
+            return back()->with('error', 'Email atau Password salah!');
         }
 
-        $request->session()->regenerate();
-        $user = Auth::user();
+        // COBA LOGIN
+        if (Auth::attempt([
+            'email' => $request->email,
+            'password' => $request->password
+        ])) {
 
-        if ((int) $user->id_role === 2) {
-            return redirect()->route('dashboard')->with('success', 'Login berhasil!');
+            $request->session()->regenerate();
+
+            $user = Auth::user();
+
+            // HANYA ADMIN & SUPER ADMIN
+            if (in_array($user->id_role, [1,2])) {
+
+                return redirect()->route('dashboard')
+                    ->with('success','Anda berhasil login');
+            }
+
+            // JIKA BUKAN ADMIN
+            Auth::logout();
+
+            return back()->with('error','Akses hanya untuk Admin');
         }
 
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return back()->withErrors([
-            'email' => 'Role tidak diizinkan.',
-        ])->onlyInput('email');
+        return back()->with('error','Email atau Password salah!');
     }
 
     /**
@@ -170,6 +188,9 @@ class AuthController extends Controller
         return redirect('/');
     }
 
+    /**
+     * Handle Forget Password
+     */
     public function showForgotPasswordForm()
 {
     return view('auth.forgot-password');

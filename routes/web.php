@@ -11,54 +11,120 @@ use App\Http\Controllers\SatuanHargaController;
 use App\Http\Controllers\StatusPesananController;
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| PUBLIC ROUTE
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/', [AuthController::class, 'showDashboard'])->name('dashboard');
+
+// webhook midtrans
 Route::post('/midtrans/notification', [PembayaranController::class, 'notification']);
 
-// route publik bisa diakses semua orang(belum login)
+
+/*
+|--------------------------------------------------------------------------
+| ROUTE GUEST (BELUM LOGIN)
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware('guest')->group(function () {
+
+    // register pelanggan
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 
+    // login pelanggan
     Route::get('/login', [AuthController::class, 'showLoginPelanggan'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
-    Route::get('/login-admin', [AuthController::class, 'showLoginAdmin'])->name('login-admin');
-    Route::post('/login-admin', [AuthController::class, 'loginAdmin']);
 
-    // route untuk lupa password
-    Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
-    Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->name('password.email');
-    Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])->name('password.reset');
-    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+    // landing page admin
+    Route::get('/adminprivasi', function () {return view('welcome-admin');})->name('welcomeAdmin');
+
+    // login admin
+    Route::get('/login-admin', [AuthController::class, 'showLoginAdmin'])->name('loginAdmin');
+    Route::post('/login-admin', [AuthController::class, 'loginAdmin'])->name('loginAdminProses');
+
+    /*
+    |--------------------------------------------------------------------------
+    | LUPA PASSWORD
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])
+        ->name('password.request');
+
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])
+        ->name('password.email');
+
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])
+        ->name('password.reset');
+
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])
+        ->name('password.update');
+
 });
 
+
+/*
+|--------------------------------------------------------------------------
+| ROUTE SUDAH LOGIN
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware('auth')->group(function () {
+
+    // logout
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
-    Route::get('/pesanan/checkout', function () {
-        return view('pesanan.checkout');
-    })->name('pesanan.checkout');
 
-    Route::post('/pesanan/beli', [PesananController::class, 'beliSekarang'])->name('pesanan.beli');
-    // callback dari Midtrans (webhook)
-    Route::post('/pembayaran/midtrans', [PembayaranController::class, 'createTransaction'])->name('pembayaran.midtrans');
-   
-    // form upload bukti bayar
-    Route::get('/pembayaran/{pembayaran}/upload-bukti', [PembayaranController::class, 'showUploadForm'])
-        ->name('pembayaran.upload.form');
 
-    // proses upload
-    Route::post('/pembayaran/{pembayaran}/upload-bukti', [PembayaranController::class, 'uploadBukti'])
-        ->name('pembayaran.upload');
-});
+    /*
+    |--------------------------------------------------------------------------
+    | PELANGGAN
+    |--------------------------------------------------------------------------
+    */
 
-// route untuk hak akses admin dan super admin
-Route::middleware(['auth', 'checkRole:1,2'])->group(function () {
-    Route::resource('jenisPembayaran', JenisPembayaranController::class);
-    Route::resource('statusPesanan', StatusPesananController::class);
-    Route::resource('satuanHarga', SatuanHargaController::class);
-    Route::resource('kategoriUsaha', KategoriUsahaController::class);
-    Route::resource('itemProduksi', ItemProduksiController::class);
-    Route::resource('pengguna', PenggunaController::class);
+    Route::middleware('checkRole:3')->group(function () {
+
+        Route::get('/pesanan/checkout', function () {
+            return view('pesanan.checkout');
+        })->name('pesanan.checkout');
+
+        Route::post('/pesanan/beli', [PesananController::class, 'beliSekarang'])
+            ->name('pesanan.beli');
+
+        // transaksi midtrans
+        Route::post('/pembayaran/midtrans', [PembayaranController::class, 'createTransaction'])
+            ->name('pembayaran.midtrans');
+
+        // upload bukti
+        Route::get('/pembayaran/{pembayaran}/upload-bukti', [PembayaranController::class, 'showUploadForm'])
+            ->name('pembayaran.upload.form');
+
+        Route::post('/pembayaran/{pembayaran}/upload-bukti', [PembayaranController::class, 'uploadBukti'])
+            ->name('pembayaran.upload');
+
+    });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN & SUPER ADMIN
+    |--------------------------------------------------------------------------
+    */
+
+    Route::middleware('checkRole:1,2')->group(function () {
+
+        Route::resource('jenisPembayaran', JenisPembayaranController::class);
+        Route::resource('statusPesanan', StatusPesananController::class);
+        Route::resource('satuanHarga', SatuanHargaController::class);
+        Route::resource('kategoriUsaha', KategoriUsahaController::class);
+        Route::resource('itemProduksi', ItemProduksiController::class);
+        Route::resource('pengguna', PenggunaController::class);
+
+    });
+
 });
 
 

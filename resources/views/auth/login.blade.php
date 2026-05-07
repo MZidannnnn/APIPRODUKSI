@@ -52,8 +52,6 @@
                  <a href="{{ route('password.request') }}" class="forgot-password">Lupa Password?</a>
             </div>
 
-           
-
             <button type="submit" class="btn-primary">Log In</button>
         </form>
 
