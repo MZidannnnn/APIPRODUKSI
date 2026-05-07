@@ -146,7 +146,7 @@ class AuthController extends Controller
         $user = pengguna::where('email', $request->email)->first();
 
         // JIKA USER TIDAK ADA
-         if (!$user) {
+        if (!$user) {
             return back()->with('error', 'Email atau Password salah!');
         }
 
