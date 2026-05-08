@@ -78,7 +78,7 @@
                   alt="Logo ADVISEL PRAMANA">
           </div>
         </div>
-      </div>
+      </div>c:\Users\USER\Pictures\Saved Pictures\New folder\logo-adv.png
 
     </section><!-- /Hero Section -->
 
