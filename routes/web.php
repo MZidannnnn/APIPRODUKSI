@@ -40,7 +40,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 
     // login klien
-    Route::get('/login', [AuthController::class, 'showLoginPelanggan'])->name('login');
+    Route::get('/login', [AuthController::class, 'showLoginKlien'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
 
     // landing page admin
