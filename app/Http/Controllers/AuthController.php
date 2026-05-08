@@ -38,7 +38,7 @@ class AuthController extends Controller
         })
         ->get();
 
-    return view('pelanggan.dashboard', compact(
+    return view('klien.dashboard', compact(
         'kategoriUsaha',
         'itemProduksi',
         'selectedKategoriId'
@@ -78,9 +78,9 @@ class AuthController extends Controller
     }
 
     /**
-     * Tampilkan form login Pelanggan
+     * Tampilkan form login Klien
      */
-    public function showLoginPelanggan()
+    public function showLoginKlien()
     {
         return view('auth.login');
     }
@@ -94,7 +94,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle login Pelanggan
+     * Handle login Klien
      */
     public function login(Request $request)
     {
@@ -163,7 +163,7 @@ class AuthController extends Controller
             // HANYA ADMIN & SUPER ADMIN
             if (in_array($user->id_role, [1,2])) {
 
-                return redirect()->route('dashboard')
+                return redirect()->route('dashboardAdmin')
                     ->with('success','Anda berhasil login');
             }
 
@@ -250,6 +250,4 @@ public function showResetForm(Request $request, string $token)
         'email' => $request->query('email'),
     ]);
 }
-
-
 }

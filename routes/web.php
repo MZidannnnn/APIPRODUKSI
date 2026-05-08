@@ -9,6 +9,7 @@ use App\Http\Controllers\PenggunaController;
 use App\Http\Controllers\PesananController;
 use App\Http\Controllers\SatuanHargaController;
 use App\Http\Controllers\StatusPesananController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -31,11 +32,11 @@ Route::post('/midtrans/notification', [PembayaranController::class, 'notificatio
 
 Route::middleware('guest')->group(function () {
 
-    // register pelanggan
+    // register klien
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 
-    // login pelanggan
+    // login klien
     Route::get('/login', [AuthController::class, 'showLoginPelanggan'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
 
@@ -115,6 +116,8 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::middleware('checkRole:1,2')->group(function () {
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboardAdmin');
+
 
         Route::resource('jenisPembayaran', JenisPembayaranController::class);
         Route::resource('statusPesanan', StatusPesananController::class);
