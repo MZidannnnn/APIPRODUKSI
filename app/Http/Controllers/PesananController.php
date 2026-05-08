@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DetailProduk;
+use App\Models\ItemProduksi;
 use App\Models\Pengguna;
 use App\Models\Pesanan;
 use App\Models\StatusPesanan;
@@ -48,7 +49,7 @@ class PesananController extends Controller
         Pesanan::create($validated);
 
         return redirect()->route('pesanan.index')
-                        ->with('success', 'Pesanan berhasil ditambahkan');
+            ->with('success', 'Pesanan berhasil ditambahkan');
     }
 
     /**
@@ -88,7 +89,7 @@ class PesananController extends Controller
         $pesanan->update($validated);
 
         return redirect()->route('pesanan.index')
-                        ->with('success', 'Pesanan berhasil diperbarui');
+            ->with('success', 'Pesanan berhasil diperbarui');
     }
 
     /**
@@ -99,7 +100,7 @@ class PesananController extends Controller
         $pesanan->delete();
 
         return redirect()->route('pesanan.index')
-                        ->with('success', 'Pesanan berhasil dihapus');
+            ->with('success', 'Pesanan berhasil dihapus');
     }
 
     // POST /pesanan/beli
@@ -139,5 +140,17 @@ class PesananController extends Controller
     {
         $pesanan->load('detailProduk', 'statusPesanan');
         return response()->json($pesanan);
+    }
+
+    public function showList()
+    {
+        $itemProduksi = ItemProduksi::with('kategoriUsaha', 'detailProduk.satuanHarga')->where('status_aktif', 'Aktif')->get();
+        return view('test.list_item', compact('itemProduksi'));
+    }
+
+    public function showLisDetail($id)
+    {
+        $itemProduksi = ItemProduksi::with('kategoriUsaha', 'detailProduk.satuanHarga')->findOrFail($id);
+        return view('test.detail-produk', compact('itemProduksi'));
     }
 }

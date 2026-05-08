@@ -22,6 +22,9 @@ Route::get('/', [AuthController::class, 'showDashboard'])->name('dashboard');
 // webhook midtrans
 Route::post('/midtrans/notification', [PembayaranController::class, 'notification']);
 
+Route::get('/pesanan/list-item', [PesananController::class, 'showList'])->name('pesanan.listItem');
+Route::get('/pesanan/detail/{id}', [PesananController::class, 'showLisDetail'])->name('pesanan.detail');
+
 
 /*
 |--------------------------------------------------------------------------
