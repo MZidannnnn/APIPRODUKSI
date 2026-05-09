@@ -9,7 +9,23 @@ use Illuminate\Http\Request;
 
 class PenggunaController extends Controller
 {
-    public function index()
+    public function index($role)
+    {
+        $user = Pengguna::where('id_role', $role)
+                    ->orderBy('nama_pengguna', 'ASC')
+                    ->get();
+
+        $data = [
+            'menuKelolaAkun' => 'active',
+            'user' => $user,
+            'role' => $role
+        ];
+
+        return view('super-admin/kelola-akun/index', $data);
+    }
+}
+
+/*public function index()
     {
         $query = pengguna::query();
 
@@ -101,5 +117,4 @@ class PenggunaController extends Controller
         $pengguna->delete();
 
         return redirect()->route('pengguna.index')->with('success', 'Pengguna dihapus.');
-    }
-}
+    } */

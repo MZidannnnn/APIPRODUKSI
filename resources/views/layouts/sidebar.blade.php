@@ -9,12 +9,15 @@
                 <div class="sidebar-brand-text mx-3">Advisel Pramana</div>
             </a>
 
+             <!-- Menu role 1 super admin -->
+            @if(Auth::user()->id_role == 1)
+
             <!-- Divider -->
             <hr class="sidebar-divider my-0">
 
             <!-- Nav Item - Dashboard -->
-            <li class="nav-item #">
-                <a class="nav-link" href=#>
+            <li class="nav-item {{ $menuDashboard ?? '' }}">
+                <a class="nav-link" href=" {{ route('dashboardSuperAdmin') }}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span></a>
             </li>
@@ -22,15 +25,13 @@
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            @if(Auth::user()->id_role == 1)
-            <!-- Menu role 1 super admin -->
             <!-- Heading -->
             <div class="sidebar-heading">
                 MENU SUPER ADMIN
             </div>
 
             <!-- Kelola Akun -->
-            <li class="nav-item">
+            <li class="nav-item {{ $menuKelolaAkun ?? '' }}">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
                     aria-expanded="true" aria-controls="collapseTwo">
                     <i class="fas fa-fw fa-users"></i>
@@ -38,9 +39,9 @@
                 </a>
                 <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href=#>Super Admin</a>
-                        <a class="collapse-item" href=#>Admin</a>
-                        <a class="collapse-item" href=#>Klien</a>
+                        <a class="collapse-item" href="{{ route('viewKelolaAkun', 1) }}">Super Admin</a>
+                        <a class="collapse-item" href="{{ route('viewKelolaAkun', 2) }}">Admin</a>
+                        <a class="collapse-item" href="{{ route('viewKelolaAkun', 3) }}">Klien</a>
                     </div>
                 </div>
             </li>
@@ -74,8 +75,25 @@
             <hr class="sidebar-divider">
         @endif
 
+        <!-- Menu role 2 admin -->
         @if(in_array(Auth::user()->id_role, [1,2]))
-            <!-- Menu role 2 admin -->
+
+            <!-- Dashboard Admin -->
+            @if(Auth::user()->id_role == 2)
+                <!-- Divider -->
+                <hr class="sidebar-divider my-0">
+
+                <!-- Nav Item - Dashboard -->
+                <li class="nav-item {{ $menuDashboard ?? '' }}">
+                    <a class="nav-link" href=" {{ route('dashboardAdmin') }}">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Dashboard</span></a>
+                </li>
+
+                <!-- Divider -->
+                <hr class="sidebar-divider">
+            @endif
+
             <!-- Heading -->
             <div class="sidebar-heading">
                 MENU ADMIN
