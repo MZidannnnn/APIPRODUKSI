@@ -5,8 +5,7 @@
     <meta charset="UTF-8">
     <title>Detail Item Produksi</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <script src="https://app.sandbox.midtrans.com/snap/snap.js"
-        data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
 </head>
 
 <body>
@@ -29,8 +28,19 @@
     </div>
     <hr>
     <h4>Beli Sekarang</h4>
- <form id="form-pesanan">
-        <input type="hidden" name="id_detail_produk" value="{{ $itemProduksi->detailProduk->id_detail_produk ?? '' }}">
+    <form id="form-pesanan" method="post" action="{{ route('pesanan.beli') }}">
+        @csrf
+        @php
+            $bolehDp = strtolower($itemProduksi->kategoriUsaha->jenisPembayaran->nama_jenis_pembayaran ?? '') === 'dp';
+        @endphp
+        @if ($bolehDp)
+            <label><input type="radio" name="tipe_pembayaran" value="DP" checked> Bayar DP 50%</label><br>
+            <label><input type="radio" name="tipe_pembayaran" value="Full"> Bayar Full 100%</label><br><br>
+        @else
+            <input type="hidden" name="tipe_pembayaran" value="Full">
+        @endif
+        <input type="hidden" name="id_detail_produk"
+            value="{{ $itemProduksi->detailProduk->id_detail_produk ?? '' }}">
         <label>Nama Penerima</label><br>
         <input type="text" name="nama_penerima" required><br><br>
 
@@ -46,7 +56,7 @@
     <script>
         const form = document.getElementById('form-pesanan');
 
-        form.addEventListener('submit', async function (e) {
+        form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const formData = new FormData(form);
@@ -67,6 +77,10 @@
                 return;
             }
 
+            const tipePembayaran = form.querySelector('input[name="tipe_pembayaran"]:checked') ?
+                form.querySelector('input[name="tipe_pembayaran"]:checked').value :
+                form.querySelector('input[name="tipe_pembayaran"]').value;
+
             // 2) Minta Snap token dari backend pembayaran
             const resBayar = await fetch("{{ route('pembayaran.midtrans') }}", {
                 method: "POST",
@@ -75,7 +89,10 @@
                     "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
                     "Accept": "application/json"
                 },
-                body: JSON.stringify({ id_pesanan: pesanan.id_pesanan })
+                body: JSON.stringify({
+                    id_pesanan: pesanan.id_pesanan,
+                    tipe_pembayaran: tipePembayaran
+                })
             });
 
             const bayar = await resBayar.json();
@@ -87,17 +104,17 @@
 
             // 3) Tampilkan popup Midtrans
             window.snap.pay(bayar.snap_token, {
-                onSuccess: function (result) {
+                onSuccess: function(result) {
                     alert("Pembayaran sukses");
                     console.log(result);
                     window.location.href = `/pembayaran/${pembayaranId}/upload-bukti`;
                 },
-                onPending: function (result) {
+                onPending: function(result) {
                     alert("Pembayaran pending");
                     console.log(result);
                     window.location.href = `/pembayaran/${pembayaranId}/upload-bukti`;
                 },
-                onError: function (result) {
+                onError: function(result) {
                     alert("Pembayaran gagal");
                     console.log(result);
                 }
@@ -105,4 +122,5 @@
         });
     </script>
 </body>
+
 </html>

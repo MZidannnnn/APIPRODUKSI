@@ -75,9 +75,9 @@ class Pesanan extends Model
 
     public function sisaBayar()
     {
-        $sudahBayar = $this->pembayaran()->sum('jumlah_bayar');
+        // $sudahBayar = $this->pembayaran()->sum('jumlah_bayar');
 
-        return $this->total_harga - $sudahBayar;
+        return $this->total_harga - $this->pembayaran()->sum('jumlah_bayar');
     }
 
     public function sudahLunas()

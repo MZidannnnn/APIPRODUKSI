@@ -23,8 +23,11 @@ Route::get('/', [AuthController::class, 'showDashboard'])->name('dashboard');
 // webhook midtrans
 Route::post('/midtrans/notification', [PembayaranController::class, 'notification']);
 
+// route testing
 Route::get('/pesanan/list-item', [PesananController::class, 'showList'])->name('pesanan.listItem');
 Route::get('/pesanan/detail/{id}', [PesananController::class, 'showLisDetail'])->name('pesanan.detail');
+Route::get('/pesanan/{pesanan}/tagihan', [PesananController::class, 'showTagihan'])
+    ->name('pesanan.tagihan');
 
 
 /*
@@ -114,41 +117,26 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | SUPER ADMIN
+    | ADMIN & SUPER ADMIN
     |--------------------------------------------------------------------------
     */
 
-    Route::middleware('checkRole:1')->group(function () {
-    // dashboard super admin
-    Route::get('dashboard-super-admin', [DashboardController::class, 'dashboardSuperAdmin'])->name('dashboardSuperAdmin');
-
-    //Kelola Akun
-    Route::get('/kelola-akun/{role}', [PenggunaController::class, 'index'])->name('viewKelolaAkun');
+    Route::middleware('checkRole:1,2')->group(function () {
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboardAdmin');
 
 
-    });
-
-    /*
-    |--------------------------------------------------------------------------
-    | ADMIN
-    |--------------------------------------------------------------------------
-    */
-
-    Route::middleware('checkRole:2')->group(function () {
-    // dashboard admin
-    Route::get('dashboard-admin', [DashboardController::class, 'dashboardAdmin'])->name('dashboardAdmin');
+        Route::resource('jenisPembayaran', JenisPembayaranController::class);
+        Route::resource('statusPesanan', StatusPesananController::class);
+        Route::resource('satuanHarga', SatuanHargaController::class);
+        Route::resource('kategoriUsaha', KategoriUsahaController::class);
+        Route::resource('itemProduksi', ItemProduksiController::class);
+        Route::resource('pengguna', PenggunaController::class);
 
     });
 
 });
 
 
-//Route::resource('jenisPembayaran', JenisPembayaranController::class);
-        //Route::resource('statusPesanan', StatusPesananController::class);
-        //Route::resource('satuanHarga', SatuanHargaController::class);
-        //Route::resource('kategoriUsaha', KategoriUsahaController::class);
-        //Route::resource('itemProduksi', ItemProduksiController::class);
-        //Route::resource('pengguna', PenggunaController::class);
 // Route::get('/login-tes', function () {
 //     return view('auth.login');
 // });

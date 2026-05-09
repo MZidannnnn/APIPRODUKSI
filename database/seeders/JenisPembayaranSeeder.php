@@ -14,9 +14,9 @@ class JenisPembayaranSeeder extends Seeder
     public function run(): void
     {
          DB::table('jenis_pembayaran')->insert([
-            ['nama_jenis_pembayaran' => 'Transfer Bank', 'created_at' => now(), 'updated_at' => now()],
-            ['nama_jenis_pembayaran' => 'VA', 'created_at' => now(), 'updated_at' => now()],
-            ['nama_jenis_pembayaran' => 'QRIS', 'created_at' => now(), 'updated_at' => now()],
+            ['nama_jenis_pembayaran' => 'DP', 'created_at' => now(), 'updated_at' => now()],
+            ['nama_jenis_pembayaran' => 'Full', 'created_at' => now(), 'updated_at' => now()],
+            // ['nama_jenis_pembayaran' => 'QRIS', 'created_at' => now(), 'updated_at' => now()],
         ]);
     }
 }
