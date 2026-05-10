@@ -12,6 +12,7 @@ class Pembayaran extends Model
 
     protected $fillable = [
         'id_pesanan',
+        'tipe_pembayaran',
         'jumlah_bayar',
         'metode_bayar',
         'payment_type',

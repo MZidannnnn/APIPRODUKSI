@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Pembayaran;
 use App\Models\Pesanan;
+use App\Models\StatusPesanan;
 use Illuminate\Http\Request;
-use Midtrans\Snap;
 use Midtrans\Config;
+use Midtrans\Snap;
 
 class PembayaranController extends Controller
 {
@@ -15,6 +16,7 @@ class PembayaranController extends Controller
     {
         $validated = $request->validate([
             'id_pesanan' => 'required|exists:pesanan,id_pesanan',
+            'tipe_pembayaran' => 'required|in:DP,Full,Pelunasan',
         ]);
 
         $pesanan = Pesanan::with('pengguna')->findOrFail($validated['id_pesanan']);
@@ -25,12 +27,21 @@ class PembayaranController extends Controller
         Config::$isSanitized = true;
         Config::$is3ds = true;
 
-        $orderId = 'ORDER-' . $pesanan->id_pesanan . '-' . time();
+        $nominal = $pesanan->total_harga;
+        
+
+        if ($validated['tipe_pembayaran'] === 'DP') {
+            $nominal = round($pesanan->total_harga / 2);
+        } elseif ($validated['tipe_pembayaran'] === 'Pelunasan') {
+            $nominal = $pesanan->sisaBayar();
+        }
+
+        $orderId = 'ORDER-' . $pesanan->id_pesanan . '-' . strtoupper($validated['tipe_pembayaran']) . '-' . time();
 
         $params = [
             'transaction_details' => [
                 'order_id' => $orderId,
-                'gross_amount' => (int) $pesanan->total_harga,
+                'gross_amount' => (int) $nominal,
             ],
             'customer_details' => [
                 'first_name' => $pesanan->nama_penerima,
@@ -45,7 +56,8 @@ class PembayaranController extends Controller
 
         $pembayaran = Pembayaran::create([
             'id_pesanan' => $pesanan->id_pesanan,
-            'jumlah_bayar' => $pesanan->total_harga,
+            'tipe_pembayaran' => $validated['tipe_pembayaran'],
+            'jumlah_bayar' => $nominal,
             'order_id' => $orderId,
             'status_bayar' => 'Pending',
         ]);
@@ -90,7 +102,7 @@ class PembayaranController extends Controller
         if ($statusBayar === 'Lunas') {
             $pesanan = $pembayaran->pesanan;
             if ($pesanan) {
-                $statusSelesai = \App\Models\StatusPesanan::where('nama_status', 'Lunas')->first();
+                $statusSelesai = StatusPesanan::where('nama_status_pesanan', 'Lunas')->first();
                 if ($statusSelesai) {
                     $pesanan->update(['id_status_pesanan' => $statusSelesai->id_status_pesanan]);
                 }

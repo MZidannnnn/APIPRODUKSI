@@ -23,8 +23,11 @@ Route::get('/', [AuthController::class, 'showDashboard'])->name('dashboard');
 // webhook midtrans
 Route::post('/midtrans/notification', [PembayaranController::class, 'notification']);
 
+// route testing
 Route::get('/pesanan/list-item', [PesananController::class, 'showList'])->name('pesanan.listItem');
 Route::get('/pesanan/detail/{id}', [PesananController::class, 'showLisDetail'])->name('pesanan.detail');
+Route::get('/pesanan/{pesanan}/tagihan', [PesananController::class, 'showTagihan'])
+    ->name('pesanan.tagihan');
 
 
 /*

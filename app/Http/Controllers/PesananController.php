@@ -150,7 +150,13 @@ class PesananController extends Controller
 
     public function showLisDetail($id)
     {
-        $itemProduksi = ItemProduksi::with('kategoriUsaha', 'detailProduk.satuanHarga')->findOrFail($id);
+        $itemProduksi = ItemProduksi::with('kategoriUsaha.jenisPembayaran', 'detailProduk.satuanHarga')->findOrFail($id);
         return view('test.detail-produk', compact('itemProduksi'));
+    }
+
+    public function showTagihan(Pesanan $pesanan)
+    {
+        $pesanan->load('statusPesanan', 'pembayaran');
+        return view('test.tagihan-dp', compact('pesanan'));
     }
 }
