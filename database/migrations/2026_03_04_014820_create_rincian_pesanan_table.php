@@ -19,6 +19,7 @@ return new class extends Migration
             $table->decimal('subtotal', 14, 2);
             $table->enum('barang_disediakan_usah', ['Ya', 'Tidak']);
             $table->string('file_desain', 255)->nullable();
+            $table->json('opsi')->nullable();
             $table->timestamps();
 
             $table->foreign('id_pesanan')

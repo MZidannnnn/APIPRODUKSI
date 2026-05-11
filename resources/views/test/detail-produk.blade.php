@@ -41,6 +41,27 @@
         @endif
         <input type="hidden" name="id_detail_produk"
             value="{{ $itemProduksi->detailProduk->id_detail_produk ?? '' }}">
+
+        @php
+            $sablon = strtolower($itemProduksi->kategoriUsaha->nama_kategori ?? '') === 'sablon';
+        @endphp
+        @if ($sablon)
+            <label>Kuantitas</label>
+            <input type="number" name="kuantitas" min="1" value="1" required>
+
+            <label><input type="checkbox" name="jasa_sablon" value="1"> Jasa sablon</label>
+
+            <label>Barang disediakan usaha?</label>
+            <select name="barang_disediakan_usah" required>
+                <option value="Ya">Ya</option>
+                <option value="Tidak">Tidak</option>
+            </select>
+
+            <label>File desain (opsional)</label>
+            <input type="file" name="file_desain">
+        @endif
+
+
         <label>Nama Penerima</label><br>
         <input type="text" name="nama_penerima" required><br><br>
 

@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\DetailProduk;
 use App\Models\ItemProduksi;
 use App\Models\Pengguna;
+use App\Models\PersetujuanHarga;
 use App\Models\Pesanan;
+use App\Models\RincianPesanan;
 use App\Models\StatusPesanan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -111,26 +113,57 @@ class PesananController extends Controller
             'nama_penerima' => 'required|string|max:100',
             'alamat_penerima' => 'required|string',
             'No_hp_penerima' => 'required|string|max:20',
+            'kuantitas' => 'required|integer|min:1',
+            'barang_disediakan_usah' => 'required|in:Ya,Tidak',
+            'file_desain' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'jasa_sablon' => 'nullable|boolean',
         ]);
 
         $detail = DetailProduk::findOrFail($validated['id_detail_produk']);
 
-        // sesuaikan ID status "Menunggu Pembayaran"
-        $statusMenunggu = StatusPesanan::where('nama_status_pesanan', 'Menunggu Pembayaran')->first();
+        $hargaAwal = $detail->harga_dasar * $validated['kuantitas'];
+        if ($validated['barang_disediakan_usah'] === 'Tidak') {
+            $hargaAwal -= 10000; // contoh diskon, sesuaikan aturan Anda
+        }
+
+        $statusMenunggu = StatusPesanan::where('nama_status_pesanan', 'Menunggu Persetujuan Harga')->first();
 
         $pesanan = Pesanan::create([
-            'id_pengguna' => Auth::id(), // pastikan guard sesuai
+            'id_pengguna' => Auth::id(),
             'id_detail_produk' => $detail->id_detail_produk,
             'id_status_pesanan' => $statusMenunggu ? $statusMenunggu->id_status_pesanan : 1,
             'tanggal_pesan' => now()->toDateString(),
             'nama_penerima' => $validated['nama_penerima'],
             'alamat_penerima' => $validated['alamat_penerima'],
             'No_hp_penerima' => $validated['No_hp_penerima'],
-            'total_harga' => $detail->harga_dasar,
+            'total_harga' => $hargaAwal,
+        ]);
+
+        $fileDesainPath = null;
+        if ($request->hasFile('file_desain')) {
+            $fileDesainPath = $request->file('file_desain')->store('desain', 'public');
+        }
+
+        RincianPesanan::create([
+            'id_pesanan' => $pesanan->id_pesanan,
+            'id_detail_produk' => $detail->id_detail_produk,
+            'kuantitas' => $validated['kuantitas'],
+            'subtotal' => $hargaAwal,
+            'barang_disediakan_usah' => $validated['barang_disediakan_usah'],
+            'file_desain' => $fileDesainPath,
+            'opsi' => [
+                'jasa_sablon' => (bool) ($validated['jasa_sablon'] ?? false),
+            ],
+        ]);
+
+        PersetujuanHarga::create([
+            'id_pesanan' => $pesanan->id_pesanan,
+            'harga_awal' => $hargaAwal,
+            'status_persetujuan' => 'Menunggu',
         ]);
 
         return response()->json([
-            'message' => 'Pesanan dibuat',
+            'message' => 'Pesanan dibuat, menunggu penawaran admin',
             'id_pesanan' => $pesanan->id_pesanan,
         ]);
     }
