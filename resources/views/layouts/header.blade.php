@@ -24,27 +24,32 @@
     <link href="{{ asset('sbadmin2/vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
 
     <style>
-    /* ===== FIX SIDEBAR ===== */
-    #accordionSidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        width: 14rem;
-        z-index: 1030;
-    }
+    /* ===== FIX SIDEBAR (Hanya Berlaku di Desktop) ===== */
+    @media (min-width: 768px) {
+        #accordionSidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 1030;
+        }
 
-    /* ===== FIX WRAPPER ===== */
-    #wrapper {
-        display: flex;
-    }
+        #wrapper {
+            display: flex;
+        }
 
-    /* ===== FIX CONTENT ===== */
-    #content-wrapper {
-        margin-left: 14rem;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
+        #content-wrapper {
+            margin-left: 14rem; /* Sesuai lebar sidebar normal */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 0.3s; /* Animasi mulus saat toggle */
+        }
+
+        /* Saat tombol toggle desktop ditekan */
+        #accordionSidebar.toggled ~ #content-wrapper {
+            margin-left: 6.5rem !important; /* Sesuai lebar sidebar mengecil */
+        }
     }
 
     /* ===== CONTENT GROW ===== */
@@ -55,19 +60,6 @@
     /* ===== FOOTER FIX ===== */
     footer.sticky-footer {
         flex-shrink: 0;
-    }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 768px) {
-        #accordionSidebar {
-            position: relative;
-            width: 100%;
-            height: auto;
-        }
-
-        #content-wrapper {
-            margin-left: 0;
-        }
     }
     </style>
 
