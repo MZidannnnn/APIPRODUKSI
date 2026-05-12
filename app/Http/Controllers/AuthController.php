@@ -156,37 +156,65 @@ class AuthController extends Controller
             'password' => $request->password
         ])) {
 
+            // Regenerate session agar lebih aman
             $request->session()->regenerate();
 
+            // Ambil data user yang sedang login
             $user = Auth::user();
 
-            // HANYA ADMIN & SUPER ADMIN
-            if (in_array($user->id_role, [1,2])) {
-
-                return redirect()->route('dashboardAdmin')
-                    ->with('success','Anda berhasil login');
+            // Arahkan Super Admin ke dashboard Super Admin
+            if ((int) $user->id_role === 1) {
+                return redirect()->route('dashboardSuperAdmin')
+                    ->with('success', 'Anda berhasil login sebagai Super Admin');
             }
 
-            // JIKA BUKAN ADMIN
+            // Arahkan Admin ke dashboard Admin
+            if ((int) $user->id_role === 2) {
+                return redirect()->route('dashboardAdmin')
+                    ->with('success', 'Anda berhasil login sebagai Admin');
+            }
+
+            // Jika bukan Super Admin atau Admin, logout otomatis
             Auth::logout();
 
-            return back()->with('error','Akses hanya untuk Admin');
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->with('error', 'Akses hanya untuk Admin dan Super Admin');
         }
 
-        return back()->with('error','Email atau Password salah!');
+        return back()->with('error', 'Email atau Password salah!');
     }
 
     /**
-     * Handle logout
-     */
-    public function logout(Request $request)
-    {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+ * Handle logout
+ */
+public function logout(Request $request)
+{
+    // Simpan role user sebelum logout
+    $role = Auth::user()->id_role;
 
-        return redirect('/');
+    // Logout
+    Auth::logout();
+
+    // Hapus session
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    // Redirect berdasarkan role
+    if (in_array($role, [1, 2])) {
+        return redirect('/adminprivasi')
+            ->with('success', 'Berhasil logout');
     }
+
+    if ($role == 3) {
+        return redirect('/')
+            ->with('success', 'Berhasil logout');
+    }
+
+    // Default fallback
+    return redirect('/');
+}
 
     /**
      * Handle Forget Password
