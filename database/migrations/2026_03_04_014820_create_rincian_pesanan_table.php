@@ -17,9 +17,9 @@ return new class extends Migration
             $table->unsignedBigInteger('id_detail_produk');
             $table->integer('kuantitas');
             $table->decimal('subtotal', 14, 2);
-            $table->enum('barang_disediakan_usah', ['Ya', 'Tidak']);
+            // $table->enum('barang_disediakan_usah', ['Ya', 'Tidak']);
             $table->string('file_desain', 255)->nullable();
-            $table->json('opsi')->nullable();
+            // $table->json('opsi')->nullable();
             $table->timestamps();
 
             $table->foreign('id_pesanan')

@@ -1,15 +1,16 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ItemProduksiController;
 use App\Http\Controllers\JenisPembayaranController;
 use App\Http\Controllers\KategoriUsahaController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\PenggunaController;
+use App\Http\Controllers\PersetujuanHargaController;
 use App\Http\Controllers\PesananController;
 use App\Http\Controllers\SatuanHargaController;
 use App\Http\Controllers\StatusPesananController;
-use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -47,7 +48,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 
     // landing page admin
-    Route::get('/adminprivasi', function () {return view('welcome-admin');})->name('welcomeAdmin');
+    Route::get('/adminprivasi', function () {
+        return view('welcome-admin');
+    })->name('welcomeAdmin');
 
     // login admin
     Route::get('/login-admin', [AuthController::class, 'showLoginAdmin'])->name('loginAdmin');
@@ -70,7 +73,6 @@ Route::middleware('guest')->group(function () {
 
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])
         ->name('password.update');
-
 });
 
 
@@ -112,6 +114,15 @@ Route::middleware('auth')->group(function () {
         Route::post('/pembayaran/{pembayaran}/upload-bukti', [PembayaranController::class, 'uploadBukti'])
             ->name('pembayaran.upload');
 
+        // harga kostum
+        Route::get('/pesanan/{pesanan}/status-harga', [PersetujuanHargaController::class, 'showStatus'])
+            ->name('pesanan.statusHarga');
+
+        Route::post('/pesanan/{pesanan}/setuju-harga', [PersetujuanHargaController::class, 'setujuHarga'])
+            ->name('pesanan.setujuHarga');
+
+        Route::post('/pesanan/{pesanan}/tolak-harga', [PersetujuanHargaController::class, 'tolakHarga'])
+            ->name('pesanan.tolakHarga');
     });
 
 
@@ -122,13 +133,11 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::middleware('checkRole:1')->group(function () {
-    // dashboard super admin
-    Route::get('dashboard-super-admin', [DashboardController::class, 'dashboardSuperAdmin'])->name('dashboardSuperAdmin');
+        // dashboard super admin
+        Route::get('dashboard-super-admin', [DashboardController::class, 'dashboardSuperAdmin'])->name('dashboardSuperAdmin');
 
-    //Kelola Akun
-    Route::get('/kelola-akun/{role}', [PenggunaController::class, 'index'])->name('viewKelolaAkun');
-
-
+        //Kelola Akun
+        Route::get('/kelola-akun/{role}', [PenggunaController::class, 'index'])->name('viewKelolaAkun');
     });
 
     /*
@@ -138,11 +147,15 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::middleware('checkRole:2')->group(function () {
-    // dashboard admin
-    Route::get('dashboard-admin', [DashboardController::class, 'dashboardAdmin'])->name('dashboardAdmin');
+        // dashboard admin
+        Route::get('dashboard-admin', [DashboardController::class, 'dashboardAdmin'])->name('dashboardAdmin');
 
+        Route::get('/admin/pesanan/{pesanan}/penawaran', [PersetujuanHargaController::class, 'showAdmin'])
+            ->name('admin.pesanan.penawaran');
+
+        Route::post('/admin/pesanan/{pesanan}/penawaran', [PersetujuanHargaController::class, 'ajukanHarga'])
+            ->name('admin.pesanan.ajukanHarga');
     });
-
 });
 
 

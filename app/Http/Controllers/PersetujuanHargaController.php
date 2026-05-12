@@ -8,6 +8,23 @@ use Illuminate\Http\Request;
 
 class PersetujuanHargaController extends Controller
 {
+    // Halaman admin untuk ajukan harga
+    public function showAdmin(Pesanan $pesanan)
+    {
+        $pesanan->load(['persetujuanHarga', 'rincianPesanan', 'pengguna']);
+        $persetujuan = $pesanan->persetujuanHarga;
+
+        return view('test.penawaran-admin', compact('pesanan', 'persetujuan'));
+    }
+
+    // Halaman klien untuk lihat penawaran + setuju/tolak
+    public function showStatus(Pesanan $pesanan)
+    {
+        $pesanan->load(['persetujuanHarga', 'pembayaran', 'statusPesanan']);
+        $persetujuan = $pesanan->persetujuanHarga;
+
+        return view('test.status-penawaran', compact('pesanan', 'persetujuan'));
+    }
 
     public function ajukanHarga(Request $request, Pesanan $pesanan)
     {
