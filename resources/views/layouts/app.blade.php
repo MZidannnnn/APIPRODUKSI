@@ -148,7 +148,7 @@
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">
-                                    #
+                                    {{ Auth::user()->nama_pengguna }}
                                 </span>
                                 <img class="img-profile rounded-circl e"
                                     src="{{ asset('sbadmin2/img/undraw_profile.svg') }}">
@@ -158,7 +158,7 @@
                                 aria-labelledby="userDropdown">
                                 <a class="dropdown-item" href="#">
                                     <div class="badge badge-success justify-content-center d-flex">
-                                        #
+                                        {{ Auth::user()->id_role == 1 ? 'Super Admin' : (Auth::user()->id_role == 2) }}
                                     </div>
                                 </a>
                                 <div class="dropdown-divider"></div>

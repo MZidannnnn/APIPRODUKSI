@@ -7,77 +7,160 @@ use Illuminate\Http\Request;
 
 class SatuanHargaController extends Controller
 {
-    /**
-     * Menampilkan seluruh data divisi dan menampilkan halaman index divisi
-     */
     public function index()
     {
-        $satuanHarga = SatuanHarga::all();
-        return view('SatuanHarga.index', compact('satuanHarga'));
+        $data = [
+            'title' => 'Data Satuan Harga',
+            'menuDataMaster' => 'active',
+            'collapseDataMaster' => 'show',
+            'satuanHarga' => SatuanHarga::all(),
+            'master' => 'satuanHarga'
+        ];
+
+        return view('super-admin/data-master/satuan-harga/index', $data);
     }
 
-    /**
-     * menampilkan view tambah data divisi
-     */
     public function create()
     {
-        return view('SatuanHarga.create');
+        $data = [
+            'title' => 'Tambah Data Satuan Harga',
+            'menuDataMaster' => 'active',
+            'collapseDataMaster' => 'show',
+            'master' => 'satuanHarga',
+        ];
+    
+        return view('super-admin/data-master/satuan-harga/create', $data);
     }
 
-    /**
-     * fungsi untuk menyimpan data divisi yang baru dibuat ke database
-     */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nama_satuan' => 'required|string|max:30|unique:satuan_harga,nama_satuan',
+        $request->validate([
+            'nama_satuan'          => 'required',
+        ], [    
+            'nama_satuan.required' => 'Nama satuan harga wajib diisi',
         ]);
 
-        SatuanHarga::create($validated);
-
-        return redirect()->route('SatuanHarga.index')
-                        ->with('success', 'Satuan Harga berhasil ditambahkan');
-    }
-
-    /**
-     * menampilkan data divisi berdasarkan id dan menampilkan halaman detail divisi
-     */
-    public function show(SatuanHarga $satuanHarga)
-    {
-        return view('SatuanHarga.show', compact('satuanHarga'));
-    }
-
-    /**
-     * menampilkan form edit data divisi berdasarkan id yang dipilih
-     */
-    public function edit(SatuanHarga $satuanHarga)
-    {
-        return view('SatuanHarga.edit', compact('satuanHarga'));
-    }
-
-    /**
-     * fungsi untuk memperbarui data divisi yang sudah ada di database berdasarkan id yang dipilih
-     */
-    public function update(Request $request, SatuanHarga $satuanHarga)
-    {
-        $validated = $request->validate([
-            'nama_satuan' => 'required|string|max:30|unique:satuan_harga,nama_satuan,' . $satuanHarga->id_satuan . ',id_satuan',
+        SatuanHarga::create([
+            'nama_satuan'  => $request->nama_satuan,
         ]);
 
-        $satuanHarga->update($validated);
-
-        return redirect()->route('SatuanHarga.index')
-                        ->with('success', 'Satuan Harga berhasil diperbarui');
+        return redirect()
+            ->route('satuanHarga.index')
+            ->with('success', 'Data satuan harga berhasil ditambahkan');
     }
 
-    /**
-     * fungsi untuk menghapus data divisi berdasarkan id yang dipilih
-     */
-    public function destroy(SatuanHarga $satuanHarga)
+    public function edit($id)
     {
+        $data = [
+            'title'              => 'Edit Data Satuan Harga',
+            'menuDataMaster'     => 'active',
+            'collapseDataMaster' => 'show',
+            'master'             => 'satuanHarga',
+            'satuanHarga'      => SatuanHarga::findOrFail($id),
+        ];
+
+        return view('super-admin/data-master/satuan-harga/edit', $data);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'nama_satuan'         => 'required',
+        ], [
+            'nama_satuan.required'         => 'Nama satuan harga wajib diisi',
+        ]);
+
+        $satuanHarga = SatuanHarga::findOrFail($id);
+
+        $satuanHarga->update([
+            'nama_satuan'       => $request->nama_satuan,
+        ]);
+
+        return redirect()
+            ->route('satuanHarga.index')
+            ->with('success', 'Data satuan harga berhasil diperbarui');
+    }
+
+    public function destroy($id)
+    {
+        $satuanHarga = SatuanHarga::findOrFail($id);
         $satuanHarga->delete();
-
-        return redirect()->route('SatuanHarga.index')
-                        ->with('success', 'Satuan Harga berhasil dihapus');
+        return redirect()
+            ->route('satuanHarga.index')
+            ->with('success', 'Data satuan harga berhasil dihapus');
     }
 }
+
+// /**
+//      * Menampilkan seluruh data divisi dan menampilkan halaman index divisi
+//      */
+//     public function index() 
+//     {
+//         $satuanHarga = SatuanHarga::all();
+//         return view('SatuanHarga.index', compact('satuanHarga'));
+//     }
+
+//     /**
+//      * menampilkan view tambah data divisi
+//      */
+//     public function create()
+//     {
+//         return view('SatuanHarga.create');
+//     }
+
+//     /**
+//      * fungsi untuk menyimpan data divisi yang baru dibuat ke database
+//      */
+//     public function store(Request $request)
+//     {
+//         $validated = $request->validate([
+//             'nama_satuan' => 'required|string|max:30|unique:satuan_harga,nama_satuan',
+//         ]);
+
+//         SatuanHarga::create($validated);
+
+//         return redirect()->route('SatuanHarga.index')
+//                         ->with('success', 'Satuan Harga berhasil ditambahkan');
+//     }
+
+//     /**
+//      * menampilkan data divisi berdasarkan id dan menampilkan halaman detail divisi
+//      */
+//     public function show(SatuanHarga $satuanHarga)
+//     {
+//         return view('SatuanHarga.show', compact('satuanHarga'));
+//     }
+
+//     /**
+//      * menampilkan form edit data divisi berdasarkan id yang dipilih
+//      */
+//     public function edit(SatuanHarga $satuanHarga)
+//     {
+//         return view('SatuanHarga.edit', compact('satuanHarga'));
+//     }
+
+//     /**
+//      * fungsi untuk memperbarui data divisi yang sudah ada di database berdasarkan id yang dipilih
+//      */
+//     public function update(Request $request, SatuanHarga $satuanHarga)
+//     {
+//         $validated = $request->validate([
+//             'nama_satuan' => 'required|string|max:30|unique:satuan_harga,nama_satuan,' . $satuanHarga->id_satuan . ',id_satuan',
+//         ]);
+
+//         $satuanHarga->update($validated);
+
+//         return redirect()->route('SatuanHarga.index')
+//                         ->with('success', 'Satuan Harga berhasil diperbarui');
+//     }
+
+//     /**
+//      * fungsi untuk menghapus data divisi berdasarkan id yang dipilih
+//      */
+//     public function destroy(SatuanHarga $satuanHarga)
+//     {
+//         $satuanHarga->delete();
+
+//         return redirect()->route('SatuanHarga.index')
+//                         ->with('success', 'Satuan Harga berhasil dihapus');
+//     }

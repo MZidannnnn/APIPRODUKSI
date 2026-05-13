@@ -32,34 +32,47 @@
 
             <!-- Kelola Akun -->
             <li class="nav-item {{ $menuKelolaAkun ?? '' }}">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
-                    aria-expanded="true" aria-controls="collapseTwo">
+                <a class="nav-link {{ isset($collapseKelolaAkun) ? '' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#collapseTwo"
+                    aria-expanded="{{ isset($collapseKelolaAkun) ? 'true' : 'false' }}" aria-controls="collapseTwo">
                     <i class="fas fa-fw fa-users"></i>
                     <span>Kelola Akun</span>
                 </a>
-                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                <div id="collapseTwo" class="collapse {{ $collapseKelolaAkun ?? '' }}" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{{ route('viewKelolaAkun', 1) }}">Super Admin</a>
-                        <a class="collapse-item" href="{{ route('viewKelolaAkun', 2) }}">Admin</a>
-                        <a class="collapse-item" href="{{ route('viewKelolaAkun', 3) }}">Klien</a>
+                        <a class="collapse-item {{ ($role ?? '') == 1 ? 'active' : '' }}" href="{{ route('viewKelolaAkun', 1) }}">Super Admin</a>
+
+                        <a class="collapse-item {{ ($role ?? '') == 2 ? 'active' : '' }}" href="{{ route('viewKelolaAkun', 2) }}">Admin</a>
+
+                        <a class="collapse-item {{ ($role ?? '') == 3 ? 'active' : '' }}" href="{{ route('viewKelolaAkun', 3) }}">Klien</a>
                     </div>
                 </div>
             </li>
 
             <!-- Monitoring Data Master -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
-                    aria-expanded="true" aria-controls="collapseUtilities">
+            <li class="nav-item {{ $menuDataMaster ?? '' }}">
+                <a class="nav-link {{ isset($collapseDataMaster) ? '' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#collapseUtilities"
+                    aria-expanded="{{ isset($collapseDataMaster) ? 'true' : 'false' }}" aria-controls="collapseUtilities">
                     <i class="fas fa-fw fa-tools"></i>
                     <span>Data Master</span>
                 </a>
-                <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
+                <div id="collapseUtilities"  class="collapse {{ $collapseDataMaster ?? '' }}" aria-labelledby="headingUtilities"
                     data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="utilities-color.html">Kategori Usaha</a>
-                        <a class="collapse-item" href="utilities-border.html">Status Pesanan</a>
-                        <a class="collapse-item" href="utilities-animation.html">Satuan Harga</a>
-                        <a class="collapse-item" href="utilities-other.html">Jenis Pembayaran</a>
+                        <a class="collapse-item {{ ($master ?? '') == 'kategoriUsaha' ? 'active' : '' }}" href="{{ route('kategoriUsaha.index') }}">
+                            Kategori Usaha
+                        </a>
+
+                        <a class="collapse-item {{ ($master ?? '') == 'statusPesanan' ? 'active' : '' }}" href="{{ route('statusPesanan.index') }}">
+                            Status Pesanan
+                        </a>
+
+                        <a class="collapse-item {{ ($master ?? '') == 'satuanHarga' ? 'active' : '' }}" href="{{ route('satuanHarga.index') }}">
+                            Satuan Harga
+                        </a>
+
+                        <a class="collapse-item {{ ($master ?? '') == 'jenisPembayaran' ? 'active' : '' }}" href="{{ route('jenisPembayaran.index') }}">
+                            Jenis Pembayaran
+                        </a>
                     </div>
                 </div>
             </li>
@@ -133,4 +146,4 @@
         @endif
 
         </ul>
-        <!-- End of Sidebar -->
+        <!-- End of Sidebar --> 

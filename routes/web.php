@@ -133,8 +133,51 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::middleware('checkRole:1')->group(function () {
-        // dashboard super admin
-        Route::get('dashboard-super-admin', [DashboardController::class, 'dashboardSuperAdmin'])->name('dashboardSuperAdmin');
+    // dashboard super admin
+    Route::get('dashboard-super-admin', [DashboardController::class, 'dashboardSuperAdmin'])->name('dashboardSuperAdmin');
+    
+    // KELOLA AKUN
+    // View data akun berdasarkan role
+    Route::get('/data-master', [KategoriUsahaController::class, 'index'])
+        ->name('viewDataMaster');
+
+    // Form tambah akun
+    Route::get('/kelola-akun/create/{role}', [PenggunaController::class, 'create'])
+        ->name('kelolaAkunCreate');
+
+    // Simpan data akun
+    Route::post('/kelola-akun/store', [PenggunaController::class, 'store'])
+        ->name('kelolaAkunStore');
+
+    // Form edit akun
+    Route::get('/kelola-akun/edit/{id}', [PenggunaController::class, 'edit'])
+        ->name('kelolaAkunEdit');
+
+    // Update data akun
+    Route::put('/kelola-akun/update/{id}', [PenggunaController::class, 'update'])
+        ->name('kelolaAkunUpdate');
+
+    // Hapus akun
+    Route::delete('/kelola-akun/delete/{id}', [PenggunaController::class, 'destroy'])
+        ->name('kelolaAkunDelete');
+
+    // View data akun berdasarkan role
+    Route::get('/kelola-akun/{role}', [PenggunaController::class, 'index'])
+        ->name('viewKelolaAkun');
+
+    
+    // Data Master
+    // Kategori Usaha
+    Route::resource('kategoriUsaha', KategoriUsahaController::class);
+
+    // Satus Pesanan
+    Route::resource('statusPesanan', StatusPesananController::class);
+
+    //Satuan Harga
+    Route::resource('satuanHarga', SatuanHargaController::class);
+
+    // Jenis Pembayaran
+    Route::resource('jenisPembayaran', JenisPembayaranController::class);
 
         //Kelola Akun
         Route::get('/kelola-akun/{role}', [PenggunaController::class, 'index'])->name('viewKelolaAkun');
@@ -159,10 +202,7 @@ Route::middleware('auth')->group(function () {
 });
 
 
-//Route::resource('jenisPembayaran', JenisPembayaranController::class);
-        //Route::resource('statusPesanan', StatusPesananController::class);
-        //Route::resource('satuanHarga', SatuanHargaController::class);
-        //Route::resource('kategoriUsaha', KategoriUsahaController::class);
+
         //Route::resource('itemProduksi', ItemProduksiController::class);
         //Route::resource('pengguna', PenggunaController::class);
 // Route::get('/login-tes', function () {
