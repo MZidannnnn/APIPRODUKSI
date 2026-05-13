@@ -14,7 +14,10 @@ return new class extends Migration
         Schema::create('persetujuan_harga', function (Blueprint $table) {
             $table->bigIncrements('id_persetujuan');
             $table->unsignedBigInteger('id_pesanan');
-            $table->enum('status_persetujuan', ['Disetujui', 'Ditolak']);
+            $table->decimal('harga_awal', 14, 2);
+            $table->decimal('harga_tawaran', 14, 2)->nullable();
+            $table->decimal('harga_disetujui', 14, 2)->nullable();
+            $table->enum('status_persetujuan', ['Ditawarkan', 'Menunggu', 'Disetujui', 'Ditolak']);
             $table->text('catatan')->nullable();
             $table->timestamp('tanggal_persetujuan')->nullable();
             $table->timestamps();

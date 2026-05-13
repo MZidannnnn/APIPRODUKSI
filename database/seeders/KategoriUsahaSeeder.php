@@ -30,6 +30,14 @@ class KategoriUsahaSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'id_jenis_pembayaran' => 2,
+                'nama_kategori' => 'Sablon',
+                'jenis_harga' => 'Harga Kostum',
+                'deskripsi' => 'Jasa sablon custom',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }

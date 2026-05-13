@@ -42,20 +42,20 @@ class Pesanan extends Model
         return $this->belongsTo(DetailProduk::class, 'id_detail_produk', 'id_detail_produk');
     }
 
-    // public function rincianPesanan()
-    // {
-    //     return $this->hasMany(RincianPesanan::class, 'id_pesanan', 'id_pesanan');
-    // }
+    public function rincianPesanan()
+    {
+        return $this->hasMany(RincianPesanan::class, 'id_pesanan', 'id_pesanan');
+    }
 
     public function pembayaran()
     {
         return $this->hasMany(Pembayaran::class, 'id_pesanan', 'id_pesanan');
     }
 
-    // public function persetujuanHarga()
-    // {
-    //     return $this->hasOne(PersetujuanHarga::class, 'id_pesanan', 'id_pesanan');
-    // }/
+    public function persetujuanHarga()
+    {
+        return $this->hasOne(PersetujuanHarga::class, 'id_pesanan', 'id_pesanan');
+    }
 
     // HELPER METHODS
 

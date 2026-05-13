@@ -21,6 +21,12 @@ class PembayaranController extends Controller
 
         $pesanan = Pesanan::with('pengguna')->findOrFail($validated['id_pesanan']);
 
+        // untuk pesanan harga tawar, pastikan harga sudah disetujui sebelum membuat transaksi pembayaran
+        $persetujuan = $pesanan->persetujuanHarga;
+        if ($persetujuan && $persetujuan->status_persetujuan !== 'Disetujui') {
+            return response()->json(['message' => 'Harga belum disetujui'], 422);
+        }
+
         // konfig midtrans
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = (bool) config('midtrans.is_production');
@@ -28,7 +34,7 @@ class PembayaranController extends Controller
         Config::$is3ds = true;
 
         $nominal = $pesanan->total_harga;
-        
+
 
         if ($validated['tipe_pembayaran'] === 'DP') {
             $nominal = round($pesanan->total_harga / 2);
