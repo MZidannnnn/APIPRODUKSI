@@ -2,15 +2,15 @@
 
 @section('content')
     <h1 class="h3 mb-4 text-gray-800">
-        <i class="fas fa-fw fa-users-cog mr-2"></i>
+        <i class="fas fa-fw fa-credit-card mr-2"></i>
         {{ $title }}
     </h1>
- 
+
     <div class="card">
         <div class="card-header d-flex flex-wrap justify-content-center justify-content-xl-between">
             <div class="mb-1 mr-2">
-                <a href="{{ route('kelolaAkunCreate', $role) }}" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus mr-2"></i> Tambah Akun
+                <a href="{{ route('jenisPembayaran.create') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus mr-2"></i> Tambah Jenis Pembayaran
                 </a>
             </div>
         </div>
@@ -21,11 +21,7 @@
                     <thead class="bg-primary text-white">
                         <tr class="text-center">
                             <th width="5%">No</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            @if ($role == 2)
-                                <th>Kategori</th>
-                            @endif
+                            <th>Nama Jenis Pembayaran</th>
                             <th>
                                 <i class="fas fa-cog"></i>
                             </th>
@@ -33,33 +29,27 @@
                     </thead>
 
                     <tbody>
-                        @foreach ($user as $item)
+                        @foreach ($jenisPembayaran as $item)
                             <tr class="text-center">
                                 <td>{{ $loop->iteration }}</td>
 
-                                <td>{{ $item->nama_pengguna }}</td>
-
-                                <td>{{ $item->email }}</td>
-                                
-                                @if ($role == 2)
-                                    <td>{{ $item->id_kategori }}</td>
-                                @endif
+                                <td>{{ $item->nama_jenis_pembayaran }}</td>
 
                                 <td>
-                                    <a href="{{ route('kelolaAkunEdit', $item->id_pengguna) }}" class="btn btn-sm btn-warning">
+                                    <a href="{{ route('jenisPembayaran.edit', $item->id_jenis_pembayaran) }}" class="btn btn-sm btn-warning">
                                         <i class="fas fa-edit"></i>
                                     </a>
 
-                                    <form action="{{ route('kelolaAkunDelete', $item->id_pengguna) }}" method="POST" class="d-inline">
+                                    <form action="{{ route('jenisPembayaran.destroy', $item->id_jenis_pembayaran) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
 
                                         <button type="button" class="btn btn-sm btn-danger" data-toggle="modal"
-                                            data-target="#hapusModal{{ $item->id_pengguna }}">
+                                            data-target="#hapusModal{{ $item->id_jenis_pembayaran}}">
                                             <i class="fas fa-trash"></i>
                                         </button>
 
-                                        @include('super-admin.kelola-akun.modal')
+                                        @include('super-admin.data-master.jenis-pembayaran.modal')
                                     </form>
                                 </td>
                             </tr>
