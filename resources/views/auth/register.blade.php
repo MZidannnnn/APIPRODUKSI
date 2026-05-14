@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Register Klien</title>
+    <title>Sign Up Klien</title>
 
     <link rel="stylesheet" href="{{ asset('fe-klien/auth-klien.css') }}">
 
@@ -30,7 +30,7 @@
                 alt="Logo">
 
             <!-- Title -->
-            <h1>Registrasi Akun</h1>
+            <h1>Sign Up Akun Anda</h1>
 
             <!-- Form -->
             <form action="{{ route('register') }}" method="POST" class="auth-form">
@@ -76,7 +76,7 @@
 
                 <!-- Button -->
                 <button type="submit">
-                    Register
+                    Sign Up
                 </button>
 
             </form>

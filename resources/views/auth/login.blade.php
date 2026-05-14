@@ -70,7 +70,7 @@
             <!-- Register -->
             <p class="auth-link">
                 Belum punya akun?
-                <a href="{{ route('register') }}">Register</a>
+                <a href="{{ route('register') }}">Sign Up</a>
             </p>
 
         </div>
