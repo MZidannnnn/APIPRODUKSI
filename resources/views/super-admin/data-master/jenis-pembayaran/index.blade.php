@@ -12,7 +12,7 @@
                 <a href="{{ route('jenisPembayaran.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus mr-2"></i> Tambah Jenis Pembayaran
                 </a>
-            </div>
+            </div> 
         </div>
 
         <div class="card-body">

@@ -1,0 +1,579 @@
+/* =========================================================
+   RESET STYLE
+========================================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* =========================================================
+   BODY
+========================================================= */
+body {
+    font-family: Arial, sans-serif;
+    background: #fff;
+    color: #222;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+.header {
+    position: relative;
+    padding: 22px 20px;
+    border-bottom: none;
+    overflow: visible;
+    z-index: 100;
+}
+
+/* garis header full layar */
+.header::after {
+    content: "";
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 152px; /* sesuaikan tinggi header kamu */
+    height: 3px;
+    background: #777;
+    z-index: 1;
+}
+
+/* =========================================================
+   BACKGROUND HEADER
+========================================================= */
+.bg {
+    position: absolute;
+    width: 170px;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.bg-header-left {
+    left: 0;
+    top: 58px;
+}
+
+.bg-header-right {
+    right: 0;
+    top: 0;
+}
+
+/* =========================================================
+   ISI HEADER
+========================================================= */
+.header-content {
+    max-width: 1000px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    position: relative;
+
+    /* Harus lebih tinggi dari background */
+    z-index: 101;
+}
+
+/* =========================================================
+   LOGO HEADER
+========================================================= */
+.logo img {
+    width: 95px;
+}
+
+/* =========================================================
+   SEARCH BOX
+========================================================= */
+.search-box {
+    flex: 1;
+    display: flex;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.search-box input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #aaa;
+    outline: none;
+}
+
+.search-box button {
+    width: 55px;
+    border: none;
+    background: #009247;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* =========================================================
+   AUTH BUTTON / PROFILE MENU
+========================================================= */
+.auth-button {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Tombol login dan register */
+.btn {
+    background: #008a46;
+    color: white;
+    text-decoration: none;
+    padding: 11px 18px;
+    border-radius: 6px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Icon chat ketika user sudah login */
+.chat-icon {
+    font-size: 22px;
+    color: #333;
+    text-decoration: none;
+}
+
+/* Wrapper profile */
+.profile-wrapper {
+    position: relative;
+}
+
+/* Tombol profile */
+.profile-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    border: none;
+    background: transparent;
+
+    cursor: pointer;
+    font-size: 16px;
+    color: #222;
+}
+
+.profile-button i {
+    font-size: 30px;
+}
+
+/* =========================================================
+   DROPDOWN PROFILE
+========================================================= */
+.profile-dropdown {
+    position: absolute;
+    top: 55px;
+    right: 0;
+
+    width: 300px;
+    background: #fff;
+
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+
+    overflow: hidden;
+
+    /* Default disembunyikan */
+    display: none;
+
+    /* Supaya dropdown tampil di atas elemen lain */
+    z-index: 9999;
+}
+
+/* Class ini dipanggil lewat JavaScript */
+.profile-dropdown.show {
+    display: block;
+}
+
+/* Header dropdown warna hitam */
+.dropdown-header {
+    background: #333;
+    color: white;
+
+    padding: 14px 16px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Area nama user */
+.dropdown-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dropdown-user i {
+    font-size: 34px;
+}
+
+/* Icon setting */
+.setting-icon {
+    color: white;
+    font-size: 20px;
+}
+
+/* Isi dropdown */
+.dropdown-body {
+    padding: 16px;
+}
+
+/* Judul riwayat pesanan */
+.dropdown-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 15px;
+}
+
+.dropdown-title strong {
+    font-size: 14px;
+}
+
+.dropdown-title a {
+    font-size: 11px;
+    color: #008a46;
+    text-decoration: none;
+}
+
+/* Menu riwayat pesanan */
+.order-menu {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+
+    border: 1px solid #ddd;
+}
+
+.order-menu a {
+    text-decoration: none;
+    color: #333;
+    text-align: center;
+
+    padding: 12px 6px;
+
+    border-right: 1px solid #ddd;
+}
+
+.order-menu a:last-child {
+    border-right: none;
+}
+
+.order-menu i {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 7px;
+    color: #006b3c;
+}
+
+.order-menu span {
+    font-size: 9px;
+}
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+.logout-form {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.logout-btn {
+
+    background: #008a46;
+    color: white;
+    text-decoration: none;
+    padding: 10px 25px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+/* =========================================================
+   CONTAINER UTAMA
+========================================================= */
+.container {
+    max-width: 1000px;
+    margin: 35px auto;
+    padding: 0 20px;
+}
+
+/* =========================================================
+   PROFILE CARD
+========================================================= */
+.profile-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+
+    padding: 28px;
+
+    border: 1px solid #ddd;
+    border-radius: 8px;
+
+    box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+}
+
+.profile-text h1 {
+    font-size: 28px;
+    margin-bottom: 12px;
+}
+
+.profile-text p {
+    max-width: 690px;
+    line-height: 1.7;
+    font-size: 15px;
+}
+
+.profile-logo img {
+    width: 150px;
+}
+
+/* =========================================================
+   SOCIAL ICON
+========================================================= */
+.social-icons {
+    margin-top: 25px;
+    display: flex;
+    gap: 8px;
+}
+
+.social-icons a {
+    width: 30px;
+    height: 30px;
+
+    border: 2px solid #777;
+    color: #555;
+    border-radius: 50%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    text-decoration: none;
+}
+
+/* =========================================================
+   SECTION
+========================================================= */
+.section {
+    margin-top: 28px;
+}
+
+.section h2 {
+    font-size: 22px;
+    margin-bottom: 15px;
+}
+
+/* =========================================================
+   KATEGORI
+========================================================= */
+.kategori-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.kategori {
+    padding: 7px 16px;
+
+    border: 1px solid #aaa;
+    border-radius: 20px;
+
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+.kategori.active {
+    background: #222;
+    color: #fff;
+}
+
+/* =========================================================
+   PRODUK
+========================================================= */
+.produk-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 55px;
+}
+
+.produk-card {
+    width: 100%;
+}
+
+.produk-img {
+    height: 150px;
+
+    border: 1px solid #ddd;
+    border-radius: 8px;
+
+    box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+
+    margin-bottom: 14px;
+}
+
+.produk-card h3 {
+    font-size: 14px;
+    font-weight: normal;
+    margin-bottom: 8px;
+}
+
+.produk-card p {
+    font-size: 14px;
+    color: #008a46;
+}
+
+/* =========================================================
+   RESPONSIVE TABLET
+========================================================= */
+@media (max-width: 992px) {
+    .header-content {
+        gap: 20px;
+    }
+
+    .produk-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE HP
+========================================================= */
+@media (max-width: 768px) {
+    .header {
+        padding: 20px;
+        min-height: 230px;
+
+        /* Tetap visible supaya dropdown tidak terpotong */
+        overflow: visible;
+    }
+
+    .header-content {
+        flex-direction: column;
+        gap: 18px;
+        z-index: 101;
+    }
+
+    .logo img {
+        width: 85px;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+
+    .auth-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .bg {
+        width: 125px;
+        opacity: 0.85;
+    }
+
+    .bg-header-left {
+        left: -20px;
+        top: 80px;
+    }
+
+    .bg-header-right {
+        right: -20px;
+        top: 0;
+    }
+
+    .profile-dropdown {
+        width: 280px;
+        top: 50px;
+        right: -60px;
+    }
+
+    .order-menu {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .order-menu a:nth-child(2) {
+        border-right: none;
+    }
+
+    .profile-card {
+        flex-direction: column-reverse;
+        text-align: center;
+        padding: 22px;
+    }
+
+    .profile-text h1 {
+        font-size: 24px;
+    }
+
+    .profile-text p {
+        font-size: 14px;
+    }
+
+    .social-icons {
+        justify-content: center;
+    }
+
+    .profile-logo img {
+        width: 120px;
+    }
+
+    .produk-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE HP KECIL
+========================================================= */
+@media (max-width: 480px) {
+    .bg {
+        width: 100px;
+    }
+
+    .bg-header-left {
+        left: -20px;
+        top: 95px;
+    }
+
+    .bg-header-right {
+        right: -25px;
+        top: 0;
+    }
+
+    .profile-dropdown {
+        width: 260px;
+        right: -40px;
+    }
+
+    .produk-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .produk-img {
+        height: 180px;
+    }
+
+    .kategori-list {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 8px;
+    }
+
+    .kategori {
+        white-space: nowrap;
+    }
+
+    .btn {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+}

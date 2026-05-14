@@ -3,97 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrasi Akun</title>
 
-    <link rel="stylesheet" href="{{ asset('fe-klien/auth.css') }}">
+    <title>Register Klien</title>
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('fe-klien/auth-klien.css') }}">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
-<div class="auth-container">
-
     <!-- Background -->
-    <img src="{{ asset('assets/images/bg-top-left.png') }}" class="asset-corner top-left">
-    <img src="{{ asset('assets/images/bg-top-right.png') }}" class="asset-corner top-right">
-    <img src="{{ asset('assets/images/bg-bottom-left.png') }}" class="asset-corner bottom-left">
-    <img src="{{ asset('assets/images/bg-bottom-right.png') }}" class="asset-corner bottom-right">
+     <img src="{{ asset('assets/images/bg-top-left.png') }}" class="auth-bg bg-left-top">
+     <img src="{{ asset('assets/images/bg-top-right.png') }}" class="auth-bg bg-right-top">
+     <img src="{{ asset('assets/images/bg-bottom-left.png') }}" class="auth-bg bg-left-bottom">
+     <img src="{{ asset('assets/images/bg-bottom-right.png') }}" class="auth-bg bg-right-bottom">
 
-    <!-- Form -->
-    <div class="auth-box">
-        <img src="{{ asset('assets/images/logo.png') }}" class="logo-main" alt="Logo">
+    <!-- Content -->
+    <main class="auth-wrapper">
 
-        <h2 class="auth-title">Register Akun</h2>
+        <div class="auth-card">
 
-        <form action="{{ route('register') }}" method="POST">
-            @csrf
+            <!-- Logo -->
+            <img src="{{ asset('assets/images/logo.png') }}"
+                class="auth-logo"
+                alt="Logo">
 
-            <input type="text" name="nama_pengguna" placeholder="Username" class="auth-input" required>
+            <!-- Title -->
+            <h1>Registrasi Akun</h1>
 
-            <input type="email" name="email" placeholder="Email" class="auth-input" required>
+            <!-- Form -->
+            <form action="{{ route('register') }}" method="POST" class="auth-form">
+                @csrf
 
-            {{-- <p class="label-text">Jenis Kelamin</p>
+                <!-- Username -->
+                <input type="text"
+                    name="nama_pengguna"
+                    placeholder="Username"
+                    required>
 
-            <div class="gender-container">
-                <label class="gender-option">
-                    <input type="radio" name="gender" value="L">
-                    Laki-Laki
-                </label>
-                <label class="gender-option">
-                    <input type="radio" name="gender" value="P">
-                    Perempuan
-                </label>
-            </div> --}}
+                <!-- Email -->
+                <input type="email"
+                    name="email"
+                    placeholder="Email"
+                    required>
 
-            <!-- PASSWORD -->
-            <div class="password-wrapper">
-                <input 
-                    type="password" 
-                    name="password" 
-                    id="password"
-                    placeholder="Password" 
-                    class="auth-input" 
-                    required
-                >
-                <i class="toggle-password fa fa-eye" onclick="togglePassword('password', this)"></i>
-            </div>
+                <!-- Password -->
+                <div class="password-wrapper">
 
-            <!-- CONFIRM PASSWORD -->
-            <div class="password-wrapper">
-                <input 
-                    type="password" 
-                    name="password_confirmation" 
-                    id="confirmPassword"
-                    placeholder="Konfirmasi Password" 
-                    class="auth-input" 
-                    required
-                >
-                <i class="toggle-password fa fa-eye" onclick="togglePassword('confirmPassword', this)"></i>
-            </div>
+                    <input type="password"
+                        name="password"
+                        placeholder="Password"
+                        class="password-input"
+                        required>
 
-            <button type="submit" class="btn-primary">Register</button>
-        </form>
+                    <i class="fa-solid fa-eye toggle-password"></i>
 
-        <p class="auth-link">
-            Sudah punya akun?
-            <a href="{{ route('login') }}">Log In</a>
-        </p>
-    </div>
+                </div>
 
-</div>
+                <!-- Konfirmasi Password -->
+                <div class="password-wrapper">
 
-<!-- SCRIPT -->
-<script>
-function togglePassword(fieldId, icon) {
-    const field = document.getElementById(fieldId);
-    const type = field.type === 'password' ? 'text' : 'password';
-    field.type = type;
+                    <input type="password"
+                        name="password_confirmation"
+                        placeholder="Konfirmasi Password"
+                        class="password-input"
+                        required>
 
-    icon.classList.toggle('fa-eye');
-    icon.classList.toggle('fa-eye-slash');
-}
-</script>
+                    <i class="fa-solid fa-eye toggle-password"></i>
+
+                </div>
+
+                <!-- Button -->
+                <button type="submit">
+                    Register
+                </button>
+
+            </form>
+
+            <!-- Login -->
+            <p class="auth-link">
+                Sudah punya akun?
+                <a href="{{ route('login') }}">Log In</a>
+            </p>
+
+        </div>
+
+    </main>
+
+    <!-- Toggle Password -->
+    <script>
+        const togglePasswordButtons = document.querySelectorAll('.toggle-password');
+
+        togglePasswordButtons.forEach(function(button) {
+
+            button.addEventListener('click', function() {
+
+                const passwordInput = this.previousElementSibling;
+
+                if (passwordInput.type === 'password') {
+
+                    passwordInput.type = 'text';
+
+                    this.classList.remove('fa-eye');
+                    this.classList.add('fa-eye-slash');
+
+                } else {
+
+                    passwordInput.type = 'password';
+
+                    this.classList.remove('fa-eye-slash');
+                    this.classList.add('fa-eye');
+                }
+
+            });
+
+        });
+    </script>
 
 </body>
 </html>

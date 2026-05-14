@@ -3,77 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Akun Anda</title>
 
-    <link rel="stylesheet" href="{{ asset('fe-klien/auth.css') }}">
+    <title>Login Klien</title>
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('fe-klien/auth-klien.css') }}">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
-<div class="auth-container">
-
     <!-- Background -->
-    <img src="{{ asset('assets/images/bg-top-left.png') }}" class="asset-corner top-left">
-    <img src="{{ asset('assets/images/bg-top-right.png') }}" class="asset-corner top-right">
-    <img src="{{ asset('assets/images/bg-bottom-left.png') }}" class="asset-corner bottom-left">
-    <img src="{{ asset('assets/images/bg-bottom-right.png') }}" class="asset-corner bottom-right">
+    <img src="{{ asset('assets/images/bg-top-left.png') }}" class="auth-bg bg-left-top">
+    <img src="{{ asset('assets/images/bg-top-right.png') }}" class="auth-bg bg-right-top">
+    <img src="{{ asset('assets/images/bg-bottom-left.png') }}" class="auth-bg bg-left-bottom">
+    <img src="{{ asset('assets/images/bg-bottom-right.png') }}" class="auth-bg bg-right-bottom">
 
-    <!-- Form -->
-    <div class="auth-box">
-        <img src="{{ asset('assets/images/logo.png') }}" class="logo-main" alt="Logo">
+    <!-- Content -->
+    <main class="auth-wrapper">
 
-        <h2 class="auth-title">Log in Ke Akun Anda</h2>
+        <div class="auth-card">
 
-        <form action="{{ route('login') }}" method="POST">
-            @csrf
+            <!-- Logo -->
+            <img src="{{ asset('assets/images/logo.png') }}"
+                class="auth-logo"
+                alt="Logo">
 
-            <input 
-                type="text" 
-                name="nama_pengguna" 
-                placeholder="Username" 
-                class="auth-input" 
-                required
-            >
+            <!-- Title -->
+            <h1>Log in Ke Akun Anda</h1>
 
-            <!-- PASSWORD -->
-            <div class="password-wrapper">
-                <input 
-                    type="password" 
-                    name="password" 
-                    id="loginPassword"
-                    placeholder="Password" 
-                    class="auth-input" 
-                    required
-                >
-                <i class="toggle-password fa fa-eye" onclick="togglePassword('loginPassword', this)"></i>
+            <!-- Form -->
+            <form action="{{ route('login') }}" method="POST" class="auth-form">
+                @csrf
 
-                 <a href="{{ route('password.request') }}" class="forgot-password">Lupa Password?</a>
-            </div>
+                <!-- Username -->
+                <input type="text"
+                    name="nama_pengguna"
+                    placeholder="Username"
+                    required>
 
-            <button type="submit" class="btn-primary">Log In</button>
-        </form>
+                <!-- Password -->
+                <div class="password-wrapper">
 
-        <p class="auth-link">
-            Belum punya akun?
-            <a href="{{ route('register') }}">Register</a>
-        </p>
-    </div>
+                    <input type="password"
+                        name="password"
+                        placeholder="Password"
+                        class="password-input"
+                        required>
 
-</div>
+                    <i class="fa-solid fa-eye toggle-password"></i>
 
-<!-- SCRIPT -->
-<script>
-function togglePassword(fieldId, icon) {
-    const field = document.getElementById(fieldId);
-    const type = field.type === 'password' ? 'text' : 'password';
-    field.type = type;
+                </div>
 
-    icon.classList.toggle('fa-eye');
-    icon.classList.toggle('fa-eye-slash');
-}
-</script>
+                <!-- Forgot Password -->
+                <div class="forgot-link">
+                    <a href="{{ route('password.request') }}">Lupa Password?</a>
+                </div>
+
+                <!-- Button -->
+                <button type="submit">
+                    Log In
+                </button>
+
+            </form>
+
+            <!-- Register -->
+            <p class="auth-link">
+                Belum punya akun?
+                <a href="{{ route('register') }}">Register</a>
+            </p>
+
+        </div>
+
+    </main>
+
+    <!-- Toggle Password -->
+    <script>
+        const togglePasswordButtons = document.querySelectorAll('.toggle-password');
+
+        togglePasswordButtons.forEach(function(button) {
+
+            button.addEventListener('click', function() {
+
+                const passwordInput = this.previousElementSibling;
+
+                if (passwordInput.type === 'password') {
+
+                    passwordInput.type = 'text';
+
+                    this.classList.remove('fa-eye');
+                    this.classList.add('fa-eye-slash');
+
+                } else {
+
+                    passwordInput.type = 'password';
+
+                    this.classList.remove('fa-eye-slash');
+                    this.classList.add('fa-eye');
+                }
+
+            });
+
+        });
+    </script>
 
 </body>
 </html>

@@ -209,9 +209,9 @@ Route::middleware('auth')->group(function () {
 //     return view('auth.login');
 // });
 
-// Route::get('/loginadmin', function () {
-//     return view('auth.loginadmin');
-// });
+Route::get('/login-klien', function () {
+    return view('klien.index');
+});
 
 // route::get('/dashboard', function () {
 //     return view('pelanggan.dashboard');

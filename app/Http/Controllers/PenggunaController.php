@@ -13,9 +13,7 @@ class PenggunaController extends Controller
 {
     public function index($role)
     {
-        $user = Pengguna::where('id_role', $role)
-        ->orderBy('nama_pengguna', 'ASC')
-        ->get();
+        $user = Pengguna::where('id_role', $role)->get();
 
         $data = [
             'title' => $title = ($role == 1) ? 'Data Akun Super Admin' : (($role == 2) ? 'Data Akun Admin' : 'Data Akun Klien'),
