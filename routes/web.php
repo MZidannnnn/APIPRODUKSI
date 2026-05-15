@@ -182,6 +182,17 @@ Route::middleware('auth')->group(function () {
 
         //Kelola Akun
         Route::get('/kelola-akun/{role}', [PenggunaController::class, 'index'])->name('viewKelolaAkun');
+
+        // route untuk export pdf dan excel
+        Route::get('/admin/laporan/penjualan', [LaporanPenjualanController::class, 'index'])
+            ->name('laporan.penjualan.index');
+
+        Route::get('/admin/laporan/penjualan/excel', [LaporanPenjualanController::class, 'exportExcel'])
+            ->name('laporan.penjualan.excel');
+
+        Route::get('/admin/laporan/penjualan/pdf', [LaporanPenjualanController::class, 'exportPdf'])
+            ->name('laporan.penjualan.pdf');
+        // >>
     });
 
     /*
@@ -200,16 +211,7 @@ Route::middleware('auth')->group(function () {
         // Route::post('/admin/pesanan/{pesanan}/penawaran', [PersetujuanHargaController::class, 'ajukanHarga'])
         //     ->name('admin.pesanan.ajukanHarga');
 
-        // route untuk export pdf dan excel
-        Route::get('/admin/laporan/penjualan', [LaporanPenjualanController::class, 'index'])
-            ->name('laporan.penjualan.index');
-
-        Route::get('/admin/laporan/penjualan/excel', [LaporanPenjualanController::class, 'exportExcel'])
-            ->name('laporan.penjualan.excel');
-
-        Route::get('/admin/laporan/penjualan/pdf', [LaporanPenjualanController::class, 'exportPdf'])
-            ->name('laporan.penjualan.pdf');
-        // >>
+        
     });
 });
 
