@@ -194,12 +194,13 @@ Route::middleware('auth')->group(function () {
         // dashboard admin
         Route::get('dashboard-admin', [DashboardController::class, 'dashboardAdmin'])->name('dashboardAdmin');
 
-        Route::get('/admin/pesanan/{pesanan}/penawaran', [PersetujuanHargaController::class, 'showAdmin'])
-            ->name('admin.pesanan.penawaran');
+        // Route::get('/admin/pesanan/{pesanan}/penawaran', [PersetujuanHargaController::class, 'showAdmin'])
+        //     ->name('admin.pesanan.penawaran');
 
-        Route::post('/admin/pesanan/{pesanan}/penawaran', [PersetujuanHargaController::class, 'ajukanHarga'])
-            ->name('admin.pesanan.ajukanHarga');
+        // Route::post('/admin/pesanan/{pesanan}/penawaran', [PersetujuanHargaController::class, 'ajukanHarga'])
+        //     ->name('admin.pesanan.ajukanHarga');
 
+        // route untuk export pdf dan excel
         Route::get('/admin/laporan/penjualan', [LaporanPenjualanController::class, 'index'])
             ->name('laporan.penjualan.index');
 
@@ -208,6 +209,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/admin/laporan/penjualan/pdf', [LaporanPenjualanController::class, 'exportPdf'])
             ->name('laporan.penjualan.pdf');
+        // >>
     });
 });
 
