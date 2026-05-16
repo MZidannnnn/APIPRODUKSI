@@ -19,7 +19,7 @@ class pengguna extends Authenticatable
         'id_kategori',
         'nama_pengguna',
         'email',
-        'password', 
+        'password',
     ];
 
     protected $hidden = [
@@ -49,6 +49,16 @@ class pengguna extends Authenticatable
     public function kategori()
     {
         return $this->belongsTo(KategoriUsaha::class, 'id_kategori', 'id_kategori');
+    }
+
+    public function percakapan()
+    {
+        return $this->hasMany(Percakapan::class, 'id_pengguna', 'id_pengguna');
+    }
+
+    public function pesan()
+    {
+        return $this->hasMany(Pesan::class, 'id_pengirim', 'id_pengguna');
     }
 
     // public function divisi()
