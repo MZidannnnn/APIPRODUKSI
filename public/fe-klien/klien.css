@@ -30,10 +30,11 @@ body {
 /* garis header full layar */
 .header::after {
     content: "";
-    position: fixed;
+    position: absolute;
     left: 0;
     right: 0;
-    top: 152px; /* sesuaikan tinggi header kamu */
+    top: 152px;
+    bottom: 0;
     height: 3px;
     background: #777;
     z-index: 1;
@@ -577,3 +578,4 @@ body {
         font-size: 14px;
     }
 }
+

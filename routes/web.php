@@ -184,13 +184,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/kelola-akun/{role}', [PenggunaController::class, 'index'])->name('viewKelolaAkun');
 
         // route untuk export pdf dan excel
-        Route::get('/admin/laporan/penjualan', [LaporanPenjualanController::class, 'index'])
+        Route::get('/super-admin/laporan/penjualan', [LaporanPenjualanController::class, 'index'])
             ->name('laporan.penjualan.index');
 
-        Route::get('/admin/laporan/penjualan/excel', [LaporanPenjualanController::class, 'exportExcel'])
+        Route::get('/super-admin/laporan/penjualan/excel', [LaporanPenjualanController::class, 'exportExcel'])
             ->name('laporan.penjualan.excel');
 
-        Route::get('/admin/laporan/penjualan/pdf', [LaporanPenjualanController::class, 'exportPdf'])
+        Route::get('/super-admin/laporan/penjualan/pdf', [LaporanPenjualanController::class, 'exportPdf'])
             ->name('laporan.penjualan.pdf');
         // >>
     });
