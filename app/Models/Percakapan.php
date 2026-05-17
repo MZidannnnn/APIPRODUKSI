@@ -12,12 +12,24 @@ class Percakapan extends Model
     protected $fillable = [
         'id_pengguna',
         'id_pesanan',
+        'id_item_produksi',
+        'id_kategori',
         'terakhir_aktif',
     ];
 
     protected $casts = [
         'terakhir_aktif' => 'datetime',
     ];
+
+    public function itemProduksi()
+    {
+        return $this->belongsTo(ItemProduksi::class, 'id_item_produksi', 'id_item_produksi');
+    }
+
+    public function kategori()
+    {
+        return $this->belongsTo(KategoriUsaha::class, 'id_kategori', 'id_kategori');
+    }
 
     public function pengguna()
     {

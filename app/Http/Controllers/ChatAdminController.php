@@ -11,30 +11,42 @@ class ChatAdminController extends Controller
 {
     public function index()
     {
-        $percakapanList = Percakapan::with('pengguna')
+        $admin = Auth::user();
+
+        $percakapanList = Percakapan::with(['pengguna', 'itemProduksi'])
+            ->where('id_kategori', $admin->id_kategori)
+            ->withCount(['pesan as unread_count' => function ($q) use ($admin) {
+                $q->whereNull('dibaca_pada')
+                    ->where('id_pengirim', '!=', $admin->id_pengguna);
+            }])
             ->orderByDesc('terakhir_aktif')
             ->get();
-
-        return view('test.list-chat-admin', [
-            'percakapanList' => $percakapanList,
-        ]);
+        return view('test.list-chat-admin', compact('percakapanList'));
     }
 
-    public function show($id)
+    public function show(Percakapan $percakapan)
     {
-        $percakapan = Percakapan::with('pengguna')->findOrFail($id);
+        $admin = Auth::user();
+
+        $percakapan = Percakapan::where('id_percakapan', $percakapan->id_percakapan)
+            ->where('id_kategori', $admin->id_kategori)
+            ->firstOrFail();
 
         return view('test.detail-chat-admin', [
             'percakapan' => $percakapan,
-            'userId' => Auth::id(),
+            'userId' => $admin->id_pengguna,
         ]);
     }
 
-    public function messages(Request $request, $id)
+    public function messages(Request $request, Percakapan $percakapan)
     {
         $afterId = (int) $request->query('after_id', 0);
 
-        $percakapan = Percakapan::findOrFail($id);
+        $admin = Auth::user();
+
+        $percakapan = Percakapan::where('id_percakapan', $percakapan->id_percakapan)
+            ->where('id_kategori', $admin->id_kategori)
+            ->firstOrFail();
 
         $query = $percakapan->pesan()
             ->with('pengirim:id_pengguna,nama_pengguna')
@@ -47,7 +59,7 @@ class ChatAdminController extends Controller
         $messages = $query->get();
 
         Pesan::where('id_percakapan', $percakapan->id_percakapan)
-            ->where('id_pengirim', '!=', Auth::id())
+            ->where('id_pengirim', '!=', $admin->id_pengguna)
             ->whereNull('dibaca_pada')
             ->update(['dibaca_pada' => now()]);
 
@@ -67,17 +79,21 @@ class ChatAdminController extends Controller
         ]);
     }
 
-    public function send(Request $request, $id)
+    public function send(Request $request, Percakapan $percakapan)
     {
         $data = $request->validate([
             'isi_pesan' => ['required', 'string', 'max:2000'],
         ]);
 
-        $percakapan = Percakapan::findOrFail($id);
+        $admin = Auth::user();
+
+        $percakapan = Percakapan::where('id_percakapan', $percakapan->id_percakapan)
+            ->where('id_kategori', $admin->id_kategori)
+            ->firstOrFail();
 
         $pesan = Pesan::create([
             'id_percakapan' => $percakapan->id_percakapan,
-            'id_pengirim' => Auth::id(),
+            'id_pengirim' => $admin->id_pengguna,
             'isi_pesan' => $data['isi_pesan'],
         ]);
 

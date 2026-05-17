@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DetailProduk;
 use App\Models\ItemProduksi;
 use App\Models\Pengguna;
+use App\Models\Percakapan;
 use App\Models\PersetujuanHarga;
 use App\Models\Pesanan;
 use App\Models\RincianPesanan;
@@ -191,8 +192,25 @@ class PesananController extends Controller
 
     public function showLisDetail($id)
     {
+        // $itemProduksi = ItemProduksi::with('kategoriUsaha.jenisPembayaran', 'detailProduk.satuanHarga')->findOrFail($id);
+        // return view('test.detail-produk', compact('itemProduksi'));
         $itemProduksi = ItemProduksi::with('kategoriUsaha.jenisPembayaran', 'detailProduk.satuanHarga')->findOrFail($id);
-        return view('test.detail-produk', compact('itemProduksi'));
+
+        $userId = Auth::id();
+        $percakapan = null;
+
+        if ($userId) {
+            $percakapan = Percakapan::firstOrCreate(
+                [
+                    'id_pengguna' => $userId,
+                    'id_item_produksi' => $itemProduksi->id_item_produksi,
+                    'id_kategori' => $itemProduksi->id_kategori,
+                ],
+                ['terakhir_aktif' => now()]
+            );
+        }
+
+        return view('test.detail-produk', compact('itemProduksi', 'percakapan', 'userId'));
     }
 
     public function showTagihan(Pesanan $pesanan)

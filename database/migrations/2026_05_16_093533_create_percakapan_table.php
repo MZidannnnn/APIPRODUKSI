@@ -15,6 +15,8 @@ return new class extends Migration
             $table->bigIncrements('id_percakapan');
             $table->unsignedBigInteger('id_pengguna');
             $table->unsignedBigInteger('id_pesanan')->nullable();
+            $table->unsignedBigInteger('id_item_produksi')->nullable();
+            $table->unsignedBigInteger('id_kategori')->nullable();
             $table->timestamp('terakhir_aktif')->nullable();
             $table->timestamps();
 
@@ -30,6 +32,16 @@ return new class extends Migration
                 ->onDelete('set null')
                 ->onUpdate('cascade');
 
+            $table->foreign('id_item_produksi')
+                ->references('id_item_produksi')->on('item_produksi')
+                ->onDelete('set null')->onUpdate('cascade');
+
+            $table->foreign('id_kategori')
+                ->references('id_kategori')->on('kategori_usaha')
+                ->onDelete('restrict')->onUpdate('cascade');
+
+            $table->index(['id_pengguna', 'id_item_produksi']);
+            $table->index(['id_kategori']);
             $table->index(['id_pengguna', 'id_pesanan']);
         });
     }

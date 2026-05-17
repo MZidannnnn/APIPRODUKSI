@@ -1,110 +1,34 @@
 @extends('klien.layouts.app')
 
 @section('content')
-<div class="chat-wrapper">
-    <div class="chat-header">Chat Admin</div>
+<div class="chat-list-page">
+    <h2 class="page-title">Daftar Chat</h2>
 
-    <div id="chatMessages" class="chat-messages"></div>
-
-    <form id="chatForm" class="chat-form">
-        @csrf
-        <textarea id="chatInput" name="isi_pesan" rows="2" placeholder="Ketik pesan..."></textarea>
-        <button type="submit">Kirim</button>
-    </form>
+    <div class="room-list">
+        @forelse ($percakapanList as $p)
+            <a class="room-item" href="{{ route('chat.show', $p->id_item_produksi) }}">
+                <div class="room-main">
+                    <div class="room-title">{{ $p->itemProduksi->nama_item ?? '-' }}</div>
+                    <div class="room-meta">{{ $p->itemProduksi->kategoriUsaha->nama_kategori ?? '-' }}</div>
+                </div>
+                @if ($p->unread_count > 0)
+                    <span class="room-badge">{{ $p->unread_count }}</span>
+                @endif
+            </a>
+        @empty
+            <div class="room-empty">Belum ada chat.</div>
+        @endforelse
+    </div>
 </div>
 
 <style>
-.chat-wrapper { max-width: 720px; margin: 0 auto; }
-.chat-header { font-weight: 700; margin-bottom: 12px; }
-.chat-messages { border: 1px solid #ddd; border-radius: 8px; padding: 12px; height: 360px; overflow-y: auto; background: #fafafa; }
-.chat-bubble { background: #ffffff; border: 1px solid #eee; border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; max-width: 80%; }
-.chat-bubble.me { background: #e9f6ff; border-color: #d0ecff; margin-left: auto; }
-.chat-meta { font-size: 12px; color: #666; margin-bottom: 4px; }
-.chat-form { display: flex; gap: 8px; margin-top: 10px; }
-.chat-form textarea { flex: 1; border-radius: 8px; border: 1px solid #ddd; padding: 8px; }
-.chat-form button { border: none; border-radius: 8px; padding: 8px 16px; background: #0d6efd; color: #fff; }
+.chat-list-page { max-width: 900px; margin: 0 auto; }
+.page-title { font-size: 22px; margin-bottom: 16px; }
+.room-list { display: grid; gap: 12px; }
+.room-item { display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: #222; border: 1px solid #ddd; border-radius: 10px; padding: 14px 16px; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.room-title { font-weight: 700; }
+.room-meta { font-size: 12px; color: #666; margin-top: 4px; }
+.room-badge { background: #008a46; color: #fff; font-size: 12px; min-width: 22px; height: 22px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; padding: 0 6px; }
+.room-empty { color: #777; }
 </style>
-
-<script>
-(function () {
-    const messagesEl = document.getElementById('chatMessages');
-    const form = document.getElementById('chatForm');
-    const input = document.getElementById('chatInput');
-    const token = document.querySelector('input[name="_token"]').value;
-
-    const messagesUrl = "{{ route('chat.messages') }}";
-    const sendUrl = "{{ route('chat.send') }}";
-    const userId = {{ (int) $userId }};
-    let lastId = 0;
-    let isLoading = false;
-
-    function escapeHtml(text) {
-        return text
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-
-    function renderMessage(msg) {
-        const bubble = document.createElement('div');
-        bubble.className = msg.sender_id === userId ? 'chat-bubble me' : 'chat-bubble';
-        bubble.innerHTML = `
-            <div class="chat-meta">${escapeHtml(msg.sender_name)} - ${escapeHtml(msg.created_at)}</div>
-            <div class="chat-text">${escapeHtml(msg.text)}</div>
-        `;
-        messagesEl.appendChild(bubble);
-    }
-
-    async function fetchMessages() {
-        if (isLoading) return;
-        isLoading = true;
-
-        const url = new URL(messagesUrl, window.location.origin);
-        if (lastId > 0) url.searchParams.set('after_id', String(lastId));
-
-        const res = await fetch(url.toString(), {
-            headers: { 'Accept': 'application/json' }
-        });
-
-        if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data.messages)) {
-                data.messages.forEach(renderMessage);
-                if (data.last_id) lastId = data.last_id;
-                if (data.messages.length > 0) {
-                    messagesEl.scrollTop = messagesEl.scrollHeight;
-                }
-            }
-        }
-
-        isLoading = false;
-    }
-
-    form.addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const text = input.value.trim();
-        if (!text) return;
-
-        const res = await fetch(sendUrl, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': token,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ isi_pesan: text })
-        });
-
-        if (res.ok) {
-            input.value = '';
-            await fetchMessages();
-        }
-    });
-
-    fetchMessages();
-    setInterval(fetchMessages, 3000);
-})();
-</script>
 @endsection

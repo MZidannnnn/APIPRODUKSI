@@ -127,11 +127,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/pesanan/{pesanan}/tolak-harga', [PersetujuanHargaController::class, 'tolakHarga'])
             ->name('pesanan.tolakHarga');
 
-        // fitur chat
+        // fitur chat klien
         Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
-        Route::get('/chat/messages', [ChatController::class, 'messages'])->name('chat.messages');
-        Route::post('/chat/messages', [ChatController::class, 'send'])->name('chat.send');
+        Route::get('/chat/{id}/messages', [ChatController::class, 'messages'])->name('chat.messages');
+        Route::post('/chat/{id}/messages', [ChatController::class, 'send'])->name('chat.send');
         Route::get('/chat/unread-count', [ChatController::class, 'unreadCount'])->name('chat.unread');
+        Route::get('/chat/{id}', [ChatController::class, 'show'])->name('chat.show');
     });
 
 
@@ -221,9 +222,17 @@ Route::middleware('auth')->group(function () {
 
         // fitur chat admin
         Route::get('/admin/chat', [ChatAdminController::class, 'index'])->name('admin.chat.index');
-    Route::get('/admin/chat/{id}', [ChatAdminController::class, 'show'])->name('admin.chat.show');
-    Route::get('/admin/chat/{id}/messages', [ChatAdminController::class, 'messages'])->name('admin.chat.messages');
-    Route::post('/admin/chat/{id}/messages', [ChatAdminController::class, 'send'])->name('admin.chat.send');
+        // Route::get('/admin/chat/{id}', [ChatAdminController::class, 'show'])->name('admin.chat.show');
+        // Route::get('/admin/chat/{id}/messages', [ChatAdminController::class, 'messages'])->name('admin.chat.messages');
+        // Route::post('/admin/chat/{id}/messages', [ChatAdminController::class, 'send'])->name('admin.chat.send');
+        Route::get('/admin/chat/{percakapan}', [ChatAdminController::class, 'show'])->name('admin.chat.show')
+            ->middleware('can:accessAdmin,percakapan');
+
+        Route::get('/admin/chat/{percakapan}/messages', [ChatAdminController::class, 'messages'])->name('admin.chat.messages')
+            ->middleware('can:accessAdmin,percakapan');
+
+        Route::post('/admin/chat/{percakapan}/messages', [ChatAdminController::class, 'send'])->name('admin.chat.send')
+            ->middleware('can:accessAdmin,percakapan');
     });
 });
 

@@ -1,27 +1,53 @@
-@extends('layouts/app')
+@extends('klien.layouts.app')
+
+@push('head')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+@endpush
 
 @section('content')
-<h1 class="h3 mb-4 text-gray-800">Chat - {{ $percakapan->pengguna->nama_pengguna }}</h1>
+<div class="chat-page">
+    <div class="chat-top">
+        @php $itemId = $percakapan->id_item_produksi; @endphp
+        @if ($itemId)
+            <a class="back-link" href="{{ route('pesanan.detail', $itemId) }}">Kembali ke produk</a>
+        @endif
+        <div class="chat-title">Chat Admin</div>
+        <div class="chat-subtitle">
+            {{ $percakapan->itemProduksi?->nama_item ?? 'Item' }}
+            @if ($percakapan->itemProduksi?->kategoriUsaha?->nama_kategori)
+                - {{ $percakapan->itemProduksi?->kategoriUsaha?->nama_kategori }}
+            @endif
+        </div>
+    </div>
 
-<div class="card shadow mb-4">
-    <div class="card-body">
-        <div id="chatMessages" class="chat-messages mb-3"></div>
+    <div class="chat-card">
+        <div id="chatMessages" class="chat-messages"></div>
 
-        <form id="chatForm" class="d-flex gap-2">
+        <form id="chatForm" class="chat-form">
             @csrf
-            <textarea id="chatInput" name="isi_pesan" rows="2" class="form-control" placeholder="Ketik pesan..."></textarea>
-            <button type="submit" class="btn btn-primary">Kirim</button>
+            <textarea id="chatInput" name="isi_pesan" rows="2" placeholder="Ketik pesan..."></textarea>
+            <button type="submit" class="btn">Kirim</button>
         </form>
     </div>
 </div>
 
 <style>
-.chat-messages { border: 1px solid #e5e5e5; border-radius: 8px; padding: 12px; height: 360px; overflow-y: auto; background: #fafafa; }
-.chat-bubble { background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; max-width: 80%; }
+.chat-page { max-width: 900px; margin: 0 auto; }
+.chat-top { margin-bottom: 16px; }
+.back-link { display: inline-block; text-decoration: none; color: #006b3c; font-weight: 600; margin-bottom: 8px; }
+.chat-title { font-size: 22px; font-weight: 700; }
+.chat-subtitle { font-size: 13px; color: #555; margin-top: 4px; }
+
+.chat-card { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+.chat-messages { border: 1px solid #e5e5e5; border-radius: 8px; padding: 12px; height: 420px; overflow-y: auto; background: #fafafa; }
+
+.chat-bubble { background: #ffffff; border: 1px solid #eee; border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; max-width: 80%; }
 .chat-bubble.me { background: #e9f6ff; border-color: #d0ecff; margin-left: auto; }
-.chat-meta { font-size: 12px; color: #666; margin-bottom: 4px; }
 .chat-text { font-size: 14px; }
 .chat-time { font-size: 11px; color: #777; margin-top: 4px; text-align: right; }
+
+.chat-form { display: flex; gap: 8px; margin-top: 10px; }
+.chat-form textarea { flex: 1; border-radius: 8px; border: 1px solid #ddd; padding: 8px; }
 </style>
 
 <script>
@@ -29,10 +55,10 @@
     const messagesEl = document.getElementById('chatMessages');
     const form = document.getElementById('chatForm');
     const input = document.getElementById('chatInput');
-    const token = document.querySelector('input[name="_token"]').value;
+    const csrf = document.querySelector('meta[name="csrf-token"]').content;
 
-    const messagesUrl = "{{ route('admin.chat.messages', $percakapan->id_percakapan) }}";
-    const sendUrl = "{{ route('admin.chat.send', $percakapan->id_percakapan) }}";
+    const messagesUrl = "{{ route('chat.messages', $percakapan->id_percakapan) }}";
+    const sendUrl = "{{ route('chat.send', $percakapan->id_percakapan) }}";
     const userId = {{ (int) $userId }};
     let lastId = 0;
     let isLoading = false;
@@ -51,7 +77,8 @@
         bubble.className = msg.sender_id === userId ? 'chat-bubble me' : 'chat-bubble';
         bubble.innerHTML = `
             <div class="chat-text">${escapeHtml(msg.text)}</div>
-            <div class="chat-time">${escapeHtml(msg.created_at)}</div>`;
+            <div class="chat-time">${escapeHtml(msg.created_at)}</div>
+        `;
         messagesEl.appendChild(bubble);
     }
 
@@ -62,10 +89,7 @@
         const url = new URL(messagesUrl, window.location.origin);
         if (lastId > 0) url.searchParams.set('after_id', String(lastId));
 
-        const res = await fetch(url.toString(), {
-            headers: { 'Accept': 'application/json' }
-        });
-
+        const res = await fetch(url.toString(), { headers: { 'Accept': 'application/json' } });
         if (res.ok) {
             const data = await res.json();
             if (Array.isArray(data.messages)) {
@@ -88,7 +112,7 @@
         const res = await fetch(sendUrl, {
             method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': token,
+                'X-CSRF-TOKEN': csrf,
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
