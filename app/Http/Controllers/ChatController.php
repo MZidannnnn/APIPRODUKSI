@@ -60,26 +60,53 @@ class ChatController extends Controller
             $query->where('id_pesan', '>', $afterId);
         }
 
+        $firstUnreadId = null;
+        if ($afterId === 0) {
+            $firstUnreadId = Pesan::where('id_percakapan', $percakapan->id_percakapan)
+                ->whereNull('dibaca_pada')
+                ->where('id_pengirim', '!=', $userId)
+                ->min('id_pesan');
+        }
+
         $messages = $query->get();
+        $lastId = $messages->last()?->id_pesan ?? $afterId;
 
         Pesan::where('id_percakapan', $percakapan->id_percakapan)
             ->where('id_pengirim', '!=', $userId)
             ->whereNull('dibaca_pada')
+            ->when($lastId, fn($q) => $q->where('id_pesan', '<=', $lastId))
             ->update(['dibaca_pada' => now()]);
 
-        $lastId = $messages->last() ? $messages->last()->id_pesan : $afterId;
-
         return response()->json([
-            'messages' => $messages->map(function ($m) {
-                return [
-                    'id' => $m->id_pesan,
-                    'sender_id' => $m->id_pengirim,
-                    'text' => $m->isi_pesan,
-                    'created_at' => $m->created_at->format('Y-m-d H:i'),
-                ];
-            }),
+            'messages' => $messages->map(fn($m) => [
+                'id' => $m->id_pesan,
+                'sender_id' => $m->id_pengirim,
+                'text' => $m->isi_pesan,
+                'created_at' => $m->created_at->format('Y-m-d H:i'),
+                'show_divider_before' => $firstUnreadId && $m->id_pesan === $firstUnreadId,
+            ]),
             'last_id' => $lastId,
         ]);
+        // $messages = $query->get();
+
+        // Pesan::where('id_percakapan', $percakapan->id_percakapan)
+        //     ->where('id_pengirim', '!=', $userId)
+        //     ->whereNull('dibaca_pada')
+        //     ->update(['dibaca_pada' => now()]);
+
+        // $lastId = $messages->last() ? $messages->last()->id_pesan : $afterId;
+
+        // return response()->json([
+        //     'messages' => $messages->map(function ($m) {
+        //         return [
+        //             'id' => $m->id_pesan,
+        //             'sender_id' => $m->id_pengirim,
+        //             'text' => $m->isi_pesan,
+        //             'created_at' => $m->created_at->format('Y-m-d H:i'),
+        //         ];
+        //     }),
+        //     'last_id' => $lastId,
+        // ]);
     }
 
     public function send(Request $request, $id)

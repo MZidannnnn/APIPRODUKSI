@@ -19,7 +19,7 @@ class PenggunaSeeder extends Seeder
             'id_role'       => 1,
             'nama_pengguna' => 'Super Admin',
             'email'         => 'superadmin@gmail.com',
-            'password'      => Hash::make('admin123'),
+            'password'      => 'admin123',
         ]);
 
         // Admin
@@ -27,7 +27,7 @@ class PenggunaSeeder extends Seeder
             'id_role'       => 2,
             'nama_pengguna' => 'Admin Sistem',
             'email'         => 'admin@gmail.com',
-            'password'      => Hash::make('admin123'),
+            'password'      => 'admin123',
         ]);
 
         // Pelanggan
@@ -35,7 +35,7 @@ class PenggunaSeeder extends Seeder
             'id_role'       => 3,
             'nama_pengguna' => 'User Demo',
             'email'         => 'user@gmail.com',
-            'password'      => Hash::make('user12345'),
+            'password'      => 'user12345',
         ]);
     }
 }

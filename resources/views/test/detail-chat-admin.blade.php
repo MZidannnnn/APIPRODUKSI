@@ -22,6 +22,27 @@
 .chat-meta { font-size: 12px; color: #666; margin-bottom: 4px; }
 .chat-text { font-size: 14px; }
 .chat-time { font-size: 11px; color: #777; margin-top: 4px; text-align: right; }
+
+.chat-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+  color: #777;
+  font-size: 12px;
+}
+.chat-divider::before,
+.chat-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #ddd;
+}
+.chat-divider span {
+  background: #fafafa;
+  padding: 0 8px;
+  border-radius: 999px;
+}
 </style>
 
 <script>
@@ -36,8 +57,9 @@
     const userId = {{ (int) $userId }};
     let lastId = 0;
     let isLoading = false;
+    let dividerRendered = false;
 
-    function escapeHtml(text) {
+   function escapeHtml(text) {
         return text
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
@@ -46,14 +68,36 @@
             .replace(/'/g, "&#039;");
     }
 
-    function renderMessage(msg) {
-        const bubble = document.createElement('div');
-        bubble.className = msg.sender_id === userId ? 'chat-bubble me' : 'chat-bubble';
-        bubble.innerHTML = `
-            <div class="chat-text">${escapeHtml(msg.text)}</div>
-            <div class="chat-time">${escapeHtml(msg.created_at)}</div>`;
-        messagesEl.appendChild(bubble);
-    }
+function renderDivider(label) {
+  const div = document.createElement('div');
+  div.className = 'chat-divider';
+  div.innerHTML = `<span>${escapeHtml(label)}</span>`;
+  messagesEl.appendChild(div);
+}
+
+function renderMessage(msg) {
+  if (!dividerRendered && msg.show_divider_before) {
+    renderDivider('Pesan belum dibaca');
+    dividerRendered = true;
+  }
+  const bubble = document.createElement('div');
+  bubble.className = msg.sender_id === userId ? 'chat-bubble me' : 'chat-bubble';
+  bubble.innerHTML = `
+    <div class="chat-text">${escapeHtml(msg.text)}</div>
+    <div class="chat-time">${escapeHtml(msg.created_at)}</div>`;
+  messagesEl.appendChild(bubble);
+}
+
+ 
+
+    // function renderMessage(msg) {
+    //     const bubble = document.createElement('div');
+    //     bubble.className = msg.sender_id === userId ? 'chat-bubble me' : 'chat-bubble';
+    //     bubble.innerHTML = `
+    //         <div class="chat-text">${escapeHtml(msg.text)}</div>
+    //         <div class="chat-time">${escapeHtml(msg.created_at)}</div>`;
+    //     messagesEl.appendChild(bubble);
+    // }
 
     async function fetchMessages() {
         if (isLoading) return;
