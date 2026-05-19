@@ -158,7 +158,7 @@
                                 aria-labelledby="userDropdown">
                                 <a class="dropdown-item" href="#">
                                     <div class="badge badge-success justify-content-center d-flex">
-                                        {{ Auth::user()->id_role == 1 ? 'Super Admin' : (Auth::user()->id_role == 2) }}
+                                        {{ Auth::user()->id_role == 1 ? 'Super Admin' : (Auth::user()->id_role == 2 ? 'Admin' : '') }}
                                     </div>
                                 </a>
                                 <div class="dropdown-divider"></div>

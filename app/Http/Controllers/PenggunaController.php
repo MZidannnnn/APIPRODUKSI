@@ -72,7 +72,7 @@ class PenggunaController extends Controller
             'id_kategori'   => $request->id_role == 2 ? $request->id_kategori : null,
             'nama_pengguna' => $request->nama_pengguna,
             'email'         => $request->email,
-            'password'      => Hash::make($request->password),
+            'password'      => $request->password,
         ]);
 
         return redirect()
@@ -139,7 +139,7 @@ class PenggunaController extends Controller
 
         if ($request->password) {
             $user->update([
-                'password' => Hash::make($request->password),
+                'password' => $request->password,
             ]);
         }
 
