@@ -28,10 +28,26 @@
             <textarea id="chatInput" name="isi_pesan" rows="2" placeholder="Ketik pesan..."></textarea>
             <button type="submit" class="btn">Kirim</button>
         </form>
+        <div class="chat-attachment-row">
+        <input id="chatAttachment" type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp,application/pdf,application/zip,application/x-rar-compressed,application/vnd.rar,image/vnd.adobe.photoshop,application/postscript,application/vnd.adobe.illustrator">
+        <div id="attachmentPreview" class="chat-attachment-preview"></div>
+    </div>
+        <div id="chatError" class="chat-error"></div>
     </div>
 </div>
 
 <style>
+/* css lampiran file pada chat */
+.chat-attachment-row { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
+.chat-attachment-preview { font-size: 12px; color: #666; }
+.chat-error { font-size: 12px; color: #b42318; margin-top: 6px; }
+
+.chat-attachments { margin-top: 6px; display: grid; gap: 8px; }
+.chat-attachment-image { max-width: 260px; border: 1px solid #ddd; border-radius: 8px; }
+.chat-attachment-file { display: inline-flex; gap: 6px; align-items: center; padding: 6px 8px; background: #f2f2f2; border-radius: 8px; font-size: 12px; color: #222; text-decoration: none; }
+/* end of css lampiran file pada chat */
+
 .chat-page { max-width: 900px; margin: 0 auto; }
 .chat-top { margin-bottom: 16px; }
 .back-link { display: inline-block; text-decoration: none; color: #006b3c; font-weight: 600; margin-bottom: 8px; }
@@ -76,6 +92,9 @@
     const messagesEl = document.getElementById('chatMessages');
     const form = document.getElementById('chatForm');
     const input = document.getElementById('chatInput');
+    const fileInput = document.getElementById('chatAttachment');
+    const previewEl = document.getElementById('attachmentPreview');
+    const errorEl = document.getElementById('chatError');
     const csrf = document.querySelector('meta[name="csrf-token"]').content;
 
     const messagesUrl = "{{ route('chat.messages', $percakapan->id_percakapan) }}";
@@ -85,8 +104,8 @@
     let isLoading = false;
     let dividerRendered = false;
 
-   function escapeHtml(text) {
-        return text
+    function escapeHtml(text) {
+        return String(text ?? '')
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")
@@ -94,6 +113,17 @@
             .replace(/'/g, "&#039;");
     }
 
+    function formatSize(bytes) {
+        if (!bytes) return '0 B';
+            const units = ['B', 'KB', 'MB', 'GB'];
+            let i = 0;
+            let size = bytes;
+        while (size >= 1024 && i < units.length - 1) {
+            size /= 1024;
+            i++;
+        }
+        return `${size.toFixed(1)} ${units[i]}`;
+    }
 
     function renderDivider(label) {
         const div = document.createElement('div');
@@ -102,17 +132,59 @@
         messagesEl.appendChild(div);
     }
 
-    function renderMessage(msg) {
-    if (!dividerRendered && msg.show_divider_before) {
-        renderDivider('Pesan belum dibaca');
-        dividerRendered = true;
+    function renderAttachments(attachments, bubble) {
+        if (!Array.isArray(attachments) || attachments.length === 0) return;
+
+        const wrap = document.createElement('div');
+        wrap.className = 'chat-attachments';
+
+        attachments.forEach(att => {
+            if (att.type === 'image' && att.preview_url) {
+                const img = document.createElement('img');
+                img.src = att.preview_url;
+                img.alt = att.name || 'Lampiran gambar';
+                img.loading = 'lazy';
+                img.className = 'chat-attachment-image';
+                wrap.appendChild(img);
+                return;
+            }
+
+            if (att.download_url) {
+                const link = document.createElement('a');
+                link.href = att.download_url;
+                link.className = 'chat-attachment-file';
+                link.textContent = att.name || 'Lampiran file';
+                link.setAttribute('download', '');
+                wrap.appendChild(link);
+            }
+        });
+
+        bubble.appendChild(wrap);
     }
-    const bubble = document.createElement('div');
-    bubble.className = msg.sender_id === userId ? 'chat-bubble me' : 'chat-bubble';
-    bubble.innerHTML = `
-        <div class="chat-text">${escapeHtml(msg.text)}</div>
-        <div class="chat-time">${escapeHtml(msg.created_at)}</div>`;
-    messagesEl.appendChild(bubble);
+
+    function renderMessage(msg) {
+        if (!dividerRendered && msg.show_divider_before) {
+            renderDivider('Pesan belum dibaca');
+            dividerRendered = true;
+        }
+
+        const bubble = document.createElement('div');
+        bubble.className = msg.sender_id === userId ? 'chat-bubble me' : 'chat-bubble';
+
+        if (msg.text) {
+            const textEl = document.createElement('div');
+            textEl.className = 'chat-text';
+            textEl.textContent = msg.text;
+            bubble.appendChild(textEl);
+        }
+
+        renderAttachments(msg.attachments, bubble);
+
+        const timeEl = document.createElement('div');
+        timeEl.className = 'chat-time';
+        timeEl.textContent = msg.created_at;
+        bubble.appendChild(timeEl);
+        messagesEl.appendChild(bubble);
     }
 
  
@@ -149,23 +221,53 @@
         isLoading = false;
     }
 
+    function setError(msg) {
+        errorEl.textContent = msg || '';
+    }
+
+    fileInput.addEventListener('change', () => {
+        const file = fileInput.files[0];
+        if (!file) {
+            previewEl.textContent = '';
+            return;
+        }
+        previewEl.textContent = `${file.name} (${formatSize(file.size)})`;
+    });
+
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
+        setError('');
+
         const text = input.value.trim();
-        if (!text) return;
+        const file = fileInput.files[0];
+
+        if (!text && !file) return;
+
+        const formData = new FormData();
+        if (text) formData.append('isi_pesan', text);
+        if (file) formData.append('lampiran', file);
 
         const res = await fetch(sendUrl, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': csrf,
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                // 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ isi_pesan: text })
+            body: formData
         });
+
+        if (res.status === 422) {
+            const data = await res.json();
+            const err = data?.errors?.lampiran?.[0] || data?.errors?.isi_pesan?.[0] || 'Validasi gagal.';
+            setError(err);
+            return;
+        }
 
         if (res.ok) {
             input.value = '';
+            fileInput.value = '';
+            previewEl.textContent = '';
             await fetchMessages();
         }
     });

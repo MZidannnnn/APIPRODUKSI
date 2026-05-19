@@ -2,10 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreChatMessageRequest;
 use App\Models\Percakapan;
 use App\Models\Pesan;
+use App\Models\PesanLampiran;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ChatAdminController extends Controller
 {
@@ -49,7 +56,10 @@ class ChatAdminController extends Controller
             ->firstOrFail();
 
         $query = $percakapan->pesan()
-            ->with('pengirim:id_pengguna,nama_pengguna')
+            ->with([
+                'pengirim:id_pengguna,nama_pengguna',
+                'lampiran'
+            ])
             ->orderBy('id_pesan');
 
         if ($afterId > 0) {
@@ -80,6 +90,7 @@ class ChatAdminController extends Controller
                 'text' => $m->isi_pesan,
                 'created_at' => $m->created_at->format('Y-m-d H:i'),
                 'show_divider_before' => $firstUnreadId && $m->id_pesan === $firstUnreadId,
+                'attachments' => $m->lampiran->map(fn($a) => $this->formatAttachment($a))->values(),
             ]),
             'last_id' => $lastId,
         ]);
@@ -106,29 +117,107 @@ class ChatAdminController extends Controller
         // ]);
     }
 
-    public function send(Request $request, Percakapan $percakapan)
+    public function send(StoreChatMessageRequest $request, Percakapan $percakapan)
     {
-        $data = $request->validate([
-            'isi_pesan' => ['required', 'string', 'max:2000'],
-        ]);
-
+        Gate::authorize('accessAdmin', $percakapan);
         $admin = Auth::user();
 
-        $percakapan = Percakapan::where('id_percakapan', $percakapan->id_percakapan)
-            ->where('id_kategori', $admin->id_kategori)
-            ->firstOrFail();
+        // if ($percakapan->id_kategori !== $admin->id_kategori) {
+        //     abort(403, 'Anda tidak memiliki otorisasi untuk percakapan ini.');
+        // }
+        // $percakapan = Percakapan::where('id_percakapan', $percakapan->id_percakapan)
+        //     ->where('id_kategori', $admin->id_kategori)
+        //     ->firstOrFail();
 
-        $pesan = Pesan::create([
-            'id_percakapan' => $percakapan->id_percakapan,
-            'id_pengirim' => $admin->id_pengguna,
-            'isi_pesan' => $data['isi_pesan'],
-        ]);
+        $data = $request->validated();
 
-        $percakapan->update(['terakhir_aktif' => now()]);
+        $pesan = DB::transaction(function () use ($request, $percakapan, $admin, $data) {
+            $pesan = Pesan::create([
+                'id_percakapan' => $percakapan->id_percakapan,
+                'id_pengirim' => $admin->id_pengguna,
+                'isi_pesan' => $data['isi_pesan'] ?? null,
+            ]);
 
-        return response()->json([
-            'ok' => true,
-            'id' => $pesan->id_pesan,
+            if ($request->hasFile('lampiran')) {
+                $this->storeAttachment($request->file('lampiran'), $pesan, $percakapan->id_percakapan);
+            }
+
+            $percakapan->update(['terakhir_aktif' => now()]);
+
+            return $pesan;
+        });
+
+        return response()->json(['ok' => true, 'id' => $pesan->id_pesan]);
+    }
+
+    private function formatAttachment(PesanLampiran $a): array
+    {
+        return [
+            'id' => $a->id_lampiran,
+            'type' => $a->jenis,
+            'name' => $a->original_name,
+            'size' => $a->size_bytes,
+            'mime' => $a->mime_type,
+            'preview_url' => $a->jenis === 'image'
+                ? route('chat.attachments.preview', $a->id_lampiran)
+                : null,
+            'download_url' => route('chat.attachments.download', $a->id_lampiran),
+        ];
+    }
+
+    private function storeAttachment(UploadedFile $file, Pesan $pesan, int $percakapanId): void
+    {
+        $mimeMap = [
+            'image/jpeg' => ['type' => 'image', 'ext' => 'jpg'],
+            'image/png' => ['type' => 'image', 'ext' => 'png'],
+            'image/gif' => ['type' => 'image', 'ext' => 'gif'],
+            'image/webp' => ['type' => 'image', 'ext' => 'webp'],
+            'application/pdf' => ['type' => 'design', 'ext' => 'pdf'],
+            'application/zip' => ['type' => 'design', 'ext' => 'zip'],
+            'application/x-rar-compressed' => ['type' => 'design', 'ext' => 'rar'],
+            'application/vnd.rar' => ['type' => 'design', 'ext' => 'rar'],
+            'image/vnd.adobe.photoshop' => ['type' => 'design', 'ext' => 'psd'],
+            'application/postscript' => ['type' => 'design', 'ext' => 'eps'],
+            'application/vnd.adobe.illustrator' => ['type' => 'design', 'ext' => 'ai'],
+        ];
+
+        $mime = $file->getMimeType() ?? '';
+        $meta = $mimeMap[$mime] ?? null;
+
+        if (! $meta) {
+            return;
+        }
+
+        $original = basename($file->getClientOriginalName());
+        $base = pathinfo($original, PATHINFO_FILENAME);
+        $safeBase = Str::slug(Str::ascii($base)) ?: 'file';
+        $storedName = $safeBase . '-' . Str::random(10) . '.' . $meta['ext'];
+
+        $dir = 'percakapan/' . $percakapanId;
+        $path = Storage::disk('chat_private')->putFileAs($dir, $file, $storedName);
+
+        $width = null;
+        $height = null;
+        if ($meta['type'] === 'image') {
+            $size = @getimagesize($file->getPathname());
+            if (is_array($size)) {
+                $width = $size[0];
+                $height = $size[1];
+            }
+        }
+
+        PesanLampiran::create([
+            'id_pesan' => $pesan->id_pesan,
+            'jenis' => $meta['type'],
+            'disk' => 'chat_private',
+            'path' => $path,
+            'original_name' => $original,
+            'stored_name' => $storedName,
+            'mime_type' => $mime,
+            'size_bytes' => $file->getSize() ?: 0,
+            'width' => $width,
+            'height' => $height,
+            'checksum' => hash_file('sha256', $file->getPathname()) ?: '',
         ]);
     }
 }

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->bigIncrements('id_pesan');
             $table->unsignedBigInteger('id_percakapan');
             $table->unsignedBigInteger('id_pengirim');
-            $table->text('isi_pesan');
+            $table->text('isi_pesan')->nullable();
             $table->timestamp('dibaca_pada')->nullable();
             $table->timestamps();
 

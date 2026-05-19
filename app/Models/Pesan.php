@@ -29,4 +29,9 @@ class Pesan extends Model
     {
         return $this->belongsTo(pengguna::class, 'id_pengirim', 'id_pengguna');
     }
+
+    public function lampiran()
+    {
+        return $this->hasMany(PesanLampiran::class, 'id_pesan', 'id_pesan');
+    }
 }

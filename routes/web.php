@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatAdminController;
+use App\Http\Controllers\ChatAttachmentController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ItemProduksiController;
@@ -90,6 +91,12 @@ Route::middleware('auth')->group(function () {
     // logout
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
+    // fitur lampiran file pada yo chat
+    Route::get('/chat/attachments/{lampiran}/preview', [ChatAttachmentController::class, 'preview'])
+        ->name('chat.attachments.preview');
+
+    Route::get('/chat/attachments/{lampiran}/download', [ChatAttachmentController::class, 'download'])
+        ->name('chat.attachments.download');
 
     /*
     |--------------------------------------------------------------------------

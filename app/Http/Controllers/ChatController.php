@@ -2,10 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreChatMessageRequest;
 use App\Models\Percakapan;
 use App\Models\Pesan;
+use App\Models\PesanLampiran;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ChatController extends Controller
 {
@@ -55,7 +61,10 @@ class ChatController extends Controller
 
         $afterId = (int) $request->query('after_id', 0);
 
-        $query = $percakapan->pesan()->orderBy('id_pesan');
+        $query = $percakapan->pesan()
+            ->with('lampiran')
+            ->orderBy('id_pesan');
+
         if ($afterId > 0) {
             $query->where('id_pesan', '>', $afterId);
         }
@@ -84,6 +93,7 @@ class ChatController extends Controller
                 'text' => $m->isi_pesan,
                 'created_at' => $m->created_at->format('Y-m-d H:i'),
                 'show_divider_before' => $firstUnreadId && $m->id_pesan === $firstUnreadId,
+                'attachments' => $m->lampiran->map(fn($a) => $this->formatAttachment($a))->values(),
             ]),
             'last_id' => $lastId,
         ]);
@@ -109,25 +119,31 @@ class ChatController extends Controller
         // ]);
     }
 
-    public function send(Request $request, $id)
+    public function send(StoreChatMessageRequest $request, $id)
     {
         $userId = Auth::id();
-
-        $data = $request->validate([
-            'isi_pesan' => ['required', 'string', 'max:2000'],
-        ]);
 
         $percakapan = Percakapan::where('id_percakapan', $id)
             ->where('id_pengguna', $userId)
             ->firstOrFail();
 
-        $pesan = Pesan::create([
-            'id_percakapan' => $percakapan->id_percakapan,
-            'id_pengirim' => $userId,
-            'isi_pesan' => $data['isi_pesan'],
-        ]);
+        $data = $request->validated();
 
-        $percakapan->update(['terakhir_aktif' => now()]);
+        $pesan = DB::transaction(function () use ($request, $percakapan, $userId, $data) {
+            $pesan = Pesan::create([
+                'id_percakapan' => $percakapan->id_percakapan,
+                'id_pengirim' => $userId,
+                'isi_pesan' => $data['isi_pesan'] ?? null,
+            ]);
+
+            if ($request->hasFile('lampiran')) {
+                $this->storeAttachment($request->file('lampiran'), $pesan, $percakapan->id_percakapan);
+            }
+
+            $percakapan->update(['terakhir_aktif' => now()]);
+
+            return $pesan;
+        });
 
         return response()->json(['ok' => true, 'id' => $pesan->id_pesan]);
     }
@@ -144,5 +160,76 @@ class ChatController extends Controller
             ->count();
 
         return response()->json(['count' => $count]);
+    }
+
+    private function formatAttachment(PesanLampiran $a): array
+    {
+        return [
+            'id' => $a->id_lampiran,
+            'type' => $a->jenis,
+            'name' => $a->original_name,
+            'size' => $a->size_bytes,
+            'mime' => $a->mime_type,
+            'preview_url' => $a->jenis === 'image'
+                ? route('chat.attachments.preview', $a->id_lampiran)
+                : null,
+            'download_url' => route('chat.attachments.download', $a->id_lampiran),
+        ];
+    }
+
+    private function storeAttachment(UploadedFile $file, Pesan $pesan, int $percakapanId): void
+    {
+        $mimeMap = [
+            'image/jpeg' => ['type' => 'image', 'ext' => 'jpg'],
+            'image/png' => ['type' => 'image', 'ext' => 'png'],
+            'image/gif' => ['type' => 'image', 'ext' => 'gif'],
+            'image/webp' => ['type' => 'image', 'ext' => 'webp'],
+            'application/pdf' => ['type' => 'design', 'ext' => 'pdf'],
+            'application/zip' => ['type' => 'design', 'ext' => 'zip'],
+            'application/x-rar-compressed' => ['type' => 'design', 'ext' => 'rar'],
+            'application/vnd.rar' => ['type' => 'design', 'ext' => 'rar'],
+            'image/vnd.adobe.photoshop' => ['type' => 'design', 'ext' => 'psd'],
+            'application/postscript' => ['type' => 'design', 'ext' => 'eps'],
+            'application/vnd.adobe.illustrator' => ['type' => 'design', 'ext' => 'ai'],
+        ];
+
+        $mime = $file->getMimeType() ?? '';
+        $meta = $mimeMap[$mime] ?? null;
+
+        if (! $meta) {
+            return;
+        }
+
+        $original = basename($file->getClientOriginalName());
+        $base = pathinfo($original, PATHINFO_FILENAME);
+        $safeBase = Str::slug(Str::ascii($base)) ?: 'file';
+        $storedName = $safeBase . '-' . Str::random(10) . '.' . $meta['ext'];
+
+        $dir = 'percakapan/' . $percakapanId;
+        $path = Storage::disk('chat_private')->putFileAs($dir, $file, $storedName);
+
+        $width = null;
+        $height = null;
+        if ($meta['type'] === 'image') {
+            $size = @getimagesize($file->getPathname());
+            if (is_array($size)) {
+                $width = $size[0];
+                $height = $size[1];
+            }
+        }
+
+        PesanLampiran::create([
+            'id_pesan' => $pesan->id_pesan,
+            'jenis' => $meta['type'],
+            'disk' => 'chat_private',
+            'path' => $path,
+            'original_name' => $original,
+            'stored_name' => $storedName,
+            'mime_type' => $mime,
+            'size_bytes' => $file->getSize() ?: 0,
+            'width' => $width,
+            'height' => $height,
+            'checksum' => hash_file('sha256', $file->getPathname()) ?: '',
+        ]);
     }
 }
