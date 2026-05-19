@@ -6,7 +6,7 @@
         <i class="fas fa-fw fa-tachometer-alt mr-2"></i>
         {{ $title }}
     </h1>
-    <!-- Begin Page Content -->c
+    <!-- Begin Page Content -->
                 <div class="container-fluid">
                     <!-- Content Row -->
                     <div class="row">

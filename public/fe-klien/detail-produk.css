@@ -1,0 +1,221 @@
+/* =========================================================
+   DETAIL PRODUK
+========================================================= */
+
+.btn-kembali {
+    display: inline-block;
+    background: #008a46;
+    color: white;
+    text-decoration: none;
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin-bottom: 20px;
+}
+
+.detail-produk {
+    width: 100%;
+}
+
+/* Galeri */
+.produk-gallery {
+    position: relative;
+    max-width: 760px;
+    margin: 0 auto 25px auto;
+    display: flex;
+    align-items: center;
+}
+
+.gallery-track-wrapper {
+    width: 100%;
+    overflow: hidden;
+}
+
+.gallery-track {
+    display: flex;
+    gap: 50px;
+    transition: transform 0.4s ease;
+}
+
+.gallery-item {
+    min-width: 220px;
+    height: 240px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+    overflow: hidden;
+    background: #fff;
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.gallery-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: #8a8a8a;
+    font-size: 42px;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.prev-btn {
+    left: -5px;
+}
+
+.next-btn {
+    right: -5px;
+}
+
+/* Konten bawah */
+.produk-detail-content {
+    max-width: 760px;
+    margin: auto;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 70px;
+}
+
+.produk-description h1 {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.produk-description p {
+    color: #888;
+    line-height: 1.5;
+    font-size: 16px;
+}
+
+/* Order box */
+.harga-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+}
+
+.harga-row h2 {
+    color: #006b3c;
+    font-size: 24px;
+}
+
+.harga-row span {
+    color: #777;
+    font-size: 12px;
+}
+
+.produk-order-box hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 12px 0;
+}
+
+.form-group label {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.size-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.size-options button {
+    padding: 4px 12px;
+    border: 1px solid #777;
+    border-radius: 5px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.size-options button:hover {
+    background: #008a46;
+    color: #fff;
+}
+
+.qty-box {
+    display: flex;
+    align-items: center;
+}
+
+.qty-box button,
+.qty-box input {
+    width: 28px;
+    height: 24px;
+    border: 1px solid #777;
+    text-align: center;
+    background: white;
+}
+
+.qty-box button {
+    cursor: pointer;
+}
+
+.date-input {
+    height: 28px;
+    padding: 3px;
+    border: 1px solid #777;
+}
+
+.button-buy-wrapper {
+    text-align: right;
+}
+
+.btn-beli {
+    background: #008a46;
+    color: white;
+    border: none;
+    padding: 11px 45px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .produk-gallery {
+        max-width: 260px;
+    }
+
+    .gallery-track {
+        gap: 20px;
+    }
+
+    .gallery-item {
+        min-width: 260px;
+        height: 250px;
+    }
+
+    .prev-btn {
+        left: -35px;
+    }
+
+    .next-btn {
+        right: -35px;
+    }
+
+    .produk-detail-content {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+
+    .produk-description {
+        text-align: center;
+    }
+
+    .button-buy-wrapper {
+        text-align: center;
+    }
+
+    .btn-beli {
+        width: 100%;
+    }
+}

@@ -9,4 +9,5 @@
     <link rel="stylesheet" href="{{ asset('fe-klien/klien.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     @stack('head')
+    @stack('styles')
 </head>
