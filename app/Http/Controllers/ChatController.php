@@ -137,7 +137,9 @@ class ChatController extends Controller
             ]);
 
             if ($request->hasFile('lampiran')) {
-                $this->storeAttachment($request->file('lampiran'), $pesan, $percakapan->id_percakapan);
+                foreach ($request->file('lampiran', []) as $file) {
+                    $this->storeAttachment($file, $pesan, $percakapan->id_percakapan);
+                }
             }
 
             $percakapan->update(['terakhir_aktif' => now()]);

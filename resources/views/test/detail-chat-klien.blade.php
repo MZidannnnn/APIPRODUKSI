@@ -29,10 +29,18 @@
             <button type="submit" class="btn">Kirim</button>
         </form>
         <div class="chat-attachment-row">
-        <input id="chatAttachment" type="file"
-            accept="image/jpeg,image/png,image/gif,image/webp,application/pdf,application/zip,application/x-rar-compressed,application/vnd.rar,image/vnd.adobe.photoshop,application/postscript,application/vnd.adobe.illustrator">
-        <div id="attachmentPreview" class="chat-attachment-preview"></div>
-    </div>
+            <div>
+                <label>Gambar & PDF (multi)</label><br>
+                <input id="chatAttachmentSafe" type="file" multiple
+                accept=".jpg,.jpeg,.png,.gif,.webp,.pdf">
+            </div>
+            <div>
+                <label>File proyek (single)</label><br>
+                <input id="chatAttachmentProject" type="file"
+                accept=".zip,.rar,.psd,.ai,.eps">
+            </div>
+            <div id="attachmentPreview" class="chat-attachment-preview"></div>
+        </div>
         <div id="chatError" class="chat-error"></div>
     </div>
 </div>
@@ -92,7 +100,7 @@
     const messagesEl = document.getElementById('chatMessages');
     const form = document.getElementById('chatForm');
     const input = document.getElementById('chatInput');
-    const fileInput = document.getElementById('chatAttachment');
+    // const fileInput = document.getElementById('chatAttachment');
     const previewEl = document.getElementById('attachmentPreview');
     const errorEl = document.getElementById('chatError');
     const csrf = document.querySelector('meta[name="csrf-token"]').content;
@@ -100,6 +108,10 @@
     const messagesUrl = "{{ route('chat.messages', $percakapan->id_percakapan) }}";
     const sendUrl = "{{ route('chat.send', $percakapan->id_percakapan) }}";
     const userId = {{ (int) $userId }};
+
+    // validasi lampiran file max 5 sekaligus dan max total 100 mb
+    const safeInput = document.getElementById('chatAttachmentSafe');
+    const projectInput = document.getElementById('chatAttachmentProject');
     let lastId = 0;
     let isLoading = false;
     let dividerRendered = false;
@@ -111,6 +123,46 @@
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
+    }
+
+    function collectFiles() {
+        const safeFiles = Array.from(safeInput.files || []);
+        const projectFiles = Array.from(projectInput.files || []);
+
+        const all = [...safeFiles, ...projectFiles];
+        return { all, safeFiles, projectFiles };
+    }
+
+    function updatePreview() {
+        const { all } = collectFiles();
+        if (all.length === 0) {
+            previewEl.textContent = '';
+            return;
+        }
+        const total = all.reduce((sum, f) => sum + (f.size || 0), 0);
+        previewEl.textContent = `${all.length} file, total ${formatSize(total)}`;
+    }
+
+    function validateClientSide() {
+        const { all, projectFiles } = collectFiles();
+
+        if (all.length > 5) {
+            setError('Maksimal 5 lampiran per pengiriman.');
+            return false;
+        }
+
+        const total = all.reduce((sum, f) => sum + (f.size || 0), 0);
+        if (total > 100 * 1024 * 1024) {
+            setError('Total ukuran lampiran maksimal 100 MB per pengiriman.');
+            return false;
+        }
+
+        if (projectFiles.length > 1 || (projectFiles.length === 1 && all.length > 1)) {
+            setError('File proyek hanya boleh 1 per pengiriman.');
+            return false;
+        }
+
+        return true;
     }
 
     function formatSize(bytes) {
@@ -225,13 +277,23 @@
         errorEl.textContent = msg || '';
     }
 
-    fileInput.addEventListener('change', () => {
-        const file = fileInput.files[0];
-        if (!file) {
-            previewEl.textContent = '';
-            return;
-        }
-        previewEl.textContent = `${file.name} (${formatSize(file.size)})`;
+    // fileInput.addEventListener('change', () => {
+    //     const file = fileInput.files[0];
+    //     if (!file) {
+    //         previewEl.textContent = '';
+    //         return;
+    //     }
+    //     previewEl.textContent = `${file.name} (${formatSize(file.size)})`;
+    // });
+
+    safeInput.addEventListener('change', () => {
+        setError('');
+        updatePreview();
+    });
+
+    projectInput.addEventListener('change', () => {
+        setError('');
+        updatePreview();
     });
 
     form.addEventListener('submit', async function (e) {
@@ -239,13 +301,14 @@
         setError('');
 
         const text = input.value.trim();
-        const file = fileInput.files[0];
+        const { all } = collectFiles();
 
-        if (!text && !file) return;
+        if (!text && all.length === 0) return;
+        if (!validateClientSide()) return;
 
         const formData = new FormData();
         if (text) formData.append('isi_pesan', text);
-        if (file) formData.append('lampiran', file);
+        all.forEach(file => formData.append('lampiran[]', file));
 
         const res = await fetch(sendUrl, {
             method: 'POST',
@@ -266,9 +329,15 @@
 
         if (res.ok) {
             input.value = '';
-            fileInput.value = '';
+            safeInput.value = '';
+            projectInput.value = '';
             previewEl.textContent = '';
             await fetchMessages();
+        }
+
+        if (res.status === 419) {
+            setError('Sesi berakhir. Silakan refresh halaman.');
+            return;
         }
     });
 
