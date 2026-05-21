@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Rules\ChatAttachmentRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Validation\Validator;
 
 class StoreChatMessageRequest extends FormRequest
 {
@@ -42,7 +43,7 @@ class StoreChatMessageRequest extends FormRequest
         ];
     }
 
-    public function withValidator($validator): void
+    public function withValidator(Validator $validator): void
     {
         $validator->after(function ($validator) {
             $files = $this->file('lampiran', []);
@@ -59,23 +60,6 @@ class StoreChatMessageRequest extends FormRequest
                 $validator->errors()->add(
                     'lampiran',
                     'Total ukuran lampiran maksimal 100 MB per pengiriman.'
-                );
-            }
-
-            $projectExt = ['zip', 'rar', 'psd', 'ai', 'eps'];
-            $hasProject = false;
-            foreach ($files as $file) {
-                $ext = strtolower($file->getClientOriginalExtension());
-                if (in_array($ext, $projectExt, true)) {
-                    $hasProject = true;
-                    break;
-                }
-            }
-
-            if ($hasProject && count($files) > 1) {
-                $validator->errors()->add(
-                    'lampiran',
-                    'File proyek (ZIP/RAR/PSD/AI/EPS) hanya boleh 1 per pengiriman.'
                 );
             }
         });

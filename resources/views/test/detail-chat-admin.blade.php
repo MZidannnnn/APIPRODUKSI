@@ -12,27 +12,23 @@
             <textarea id="chatInput" name="isi_pesan" rows="2" class="form-control" placeholder="Ketik pesan..."></textarea>
             <button type="submit" class="btn btn-primary">Kirim</button>
         </form>
-        <div class="chat-attachment-row">
-            <div>
-                <label>Gambar & PDF (multi)</label><br>
-                <input id="chatAttachmentSafe" type="file" multiple
-                accept=".jpg,.jpeg,.png,.gif,.webp,.pdf">
-            </div>
-            <div>
-                <label>File proyek (single)</label><br>
-                <input id="chatAttachmentProject" type="file"
-                accept=".zip,.rar,.psd,.ai,.eps">
-            </div>
-            <div id="attachmentPreview" class="chat-attachment-preview"></div>
+        <div class="chat-attach-panel">
+            <label id="chatDropzone" class="chat-dropzone">
+                <input id="chatAttachment" type="file" multiple
+                    accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.zip,.rar,.psd,.ai,.eps">
+                <span class="dz-title">Drop file di sini atau klik untuk memilih</span>
+                <span class="dz-sub">Maks 5 file, total 100 MB per pengiriman</span>
+                <span class="dz-hint">Format: JPG, PNG, GIF, WebP, PDF, ZIP, RAR, PSD, AI, EPS</span>
+            </label>
+
+            <ul id="attachmentList" class="attach-list"></ul>
+            <div id="chatError" class="chat-error"></div>
         </div>
-        <div id="chatError" class="chat-error"></div>
     </div>
 </div>
 
 <style>
 /* css lampiran file pada chat */
-.chat-attachment-row { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
-.chat-attachment-preview { font-size: 12px; color: #666; }
 .chat-error { font-size: 12px; color: #b42318; margin-top: 6px; }
 
 .chat-attachments { margin-top: 6px; display: grid; gap: 8px; }
@@ -67,6 +63,103 @@
   padding: 0 8px;
   border-radius: 999px;
 }
+
+/* css lampiran terbaru */
+:root {
+  --chat-bg: #f6f2ea;
+  --chat-ink: #1f2a2e;
+  --chat-accent: #1b7f6e;
+  --chat-accent-2: #ffb74d;
+  --chat-border: #d9d4c8;
+}
+
+.chat-card, .card-body {
+  background: linear-gradient(180deg, #fffaf0 0%, #f7f1e7 100%);
+}
+
+.chat-attach-panel { margin-top: 10px; }
+
+.chat-dropzone {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 2px dashed var(--chat-border);
+  border-radius: 14px;
+  background:
+    radial-gradient(80% 120% at 10% 0%, rgba(27,127,110,0.08), transparent 60%),
+    linear-gradient(180deg, #fff 0%, #fff7e9 100%);
+  color: var(--chat-ink);
+  cursor: pointer;
+  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+}
+
+.chat-dropzone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.chat-dropzone.is-dragover {
+  border-color: var(--chat-accent);
+  box-shadow: 0 0 0 4px rgba(27,127,110,0.12);
+  transform: translateY(-1px);
+}
+
+.dz-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.dz-sub {
+  font-size: 12px;
+  color: #5b6b6e;
+}
+
+.dz-hint {
+  font-size: 11px;
+  color: #7a7a7a;
+}
+
+.attach-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  display: grid;
+  gap: 8px;
+}
+
+.attach-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid #e6e0d5;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.attach-meta {
+  font-size: 12px;
+  color: #4b5a5d;
+}
+
+.attach-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.attach-remove {
+  border: 1px solid #e2b4a6;
+  color: #a3381a;
+  background: #fff0ea;
+  padding: 4px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+/* batas css lampiran terbaru */
 </style>
 
 <script>
@@ -74,21 +167,25 @@
     const messagesEl = document.getElementById('chatMessages');
     const form = document.getElementById('chatForm');
     const input = document.getElementById('chatInput');
-    // const fileInput = document.getElementById('chatAttachment');
-    const previewEl = document.getElementById('attachmentPreview');
     const errorEl = document.getElementById('chatError');
     const token = document.querySelector('input[name="_token"]').value;
+
+    const dropzone = document.getElementById('chatDropzone');
+    const fileInput = document.getElementById('chatAttachment');
+    const listEl = document.getElementById('attachmentList');
+
+    const maxFiles = 5;
+    const maxBytes = 100 * 1024 * 1024;
+    const allowedExt = ['jpg','jpeg','png','gif','webp','pdf','zip','rar','psd','ai','eps'];
 
     const messagesUrl = "{{ route('admin.chat.messages', $percakapan->id_percakapan) }}";
     const sendUrl = "{{ route('admin.chat.send', $percakapan->id_percakapan) }}";
     const userId = {{ (int) $userId }};
 
-    // validasi lampiran file max 5 sekaligus dan max total 100 mb
-    const safeInput = document.getElementById('chatAttachmentSafe');
-    const projectInput = document.getElementById('chatAttachmentProject');
     let lastId = 0;
     let isLoading = false;
     let dividerRendered = false;
+    let selectedFiles = [];
 
     function escapeHtml(text) {
         return String(text ?? '')
@@ -97,46 +194,6 @@
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
-    }
-
-    function collectFiles() {
-        const safeFiles = Array.from(safeInput.files || []);
-        const projectFiles = Array.from(projectInput.files || []);
-
-        const all = [...safeFiles, ...projectFiles];
-        return { all, safeFiles, projectFiles };
-    }
-
-    function updatePreview() {
-        const { all } = collectFiles();
-        if (all.length === 0) {
-            previewEl.textContent = '';
-            return;
-        }
-        const total = all.reduce((sum, f) => sum + (f.size || 0), 0);
-        previewEl.textContent = `${all.length} file, total ${formatSize(total)}`;
-    }
-
-    function validateClientSide() {
-        const { all, projectFiles } = collectFiles();
-
-        if (all.length > 5) {
-            setError('Maksimal 5 lampiran per pengiriman.');
-            return false;
-        }
-
-        const total = all.reduce((sum, f) => sum + (f.size || 0), 0);
-        if (total > 100 * 1024 * 1024) {
-            setError('Total ukuran lampiran maksimal 100 MB per pengiriman.');
-            return false;
-        }
-
-        if (projectFiles.length > 1 || (projectFiles.length === 1 && all.length > 1)) {
-            setError('File proyek hanya boleh 1 per pengiriman.');
-            return false;
-        }
-
-        return true;
     }
 
     function formatSize(bytes) {
@@ -151,12 +208,71 @@
         return `${size.toFixed(1)} ${units[i]}`;
     }
 
-function renderDivider(label) {
-  const div = document.createElement('div');
-  div.className = 'chat-divider';
-  div.innerHTML = `<span>${escapeHtml(label)}</span>`;
-  messagesEl.appendChild(div);
-}
+    function isAllowed(file) {
+        const ext = (file.name.split('.').pop() || '').toLowerCase();
+        return allowedExt.includes(ext);
+    }
+
+    function renderDivider(label) {
+        const div = document.createElement('div');
+        div.className = 'chat-divider';
+        div.innerHTML = `<span>${escapeHtml(label)}</span>`;
+        messagesEl.appendChild(div);
+    }
+
+    function renderList() {
+        listEl.innerHTML = '';
+        selectedFiles.forEach((file, idx) => {
+            const li = document.createElement('li');
+            li.className = 'attach-item';
+
+            const meta = document.createElement('div');
+            meta.innerHTML = `
+            <div class="attach-name"></div>
+            <div class="attach-meta"></div>
+            `;
+            meta.querySelector('.attach-name').textContent = file.name;
+            meta.querySelector('.attach-meta').textContent = `${formatSize(file.size)} • ${file.type || 'unknown'}`;
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'attach-remove';
+            btn.textContent = 'Hapus';
+            btn.addEventListener('click', () => {
+                selectedFiles.splice(idx, 1);
+                renderList();
+                setError('');
+            });
+
+            li.appendChild(meta);
+            li.appendChild(btn);
+            listEl.appendChild(li);
+        });
+    }
+
+    function addFiles(files) {
+        const incoming = Array.from(files || []);
+        if (incoming.length === 0) return;
+
+        for (const f of incoming) {
+            if (!isAllowed(f)) {
+                setError('Ekstensi file tidak didukung.');
+                continue;
+            }
+            selectedFiles.push(f);
+        }
+        if (selectedFiles.length > maxFiles) {
+            selectedFiles = selectedFiles.slice(0, maxFiles);
+            setError('Maksimal 5 lampiran per pengiriman.');
+        }
+
+        const total = selectedFiles.reduce((s, f) => s + (f.size || 0), 0);
+        if (total > maxBytes) {
+            setError('Total ukuran lampiran maksimal 100 MB per pengiriman.');
+        }
+        renderList();
+        fileInput.value = '';
+    }
 
     function renderAttachments(attachments, bubble) {
         if (!Array.isArray(attachments) || attachments.length === 0) return;
@@ -212,17 +328,6 @@ function renderDivider(label) {
             messagesEl.appendChild(bubble);
     }
 
- 
-
-    // function renderMessage(msg) {
-    //     const bubble = document.createElement('div');
-    //     bubble.className = msg.sender_id === userId ? 'chat-bubble me' : 'chat-bubble';
-    //     bubble.innerHTML = `
-    //         <div class="chat-text">${escapeHtml(msg.text)}</div>
-    //         <div class="chat-time">${escapeHtml(msg.created_at)}</div>`;
-    //     messagesEl.appendChild(bubble);
-    // }
-
     async function fetchMessages() {
         if (isLoading) return;
         isLoading = true;
@@ -252,23 +357,24 @@ function renderDivider(label) {
         errorEl.textContent = msg || '';
     }
 
-    // fileInput.addEventListener('change', () => {
-    //     const file = fileInput.files[0];
-    //     if (!file) {
-    //         previewEl.textContent = '';
-    //         return;
-    //     }
-    //     previewEl.textContent = `${file.name} (${formatSize(file.size)})`;
-    // });
-
-    safeInput.addEventListener('change', () => {
-        setError('');
-        updatePreview();
+    dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('is-dragover');
     });
 
-    projectInput.addEventListener('change', () => {
+    dropzone.addEventListener('dragleave', () => {
+        dropzone.classList.remove('is-dragover');
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('is-dragover');
+        addFiles(e.dataTransfer.files);
+    });
+
+    fileInput.addEventListener('change', () => {
         setError('');
-        updatePreview();
+        addFiles(fileInput.files);
     });
 
     form.addEventListener('submit', async function (e) {
@@ -276,14 +382,22 @@ function renderDivider(label) {
         setError('');
 
         const text = input.value.trim();
-        const { all } = collectFiles();
 
-        if (!text && all.length === 0) return;
-        if (!validateClientSide()) return;
+        if (!text && selectedFiles.length === 0) return;
+
+            const total = selectedFiles.reduce((s, f) => s + (f.size || 0), 0);
+        if (selectedFiles.length > maxFiles) {
+            setError('Maksimal 5 lampiran per pengiriman.');
+            return;
+        }
+        if (total > maxBytes) {
+            setError('Total ukuran lampiran maksimal 100 MB per pengiriman.');
+            return;
+        }
 
         const formData = new FormData();
         if (text) formData.append('isi_pesan', text);
-        all.forEach(file => formData.append('lampiran[]', file));
+        selectedFiles.forEach(f => formData.append('lampiran[]', f));
 
         const res = await fetch(sendUrl, {
             method: 'POST',
@@ -304,9 +418,8 @@ function renderDivider(label) {
 
         if (res.ok) {
             input.value = '';
-            safeInput.value = '';
-            projectInput.value = '';
-            previewEl.textContent = '';
+            selectedFiles = [];
+            renderList();
             await fetchMessages();
         }
         
