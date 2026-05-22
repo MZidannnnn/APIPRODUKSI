@@ -16,7 +16,6 @@ return new class extends Migration
             $table->unsignedBigInteger('id_kategori');
             $table->string('nama_item', 100);
             $table->text('deskripsi_item')->nullable();
-            $table->string('gambar_item', 255)->nullable();
             $table->enum('status_aktif', ['Aktif', 'Non-aktif']);
             $table->timestamps();
 

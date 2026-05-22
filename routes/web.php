@@ -151,12 +151,12 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('checkRole:1')->group(function () {
         // dashboard super admin
-        Route::get('dashboard-super-admin', [DashboardController::class, 'dashboardSuperAdmin'])->name('dashboardSuperAdmin');
+        Route::get('/super-admin/dashboard', [DashboardController::class, 'dashboardSuperAdmin'])->name('dashboardSuperAdmin');
 
         // KELOLA AKUN
-        // View data akun berdasarkan role
-        Route::get('/data-master', [KategoriUsahaController::class, 'index'])
-            ->name('viewDataMaster');
+
+        //Kelola Akun
+        Route::get('/kelola-akun/{role}', [PenggunaController::class, 'index'])->name('viewKelolaAkun');
 
         // Form tambah akun
         Route::get('/kelola-akun/create/{role}', [PenggunaController::class, 'create'])
@@ -184,6 +184,10 @@ Route::middleware('auth')->group(function () {
 
 
         // Data Master
+        // View data akun berdasarkan role
+        Route::get('/data-master', [KategoriUsahaController::class, 'index'])
+            ->name('viewDataMaster');
+
         // Kategori Usaha
         Route::resource('kategoriUsaha', KategoriUsahaController::class);
 
@@ -195,9 +199,6 @@ Route::middleware('auth')->group(function () {
 
         // Jenis Pembayaran
         Route::resource('jenisPembayaran', JenisPembayaranController::class);
-
-        //Kelola Akun
-        Route::get('/kelola-akun/{role}', [PenggunaController::class, 'index'])->name('viewKelolaAkun');
 
         // route untuk export pdf dan excel
         Route::get('/super-admin/laporan/penjualan', [LaporanPenjualanController::class, 'index'])
@@ -219,7 +220,9 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('checkRole:2')->group(function () {
         // dashboard admin
-        Route::get('dashboard-admin', [DashboardController::class, 'dashboardAdmin'])->name('dashboardAdmin');
+        Route::get('/admin/dashboard', [DashboardController::class, 'dashboardAdmin'])->name('dashboardAdmin');
+
+        Route::resource('itemProduksi', ItemProduksiController::class);
 
         // Route::get('/admin/pesanan/{pesanan}/penawaran', [PersetujuanHargaController::class, 'showAdmin'])
         //     ->name('admin.pesanan.penawaran');

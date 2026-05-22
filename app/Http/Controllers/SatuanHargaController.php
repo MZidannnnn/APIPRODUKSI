@@ -67,7 +67,7 @@ class SatuanHargaController extends Controller
         $request->validate([
             'nama_satuan'         => 'required',
         ], [
-            'nama_satuan.required'         => 'Nama satuan harga wajib diisi',
+            'nama_satuan.required' => 'Nama satuan harga wajib diisi',
         ]);
 
         $satuanHarga = SatuanHarga::findOrFail($id);

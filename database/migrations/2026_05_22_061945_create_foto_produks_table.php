@@ -11,24 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('detail_produk', function (Blueprint $table) {
-            $table->bigIncrements('id_detail_produk');
+        Schema::create('foto_produk', function (Blueprint $table) {
+            $table->bigIncrements('id_foto_produk');
             $table->unsignedBigInteger('id_item_produksi');
-            $table->unsignedBigInteger('id_satuan');
-            $table->string('ukuran', 50)->nullable();
-            $table->decimal('harga_dasar', 14, 2);
+            $table->string('nama_foto', 255);
             $table->timestamps();
 
+            // Foreign Key
             $table->foreign('id_item_produksi')
                 ->references('id_item_produksi')
                 ->on('item_produksi')
                 ->onDelete('cascade')
-                ->onUpdate('cascade');
-
-            $table->foreign('id_satuan')
-                ->references('id_satuan')
-                ->on('satuan_harga')
-                ->onDelete('restrict')
                 ->onUpdate('cascade');
         });
     }
@@ -38,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('detail_produk');
+        Schema::dropIfExists('foto_produks');
     }
 };

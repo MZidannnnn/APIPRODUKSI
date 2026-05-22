@@ -69,7 +69,6 @@ class StatusPesananController extends Controller
         ], [
             'nama_status_pesanan.required'  => 'Nama status pesanan wajib diisi',
         ]);
-
         $statusPesanan = StatusPesanan::findOrFail($id);
 
         $statusPesanan->update([

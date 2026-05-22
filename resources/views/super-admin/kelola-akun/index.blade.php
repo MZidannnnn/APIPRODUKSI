@@ -42,7 +42,7 @@
                                 <td>{{ $item->email }}</td>
                                 
                                 @if ($role == 2)
-                                    <td>{{ $item->id_kategori }}</td>
+                                    <td>{{ $item->kategori->nama_kategori ?? '-' }}</td>
                                 @endif
 
                                 <td>

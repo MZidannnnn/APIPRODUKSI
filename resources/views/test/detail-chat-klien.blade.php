@@ -40,6 +40,21 @@
             <ul id="attachmentList" class="attach-list"></ul>
             <div id="chatError" class="chat-error"></div>
         </div>
+        <div id="imageModal" class="img-modal" aria-hidden="true">
+            <div class="img-modal-backdrop" data-close></div>
+            <div class="img-modal-dialog" role="dialog" aria-modal="true" aria-label="Preview gambar">
+                <button type="button" class="img-modal-close" data-close>X</button>
+                <div class="img-modal-toolbar">
+                    <button type="button" id="zoomOut">-</button>
+                    <button type="button" id="zoomReset">Reset</button>
+                    <button type="button" id="zoomIn">+</button>
+                    <a id="imageDownload" class="img-modal-download" href="#" download>Download</a>
+                </div>
+                <div class="img-modal-body">
+                     <img id="imagePreview" alt="Preview lampiran">
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -186,6 +201,82 @@
   cursor: pointer;
 }
 /* batas css lampiran terbaru */
+
+/* css untuk modal download gambar */
+.img-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.img-modal.is-open { display: flex; }
+
+.img-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+}
+
+.img-modal-dialog {
+  position: relative;
+  width: min(92vw, 960px);
+  max-height: 90vh;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  z-index: 1;
+}
+
+.img-modal-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.img-modal-toolbar button,
+.img-modal-download {
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  color: #222;
+  font-size: 12px;
+}
+
+.img-modal-body {
+  display: grid;
+  place-items: center;
+  background: #fafafa;
+  overflow: auto;
+}
+
+.img-modal-body img {
+  max-width: 100%;
+  max-height: 75vh;
+  transform-origin: center center;
+  transition: transform 120ms ease;
+  cursor: zoom-in;
+}
+
+.img-modal-close {
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  cursor: pointer;
+}
+/* end css modal gambar */
 </style>
 
 <script>
@@ -200,6 +291,15 @@
     const fileInput = document.getElementById('chatAttachment');
     const listEl = document.getElementById('attachmentList');
 
+    // modal zoom gambar
+    const imageModal = document.getElementById('imageModal');
+    const imagePreview = document.getElementById('imagePreview');
+    const imageDownload = document.getElementById('imageDownload');
+    const zoomInBtn = document.getElementById('zoomIn');
+    const zoomOutBtn = document.getElementById('zoomOut');
+    const zoomResetBtn = document.getElementById('zoomReset');
+    // end modal zoom gambar
+
     const maxFiles = 5;
     const maxBytes = 100 * 1024 * 1024;
     const allowedExt = ['jpg','jpeg','png','gif','webp','pdf','zip','rar','psd','ai','eps'];
@@ -208,6 +308,9 @@
     const sendUrl = "{{ route('chat.send', $percakapan->id_percakapan) }}";
     const userId = {{ (int) $userId }};
 
+    // zoom gambar fitur chat
+    let zoom = 1;
+    // end zoom gambar fitur chat
     let lastId = 0;
     let isLoading = false;
     let dividerRendered = false;
@@ -221,6 +324,27 @@
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
     }
+
+    // js untuk zoom gambar pada ruang chat
+    function applyZoom() {
+        imagePreview.style.transform = `scale(${zoom})`;
+    }
+
+    function openImageModal(att) {
+        zoom = 1;
+        imagePreview.src = att.preview_url;
+        imageDownload.href = att.download_url || '#';
+        applyZoom();
+        imageModal.classList.add('is-open');
+        imageModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeImageModal() {
+        imageModal.classList.remove('is-open');
+        imageModal.setAttribute('aria-hidden', 'true');
+        imagePreview.src = '';
+    }
+    //end js untuk zoom gambar pada ruang chat
 
     function formatSize(bytes) {
         if (!bytes) return '0 B';
@@ -313,6 +437,8 @@
                 img.alt = att.name || 'Lampiran gambar';
                 img.loading = 'lazy';
                 img.className = 'chat-attachment-image';
+                img.style.cursor = 'zoom-in';
+                img.addEventListener('click', () => openImageModal(att));
                 wrap.appendChild(img);
                 return;
             }
@@ -381,6 +507,29 @@
         errorEl.textContent = msg || '';
     }
 
+    // js untuk zoom gambar pada ruang chat
+    zoomInBtn.addEventListener('click', () => {
+        zoom = Math.min(4, zoom + 0.2);
+        applyZoom();
+    });
+
+    zoomOutBtn.addEventListener('click', () => {
+        zoom = Math.max(1, zoom - 0.2);
+        applyZoom();
+    });
+
+    zoomResetBtn.addEventListener('click', () => {
+        zoom = 1;
+        applyZoom();
+    });
+
+    imageModal.addEventListener('click', (e) => {
+        if (e.target.hasAttribute('data-close')) {
+            closeImageModal();
+        }
+    });
+    //  end js untuk zoom gambar pada ruang chat
+
     dropzone.addEventListener('dragover', (e) => {
         e.preventDefault();
         dropzone.classList.add('is-dragover');
@@ -442,6 +591,7 @@
         if (res.ok) {
             input.value = '';
             selectedFiles = [];
+            closeImageModal();
             renderList();
             await fetchMessages();
         }
