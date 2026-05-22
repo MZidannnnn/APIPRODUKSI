@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use RuntimeException;
 
 class ChatAdminController extends Controller
 {
@@ -193,10 +195,26 @@ class ChatAdminController extends Controller
         $original = basename($file->getClientOriginalName());
         $base = pathinfo($original, PATHINFO_FILENAME);
         $safeBase = Str::slug(Str::ascii($base)) ?: 'file';
-        $storedName = $safeBase . '-' . Str::random(10) . '.' . $meta['ext'];
+        // $storedName = $safeBase . '-' . Str::random(10) . '.' . $meta['ext'];
+
+        if (! $file->isValid()) {
+            throw ValidationException::withMessages([
+                'lampiran' => 'Upload gagal. Silakan ulangi.'
+            ]);
+        }
 
         $dir = 'percakapan/' . $percakapanId;
-        $path = Storage::disk('chat_private')->putFileAs($dir, $file, $storedName);
+        $storedName = $safeBase . '-' . Str::random(10) . '.' . $meta['ext'];
+
+        if ($dir === '' || $storedName === '') {
+            throw new RuntimeException('Path penyimpanan tidak valid.');
+        }
+
+        $path = $file->storeAs($dir, $storedName, 'chat_private');
+
+        if (! $path) {
+            throw new RuntimeException('Gagal menyimpan file.');
+        }
 
         $width = null;
         $height = null;

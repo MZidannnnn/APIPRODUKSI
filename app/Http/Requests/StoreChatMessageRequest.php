@@ -37,6 +37,7 @@ class StoreChatMessageRequest extends FormRequest
             'lampiran' => ['nullable', 'array', 'max:5', 'required_without:isi_pesan'],
             'lampiran.*' => [
                 'file',
+                'uploaded',
                 'mimes:jpg,jpeg,png,gif,webp,pdf,zip,rar,psd,ai,eps',
                 new ChatAttachmentRule(),
             ],
