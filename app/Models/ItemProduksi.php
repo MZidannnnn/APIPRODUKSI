@@ -27,4 +27,9 @@ class ItemProduksi extends Model
     {
         return $this->hasOne(DetailProduk::class, 'id_item_produksi', 'id_item_produksi');
     }
+
+    public function fotoProduk()
+    {
+        return $this->hasMany(FotoProduk::class, 'id_item_produksi');
+    }
 }

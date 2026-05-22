@@ -78,8 +78,8 @@
             </li>
 
             <!-- Laporan Penjualan -->
-            <li class="nav-item #">
-                <a class="nav-link" href="#">
+            <li class="nav-item {{ $menuLaporanPenjualan ?? '' }}">
+                <a class="nav-link" href="{{ route('laporan.penjualan.index') }}">
                     <i class="fas fa-fw fa-folder-open"></i>
                     <span>Laporan Penjualan</span></a>
             </li>
@@ -112,8 +112,8 @@
                 MENU ADMIN
             </div>
 
-            <li class="nav-item #">
-                <a class="nav-link" href="#">
+            <li class="nav-item {{ $menuDataProduk ?? '' }}">
+                <a class="nav-link" href="{{ route('itemProduksi.index') }}">
                     <i class="fas fa-fw fa-box"></i>
                     <span>Data Produk Jasa</span></a>
             </li>

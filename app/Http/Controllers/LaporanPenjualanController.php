@@ -10,8 +10,33 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class LaporanPenjualanController extends Controller
 {
+    public function index(Request $request)
+{
+    $filters = $request->only([
+        'tanggal_mulai',
+        'tanggal_selesai'
+    ]);
+
+    $laporanPenjualan = $this->buildQuery(
+        $filters['tanggal_mulai'] ?? null,
+        $filters['tanggal_selesai'] ?? null
+    )
+    ->where('pb.status_bayar', 'Lunas')
+    ->paginate(50) // Hanya tampilkan 50 baris per halaman web
+    ->withQueryString(); // Menjaga filter tanggal tetap aktif saat pindah halaman
+
+    $data = [
+        'title'                => 'Laporan Penjualan',
+        'menuLaporanPenjualan' => 'active',
+        'laporan'              => $laporanPenjualan,
+        'filters'              => $filters,
+    ];
+
+    return view('super-admin/laporan-penjualan/index', $data);
+}
+
     private function validateTanggal(Request $request): array
-    {
+    { 
         return $request->validate([
             'tanggal_mulai' => ['required', 'date'],
             'tanggal_selesai' => ['required', 'date', 'after_or_equal:tanggal_mulai'],
@@ -45,7 +70,7 @@ class LaporanPenjualanController extends Controller
 
         // Jika parameter tanggal diisi, baru tambahkan filter whereBetween
         if ($tanggalMulai && $tanggalSelesai) {
-            $query->whereBetween('ps.tanggal_pesan', [$tanggalMulai, $tanggalSelesai]);
+            $query->whereBetween(DB::raw('DATE(pb.created_at)'), [$tanggalMulai, $tanggalSelesai]);
         }
 
         return $query
@@ -54,19 +79,6 @@ class LaporanPenjualanController extends Controller
             ->orderBy('pb.created_at');
     }
 
-    public function index(Request $request)
-    {
-        $filters = $request->only(['tanggal_mulai', 'tanggal_selesai']);
-
-        $rows = $this->buildQuery($filters['tanggal_mulai'] ?? null, $filters['tanggal_selesai'] ?? null)
-            ->paginate(50) // Hanya tampilkan 50 baris per halaman web
-            ->withQueryString(); // Menjaga filter tanggal tetap aktif saat pindah halaman
-
-        return view('test.penjualan', [
-            'rows' => $rows,
-            'filters' => $filters,
-        ]);
-    }
 
     public function exportExcel(Request $request)
     {

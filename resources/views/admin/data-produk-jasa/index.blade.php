@@ -9,8 +9,8 @@
     <div class="card">
         <div class="card-header d-flex flex-wrap justify-content-center justify-content-xl-between">
             <div class="mb-1 mr-2">
-                <a href="{{ route('kategoriUsaha.create') }}" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus mr-2"></i> Tambah Kategori Usaha
+                <a href="#" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus mr-2"></i> Tambah Data Produk
                 </a>
             </div>
         </div>
@@ -21,18 +21,18 @@
                     <thead class="bg-primary text-white">
                         <tr class="text-center">
                             <th width="5%">No</th>
-                            <th>Nama Kategori</th>
-                            <th>Jenis Harga</th>
-                            <th>Jenis Pembayaran</th>
+                            <th>Nama Produk</th>
+                            <th>Kategori</th>
+                            <th>Status Produk</th>
                             <th>Deskripsi</th>
                             <th width="15%">
                                 <i class="fas fa-cog"></i>
                             </th>
                         </tr>
-                    </thead> 
+                    </thead>
 
                     <tbody>
-                        @foreach ($kategori as $item)
+                        @foreach ($itemProduksi as $item)
                             <tr class="text-center">
                                 <td>{{ $loop->iteration }}</td>
 
@@ -56,22 +56,22 @@
                                 </td>
 
                                 <td>{{ $item->deskripsi ?? '-' }}</td>
-
+                                
                                 <td>
-                                    <a href="{{ route('kategoriUsaha.edit', $item->id_kategori) }}" class="btn btn-sm btn-warning">
+                                    <a href="#" class="btn btn-sm btn-warning">
                                         <i class="fas fa-edit"></i>
                                     </a>
 
-                                    <form action="{{ route('kategoriUsaha.destroy', $item->id_kategori) }}" method="POST" class="d-inline">
+                                    <form action="#" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
 
                                         <button type="button" class="btn btn-sm btn-danger" data-toggle="modal"
-                                            data-target="#hapusModal{{ $item->id_kategori }}">
+                                            data-target="#">
                                             <i class="fas fa-trash"></i>
                                         </button>
 
-                                        @include('super-admin.data-master.kategori-usaha.modal')
+                                        
                                     </form>
                                 </td>
                             </tr>
