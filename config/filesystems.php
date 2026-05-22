@@ -38,6 +38,14 @@ return [
             'report' => false,
         ],
 
+        'chat_private' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/chat'),
+            'serve' => false,
+            'throw' => false,
+            'report' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

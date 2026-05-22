@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ChatAdminController;
+use App\Http\Controllers\ChatAttachmentController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ItemProduksiController;
 use App\Http\Controllers\JenisPembayaranController;
@@ -20,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', [AuthController::class, 'showDashboard'])->name('dashboard');
+Route::get('/', [AuthController::class, 'showDashboard'])->middleware('redirectRole')->name('dashboard');
 
 // webhook midtrans
 Route::post('/midtrans/notification', [PembayaranController::class, 'notification']);
@@ -88,6 +91,12 @@ Route::middleware('auth')->group(function () {
     // logout
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
+    // fitur lampiran file pada yo chat
+    Route::get('/chat/attachments/{lampiran}/preview', [ChatAttachmentController::class, 'preview'])
+        ->name('chat.attachments.preview');
+
+    Route::get('/chat/attachments/{lampiran}/download', [ChatAttachmentController::class, 'download'])
+        ->name('chat.attachments.download');
 
     /*
     |--------------------------------------------------------------------------
@@ -124,6 +133,13 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/pesanan/{pesanan}/tolak-harga', [PersetujuanHargaController::class, 'tolakHarga'])
             ->name('pesanan.tolakHarga');
+
+        // fitur chat klien
+        Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+        Route::get('/chat/{id}/messages', [ChatController::class, 'messages'])->name('chat.messages');
+        Route::post('/chat/{id}/messages', [ChatController::class, 'send'])->name('chat.send');
+        Route::get('/chat/unread-count', [ChatController::class, 'unreadCount'])->name('chat.unread');
+        Route::get('/chat/{id}', [ChatController::class, 'show'])->name('chat.show');
     });
 
 
@@ -214,14 +230,26 @@ Route::middleware('auth')->group(function () {
         // Route::post('/admin/pesanan/{pesanan}/penawaran', [PersetujuanHargaController::class, 'ajukanHarga'])
         //     ->name('admin.pesanan.ajukanHarga');
 
-        
+        // fitur chat admin
+        Route::get('/admin/chat', [ChatAdminController::class, 'index'])->name('admin.chat.index');
+        // Route::get('/admin/chat/{id}', [ChatAdminController::class, 'show'])->name('admin.chat.show');
+        // Route::get('/admin/chat/{id}/messages', [ChatAdminController::class, 'messages'])->name('admin.chat.messages');
+        // Route::post('/admin/chat/{id}/messages', [ChatAdminController::class, 'send'])->name('admin.chat.send');
+        Route::get('/admin/chat/{percakapan}', [ChatAdminController::class, 'show'])->name('admin.chat.show')
+            ->middleware('can:accessAdmin,percakapan');
+
+        Route::get('/admin/chat/{percakapan}/messages', [ChatAdminController::class, 'messages'])->name('admin.chat.messages')
+            ->middleware('can:accessAdmin,percakapan');
+
+        Route::post('/admin/chat/{percakapan}/messages', [ChatAdminController::class, 'send'])->name('admin.chat.send')
+            ->middleware('can:accessAdmin,percakapan');
     });
 });
 
 
 
-        //Route::resource('itemProduksi', ItemProduksiController::class);
-        //Route::resource('pengguna', PenggunaController::class);
+//Route::resource('itemProduksi', ItemProduksiController::class);
+//Route::resource('pengguna', PenggunaController::class);
 // Route::get('/login-tes', function () {
 //     return view('auth.login');
 // });

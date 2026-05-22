@@ -28,7 +28,7 @@
                 @endguest
 
                 @auth
-                    <a href="#" class="chat-icon">
+                    <a href="{{ route('chat.index') }}" class="chat-icon">
                         <i class="fas fa-message"></i>
                     </a>
 
