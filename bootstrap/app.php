@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'checkRole' => \App\Http\Middleware\CheckRole::class,
+            'redirectRole' => \App\Http\Middleware\RedirectByRole::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

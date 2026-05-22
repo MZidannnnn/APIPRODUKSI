@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', [AuthController::class, 'showDashboard'])->name('dashboard');
+Route::get('/', [AuthController::class, 'showDashboard'])->middleware('redirectRole')->name('dashboard');
 
 // webhook midtrans
 Route::post('/midtrans/notification', [PembayaranController::class, 'notification']);
