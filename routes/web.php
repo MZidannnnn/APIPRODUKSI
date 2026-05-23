@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminPesananStatusController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatAdminController;
 use App\Http\Controllers\ChatAttachmentController;
@@ -247,6 +248,12 @@ Route::middleware('auth')->group(function () {
         // route riwayat transaksi admin
         Route::get('/admin/transaksi', [PembayaranController::class, 'TampilRiwayatTransaksi'])->name('admin.transaksi');
         // end route riwayat transaksi admin
+
+        // route update status pesanan admin
+        Route::get('/admin/edit-status-pesanan/{pesanan}', [AdminPesananStatusController::class, 'editStatusPesanan'])->name('admin.editStatusPesanan');
+        Route::patch('/admin/update-status-pesanan/{pesanan}', [AdminPesananStatusController::class, 'updateStatusPesanan'])->name('admin.updateStatusPesanan');
+        Route::get('/admin/pesanan', [AdminPesananStatusController::class, 'tampilAdminPesanan'])->name('admin.tampilPesanan');
+        // end route update status pesanan admin
     });
 });
 

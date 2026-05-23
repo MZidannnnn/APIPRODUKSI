@@ -146,14 +146,14 @@ class PembayaranController extends Controller
         $admin = Auth::user()->id_kategori;
 
         $riwayatTransaksi = Pembayaran::with([
-        'pesanan:id_pesanan,nama_penerima',
-        'pesanan.detailProduk.itemProduksi:id_item_produksi,id_kategori'
-    ])
-    ->whereHas('pesanan.detailProduk.itemProduksi', function ($query) use ($admin) {
-        // Logika filter id_kategori harus berada di dalam fungsi ini
-        $query->where('id_kategori', $admin);
-    })
-    ->get();
-        return view('test.list-transaksi-admin', compact('riwayatTransaksi'));
+            'pesanan:id_pesanan,nama_penerima',
+            'pesanan.detailProduk.itemProduksi:id_item_produksi,id_kategori'
+        ])
+        ->whereHas('pesanan.detailProduk.itemProduksi', function ($query) use ($admin) {
+            // Logika filter id_kategori harus berada di dalam fungsi ini
+            $query->where('id_kategori', $admin);
+        })
+        ->get();
+            return view('test.list-transaksi-admin', compact('riwayatTransaksi'));
     }
 }
