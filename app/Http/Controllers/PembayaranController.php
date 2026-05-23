@@ -6,6 +6,7 @@ use App\Models\Pembayaran;
 use App\Models\Pesanan;
 use App\Models\StatusPesanan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Midtrans\Config;
 use Midtrans\Snap;
 
@@ -138,5 +139,21 @@ class PembayaranController extends Controller
         ]);
 
         return back()->with('success', 'Bukti bayar berhasil diupload');
+    }
+
+    public function TampilRiwayatTransaksi()
+    {
+        $admin = Auth::user()->id_kategori;
+
+        $riwayatTransaksi = Pembayaran::with([
+            'pesanan:id_pesanan,nama_penerima',
+            'pesanan.detailProduk.itemProduksi:id_item_produksi,id_kategori'
+        ])
+        ->whereHas('pesanan.detailProduk.itemProduksi', function ($query) use ($admin) {
+            // Logika filter id_kategori harus berada di dalam fungsi ini
+            $query->where('id_kategori', $admin);
+        })
+        ->get();
+            return view('test.list-transaksi-admin', compact('riwayatTransaksi'));
     }
 }

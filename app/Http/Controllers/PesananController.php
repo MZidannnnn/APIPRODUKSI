@@ -213,9 +213,9 @@ class PesananController extends Controller
         return view('test.detail-produk', compact('itemProduksi', 'percakapan', 'userId'));
     }
 
-    public function showTagihan(Pesanan $pesanan)
-    {
-        $pesanan->load('statusPesanan', 'pembayaran');
-        return view('test.tagihan-dp', compact('pesanan'));
-    }
+    // public function showTagihan(Pesanan $pesanan)
+    // {
+    //     $pesanan->load('statusPesanan', 'pembayaran');
+    //     return view('test.tagihan-dp', compact('pesanan'));
+    // }
 }
