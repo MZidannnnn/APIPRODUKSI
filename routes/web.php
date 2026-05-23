@@ -243,6 +243,10 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/admin/chat/{percakapan}/messages', [ChatAdminController::class, 'send'])->name('admin.chat.send')
             ->middleware('can:accessAdmin,percakapan');
+        
+        // route riwayat transaksi admin
+        Route::get('/admin/transaksi', [PembayaranController::class, 'TampilRiwayatTransaksi'])->name('admin.transaksi');
+        // end route riwayat transaksi admin
     });
 });
 
