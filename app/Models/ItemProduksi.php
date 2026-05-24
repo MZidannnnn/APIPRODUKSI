@@ -28,7 +28,6 @@ class ItemProduksi extends Model
         return $this->hasMany(DetailProduk::class, 'id_item_produksi', 'id_item_produksi');
     }
 
-    // opsional tapi berguna
     public function percakapan()
     {
         return $this->hasMany(Percakapan::class, 'id_item_produksi', 'id_item_produksi');

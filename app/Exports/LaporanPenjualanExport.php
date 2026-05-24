@@ -11,15 +11,16 @@ use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithCustomStartCell;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Border; 
+use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class LaporanPenjualanExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnFormatting, WithEvents, ShouldAutoSize
+class LaporanPenjualanExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithColumnFormatting, WithEvents, ShouldAutoSize, WithCustomStartCell
 {
     public function __construct(
         private string $tanggalMulai,
@@ -43,7 +44,7 @@ class LaporanPenjualanExport implements FromQuery, WithHeadings, WithMapping, Wi
                 DB::raw('COALESCE(rp.kuantitas, 1) as kuantitas'),
                 'ps.total_harga',
                 'sp.nama_status_pesanan as status_pesanan',
-                'pb.created_at as tanggal_bayar',
+                // 'pb.created_at as tanggal_bayar',
                 'pb.tipe_pembayaran',
                 'pb.jumlah_bayar',
                 'pb.payment_type',
@@ -58,7 +59,7 @@ class LaporanPenjualanExport implements FromQuery, WithHeadings, WithMapping, Wi
     public function headings(): array
     {
         return [
-            'No Pesanan',
+            'ID Pesanan',
             'Tgl Pesan',
             'Nama Penerima',
             'Produk',
@@ -66,7 +67,7 @@ class LaporanPenjualanExport implements FromQuery, WithHeadings, WithMapping, Wi
             'Quantity',
             'Total Harga',
             'Status Pesanan',
-            'Tgl Bayar',
+            // 'Tgl Bayar',
             'Tipe Bayar',
             'Jumlah Bayar',
             'Payment Type',
@@ -85,7 +86,7 @@ class LaporanPenjualanExport implements FromQuery, WithHeadings, WithMapping, Wi
             $row->kuantitas,
             $row->total_harga,
             $row->status_pesanan,
-            $row->tanggal_bayar ? Date::dateTimeToExcel(Carbon::parse($row->tanggal_bayar)) : null,
+            // $row->tanggal_bayar ? Date::dateTimeToExcel(Carbon::parse($row->tanggal_bayar)) : null,
             $row->tipe_pembayaran,
             $row->jumlah_bayar,
             $row->payment_type,
@@ -93,10 +94,15 @@ class LaporanPenjualanExport implements FromQuery, WithHeadings, WithMapping, Wi
         ];
     }
 
+    public function startCell(): string
+    {
+        return 'A3';
+    }
+
     public function styles(Worksheet $sheet): array
     {
         return [
-            1 => [
+            3 => [
                 'font' => ['bold' => true],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
@@ -115,8 +121,8 @@ class LaporanPenjualanExport implements FromQuery, WithHeadings, WithMapping, Wi
         return [
             'B' => NumberFormat::FORMAT_DATE_YYYYMMDD2,
             'G' => '#,##0',
-            'I' => NumberFormat::FORMAT_DATE_YYYYMMDD2,
-            'K' => '#,##0',
+            // 'I' => NumberFormat::FORMAT_DATE_YYYYMMDD2,
+            'J' => '#,##0',
         ];
     }
 
@@ -127,27 +133,40 @@ class LaporanPenjualanExport implements FromQuery, WithHeadings, WithMapping, Wi
                 $sheet = $event->sheet->getDelegate();
                 $lastRow = $sheet->getHighestRow();
                 $lastColumn = $sheet->getHighestColumn();
-                $range = "A1:{$lastColumn}{$lastRow}";
 
-                $sheet->setAutoFilter("A1:{$lastColumn}1");
-                $sheet->freezePane('A2');
+                $sheet->setCellValue('A1', 'Laporan Penjualan');
+                $sheet->setCellValue('A2', "Periode: {$this->tanggalMulai} s/d {$this->tanggalSelesai}");
+                $sheet->mergeCells("A1:{$lastColumn}1");
+                $sheet->mergeCells("A2:{$lastColumn}2");
 
-                $sheet->getStyle($range)
-                    ->getBorders()
-                    ->getAllBorders()
-                    ->setBorderStyle(Border::BORDER_THIN);
+                $sheet->getStyle("A1:{$lastColumn}1")->applyFromArray([
+                    'font' => [
+                        'bold' => true,
+                        'size' => 14,
+                    ],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                ]);
 
-                $sheet->getStyle("F2:F{$lastRow}")
-                    ->getAlignment()
-                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("A2:{$lastColumn}2")->applyFromArray([
+                    'font' => [
+                        'bold' => true,
+                        'size' => 12,
+                    ],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                ]);
 
-                $sheet->getStyle("G2:G{$lastRow}")
-                    ->getAlignment()
-                    ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                $sheet->setAutoFilter("A3:{$lastColumn}3");
+                $sheet->freezePane('A4');
 
-                $sheet->getStyle("K2:K{$lastRow}")
-                    ->getAlignment()
-                    ->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                $sheet->getStyle("F4:F{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("G4:G{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                $sheet->getStyle("J4:J{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
             },
         ];
     }
