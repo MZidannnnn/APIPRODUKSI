@@ -2,14 +2,14 @@
 
 @section('content')
     <h1 class="h3 mb-4 text-gray-800">
-        <i class="fas fa-fw fa-tags mr-2"></i>
+        <i class="fas fa-fw fa-box mr-2"></i>
         {{ $title }}
     </h1>
 
     <div class="card">
         <div class="card-header d-flex flex-wrap justify-content-center justify-content-xl-between">
             <div class="mb-1 mr-2">
-                <a href="#" class="btn btn-primary btn-sm">
+                <a href="{{ route('itemProduksi.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus mr-2"></i> Tambah Data Produk
                 </a>
             </div>
@@ -21,9 +21,11 @@
                     <thead class="bg-primary text-white">
                         <tr class="text-center">
                             <th width="5%">No</th>
+                            <th>Tanggal Produk Dibuat</th>
                             <th>Nama Produk</th>
                             <th>Kategori</th>
                             <th>Status Produk</th>
+                            <th>Satuan Harga</th>
                             <th>Deskripsi</th>
                             <th width="15%">
                                 <i class="fas fa-cog"></i>
@@ -36,42 +38,52 @@
                             <tr class="text-center">
                                 <td>{{ $loop->iteration }}</td>
 
-                                <td>{{ $item->nama_kategori }}</td>
+                                <td>
+                                    {{ \Carbon\Carbon::parse($item->created_at)->translatedFormat('d-m-Y') }}
+                                    <small class="text-muted d-block">{{ \Carbon\Carbon::parse($item->created_at)->diffForHumans() }}</small>
+                                </td>
 
-                                <td class="text-center">
-                                    @if ($item->jenis_harga == 'Harga Tetap')
+                                <td>{{ $item->nama_item }}</td>
+
+                                <td>
+                                {{-- Relasi Kategori usaha --}}
+                                {{ $item->kategoriUsaha->nama_kategori}}
+                                </td>
+
+                                <td>
+                                    @if ($item->status_aktif == 'Aktif')
                                         <span class="badge badge-success">
-                                            {{ $item->jenis_harga }}
+                                            {{ $item->status_aktif }}
                                         </span>
                                     @else
-                                        <span class="badge badge-warning">
-                                            {{ $item->jenis_harga }}
+                                        <span class="badge badge-danger">
+                                            {{ $item->status_aktif }}
                                         </span>
                                     @endif
                                 </td>
                                 
-                                <td class="text-center">
-                                    {{-- Relasi jenis pembayaran --}}
-                                    {{ $item->jenisPembayaran->nama_jenis_pembayaran ?? '-' }}
+                                <td>
+                                    {{-- Satuan Harga --}}
+                                    {{ $item->satuanHarga->nama_satuan}}
                                 </td>
 
-                                <td>{{ $item->deskripsi ?? '-' }}</td>
-                                
+                                <td>{{ $item->deskripsi_item ?? '-' }}</td>
+
                                 <td>
-                                    <a href="#" class="btn btn-sm btn-warning">
+                                    <a href="{{ route('itemProduksi.show', $item->id_item_produksi) }}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+
+                                    <a href="{{ route('itemProduksi.edit', $item->id_item_produksi) }}" class="btn btn-sm btn-warning">
                                         <i class="fas fa-edit"></i>
                                     </a>
 
-                                    <form action="#" method="POST" class="d-inline">
+                                    <form action="{{ route('itemProduksi.destroy', $item->id_item_produksi) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-
-                                        <button type="button" class="btn btn-sm btn-danger" data-toggle="modal"
-                                            data-target="#">
+                                        <button type="button" class="btn btn-danger btn-sm btn-hapus">
                                             <i class="fas fa-trash"></i>
                                         </button>
-
-                                        
                                     </form>
                                 </td>
                             </tr>

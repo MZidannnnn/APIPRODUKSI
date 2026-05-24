@@ -46,7 +46,7 @@ class KategoriUsahaController extends Controller
             'nama_kategori.max'              => 'Nama kategori usaha maksimal 100 karakter',
             'id_jenis_pembayaran.required'   => 'Jenis pembayaran wajib dipilih',
             'jenis_harga.required'           => 'Jenis harga wajib dipilih',
-            'jenis_harga.in'                 => 'Jenis harga tidak valid',
+            'jenis_harga.in'                 => 'Jenis harga tidak valid', 
         ]);
 
         KategoriUsaha::create([

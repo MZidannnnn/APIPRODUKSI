@@ -11,7 +11,6 @@ class DetailProduk extends Model
     public $timestamps = true;
     protected $fillable = [
         'id_item_produksi',
-        'id_satuan',
         'ukuran',
         'harga_dasar',
     ];
@@ -20,8 +19,9 @@ class DetailProduk extends Model
     {
         return $this->belongsTo(ItemProduksi::class, 'id_item_produksi', 'id_item_produksi');
     }
+    
     public function satuanHarga()
     {
         return $this->belongsTo(SatuanHarga::class, 'id_satuan', 'id_satuan');
-    }
+    } 
 }

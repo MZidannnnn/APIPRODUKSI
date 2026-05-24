@@ -60,7 +60,7 @@
                                 <div class="order-menu">
                                     <a href="#">
                                         <i class="fas fa-wallet"></i>
-                                        <span>Bayar Sekarang</span>
+                                        <span>Belum Bayar</span>
                                     </a>
 
                                     <a href="#">

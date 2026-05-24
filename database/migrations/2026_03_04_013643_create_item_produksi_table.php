@@ -15,6 +15,7 @@ return new class extends Migration
             $table->bigIncrements('id_item_produksi');
             $table->unsignedBigInteger('id_kategori');
             $table->string('nama_item', 100);
+            $table->unsignedBigInteger('id_satuan');
             $table->text('deskripsi_item')->nullable();
             $table->enum('status_aktif', ['Aktif', 'Non-aktif']);
             $table->timestamps();
@@ -22,6 +23,12 @@ return new class extends Migration
             $table->foreign('id_kategori')
                 ->references('id_kategori')
                 ->on('kategori_usaha')
+                ->onDelete('restrict')
+                ->onUpdate('cascade');
+
+            $table->foreign('id_satuan')
+                ->references('id_satuan')
+                ->on('satuan_harga')
                 ->onDelete('restrict')
                 ->onUpdate('cascade');
         });

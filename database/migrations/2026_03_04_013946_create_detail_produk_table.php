@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('detail_produk', function (Blueprint $table) {
             $table->bigIncrements('id_detail_produk');
             $table->unsignedBigInteger('id_item_produksi');
-            $table->unsignedBigInteger('id_satuan');
             $table->string('ukuran', 50)->nullable();
             $table->decimal('harga_dasar', 14, 2);
             $table->timestamps();
@@ -23,12 +22,6 @@ return new class extends Migration
                 ->references('id_item_produksi')
                 ->on('item_produksi')
                 ->onDelete('cascade')
-                ->onUpdate('cascade');
-
-            $table->foreign('id_satuan')
-                ->references('id_satuan')
-                ->on('satuan_harga')
-                ->onDelete('restrict')
                 ->onUpdate('cascade');
         });
     }

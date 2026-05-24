@@ -16,6 +16,7 @@ class ItemProduksiSeeder extends Seeder
         DB::table('item_produksi')->insert([
             [
                 'id_kategori' => 1,
+                'id_satuan' => 3,
                 'nama_item' => 'Banner 1x2',
                 'deskripsi_item' => 'Banner ukuran 1x2 meter',
                 'status_aktif' => 'Aktif',
@@ -24,6 +25,7 @@ class ItemProduksiSeeder extends Seeder
             ],
             [
                 'id_kategori' => 2,
+                'id_satuan' => 2,
                 'nama_item' => 'Desain Logo Premium',
                 'deskripsi_item' => 'Desain logo dengan revisi',
                 'status_aktif' => 'Aktif',

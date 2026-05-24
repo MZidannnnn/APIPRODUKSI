@@ -16,7 +16,6 @@ class DetailProdukSeeder extends Seeder
         DB::table('detail_produk')->insert([
             [
                 'id_item_produksi' => 1,
-                'id_satuan' => 2,
                 'ukuran' => '1x2',
                 'harga_dasar' => 150000,
                 'created_at' => now(),
@@ -24,7 +23,6 @@ class DetailProdukSeeder extends Seeder
             ],
             [
                 'id_item_produksi' => 2,
-                'id_satuan' => 3,
                 'ukuran' => 'Paket',
                 'harga_dasar' => 500000,
                 'created_at' => now(),

@@ -14,7 +14,7 @@ class ItemProduksi extends Model
         'id_kategori',
         'nama_item',
         'deskripsi_item',
-        'gambar_item',
+        'id_satuan',
         'status_aktif',
     ];
 
@@ -25,7 +25,7 @@ class ItemProduksi extends Model
 
     public function detailProduk()
     {
-        return $this->hasOne(DetailProduk::class, 'id_item_produksi', 'id_item_produksi');
+        return $this->hasMany(DetailProduk::class, 'id_item_produksi', 'id_item_produksi');
     }
 
     // opsional tapi berguna
@@ -33,6 +33,12 @@ class ItemProduksi extends Model
     {
         return $this->hasMany(Percakapan::class, 'id_item_produksi', 'id_item_produksi');
     }
+
+    public function satuanHarga()
+    {
+        return $this->belongsTo(SatuanHarga::class, 'id_satuan', 'id_satuan');
+    } 
+    
     public function fotoProduk()
     {
         return $this->hasMany(FotoProduk::class, 'id_item_produksi');

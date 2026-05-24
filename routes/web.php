@@ -223,8 +223,6 @@ Route::middleware('auth')->group(function () {
         // dashboard admin
         Route::get('/admin/dashboard', [DashboardController::class, 'dashboardAdmin'])->name('dashboardAdmin');
 
-        Route::resource('itemProduksi', ItemProduksiController::class);
-
         // Route::get('/admin/pesanan/{pesanan}/penawaran', [PersetujuanHargaController::class, 'showAdmin'])
         //     ->name('admin.pesanan.penawaran');
 
@@ -254,6 +252,12 @@ Route::middleware('auth')->group(function () {
         Route::patch('/admin/update-status-pesanan/{pesanan}', [AdminPesananStatusController::class, 'updateStatusPesanan'])->name('admin.updateStatusPesanan');
         Route::get('/admin/pesanan', [AdminPesananStatusController::class, 'tampilAdminPesanan'])->name('admin.tampilPesanan');
         // end route update status pesanan admin
+    });
+
+    Route::middleware('checkRole:1,2')->group(function () {
+
+    // CRUD item produksi
+        Route::resource('itemProduksi', ItemProduksiController::class);
     });
 });
 

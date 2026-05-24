@@ -72,7 +72,7 @@ class JenisPembayaranController extends Controller
 
         $jenisPembayaran = JenisPembayaran::findOrFail($id);
 
-        $jenisPembayaran->update([
+        $jenisPembayaran->update([ 
             'nama_jenis_pembayaran'  => $request->nama_jenis_pembayaran,
         ]);
 

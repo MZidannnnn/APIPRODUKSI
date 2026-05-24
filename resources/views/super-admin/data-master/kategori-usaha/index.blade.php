@@ -50,10 +50,8 @@
                                     @endif
                                 </td>
                                 
-                                <td class="text-center">
-                                    {{-- Relasi jenis pembayaran --}}
-                                    {{ $item->jenisPembayaran->nama_jenis_pembayaran ?? '-' }}
-                                </td>
+                                {{-- Relasi jenis pembayaran --}}
+                                <td>{{ $item->jenisPembayaran->nama_jenis_pembayaran ?? '-' }}</td>
 
                                 <td>{{ $item->deskripsi ?? '-' }}</td>
 

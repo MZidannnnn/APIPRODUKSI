@@ -39,6 +39,38 @@
             });
         </script>
     @endsession
+
+    <!-- Session Hapus -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Mendengarkan semua klik di halaman secara global
+            document.body.addEventListener('click', function (e) {
+                // Jika yang diklik adalah tombol yang memiliki class 'btn-hapus'
+                if (e.target.classList.contains('btn-hapus') || e.target.closest('.btn-hapus')) {
+                    e.preventDefault(); // Tahan submit form asli
+                    
+                    // Cari form terdekat dari tombol yang diklik
+                    const form = e.target.closest('form'); 
+                    
+                    Swal.fire({
+                        title: "Yakin ingin menghapus data ini?",
+                        text: "Data yang dihapus tidak dapat dikembalikan!",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "Ya, hapus!",
+                        cancelButtonText: "Batal"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Jika klik Ya, jalankan submit form ke controller
+                            if (form) form.submit();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
     
 </body>
 
