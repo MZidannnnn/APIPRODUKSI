@@ -61,7 +61,7 @@ class LaporanPenjualanController extends Controller
                 DB::raw('COALESCE(rp.kuantitas, 1) as kuantitas'),
                 'ps.total_harga',
                 'sp.nama_status_pesanan as status_pesanan',
-                'pb.created_at as tanggal_bayar',
+                // 'pb.created_at as tanggal_bayar',
                 'pb.tipe_pembayaran',
                 'pb.jumlah_bayar',
                 'pb.payment_type',
@@ -70,7 +70,8 @@ class LaporanPenjualanController extends Controller
 
         // Jika parameter tanggal diisi, baru tambahkan filter whereBetween
         if ($tanggalMulai && $tanggalSelesai) {
-            $query->whereBetween(DB::raw('DATE(pb.created_at)'), [$tanggalMulai, $tanggalSelesai]);
+            // $query->whereBetween(DB::raw('DATE(pb.created_at)'), [$tanggalMulai, $tanggalSelesai]);
+            $query->whereBetween('ps.tanggal_pesan', [$tanggalMulai, $tanggalSelesai]);
         }
 
         return $query
@@ -95,7 +96,7 @@ class LaporanPenjualanController extends Controller
         $validated = $this->validateTanggal($request);
         $rows = $this->buildQuery($validated['tanggal_mulai'], $validated['tanggal_selesai'])->get();
 
-        $pdf = Pdf::loadView('test.penjualan-pdf', [
+        $pdf = Pdf::loadView('super-admin.laporan-penjualan.exportpdf', [
             'rows' => $rows,
             'filters' => $validated,
         ])->setPaper('a4', 'landscape');

@@ -54,7 +54,7 @@
                 <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
                     <thead class="bg-primary text-white">
                         <tr class="text-center">
-                            <th>No Pesanan</th>
+                            <th>Id Pesanan</th>
                             <th>Tgl Pesan</th>
                             <th>Nama Penerima</th>
                             <th>Produk</th> 
@@ -62,7 +62,7 @@
                             <th>Qty</th>
                             <th>Total Harga</th>
                             <th>Status Pesanan</th>
-                            <th>Tgl Bayar</th>
+                            {{-- <th>Tgl Bayar</th> --}}
                             <th>Tipe Bayar</th>
                             <th>Jumlah Bayar</th>
                             <th>Payment Type</th>
@@ -81,7 +81,7 @@
                                 <td>{{ $row->kuantitas }}</td>
                                 <td>{{ $row->total_harga }}</td>
                                 <td>{{ $row->status_pesanan }}</td>
-                                <td>{{ optional($row->tanggal_bayar)->format('Y-m-d') }}</td>
+                                {{-- <td>{{ optional($row->tanggal_bayar)->format('Y-m-d') }}</td> --}}
                                 <td>{{ $row->tipe_pembayaran }}</td>
                                 <td>{{ $row->jumlah_bayar }}</td>
                                 <td>{{ $row->payment_type }}</td>
