@@ -14,16 +14,17 @@ return new class extends Migration
         Schema::create('pembayaran', function (Blueprint $table) {
             $table->bigIncrements('id_pembayaran');
             $table->unsignedBigInteger('id_pesanan');
-                $table->enum('tipe_pembayaran', ['DP', 'Full', 'Pelunasan'])
-        ->default('Full');
+            $table->enum('tipe_pembayaran', ['DP', 'Full', 'Pelunasan'])->default('Full');
             $table->decimal('jumlah_bayar', 14, 2);
             $table->string('metode_bayar', 50)->nullable();
             $table->string('payment_type', 50)->nullable();
             $table->string('transaction_id', 100)->nullable();
             $table->string('order_id', 100)->nullable();
+            $table->string('snap_token', 255)->nullable();
+            $table->timestamp('snap_expires_at')->nullable();
             $table->string('bukti_bayar', 255)->nullable();
-            $table->enum('status_bayar', ['Pending', 'Lunas']);
-            $table->json('payload')->nullable(); 
+            $table->enum('status_bayar', ['Pending', 'Lunas', 'Kedaluwarsa']);
+            $table->json('payload')->nullable();
             $table->timestamps();
 
             $table->foreign('id_pesanan')

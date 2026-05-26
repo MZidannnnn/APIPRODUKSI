@@ -21,13 +21,14 @@ class Pembayaran extends Model
         'bukti_bayar',
         'status_bayar',
         'payload',
-       
+        'snap_token',
+        'snap_expires_at',
     ];
 
     protected $casts = [
         'jumlah_bayar' => 'decimal:2',
         'payload' => 'array',
-        
+        'snap_expires_at' => 'datetime',
     ];
 
     public function pesanan()

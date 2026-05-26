@@ -89,4 +89,11 @@ class Pesanan extends Model
     {
         return $this->sisaBayar() <= 0;
     }
+
+    // relasi untuk klien riwayat pesanan
+    public function latestPembayaran()
+    {
+        return $this->hasOne(Pembayaran::class, 'id_pesanan', 'id_pesanan')
+                    ->latestOfMany('id_pembayaran');
+    }
 }

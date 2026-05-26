@@ -12,6 +12,7 @@ use App\Models\RincianPesanan;
 use App\Models\StatusPesanan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class PesananController extends Controller
 {
@@ -200,25 +201,53 @@ class PesananController extends Controller
         ])->findOrFail($id);
 
         $userId = Auth::id();
-        $percakapan = null;
 
-        if ($userId) {
-            $percakapan = Percakapan::firstOrCreate(
-                [
-                    'id_pengguna' => $userId,
-                    'id_item_produksi' => $itemProduksi->id_item_produksi,
-                    'id_kategori' => $itemProduksi->id_kategori,
-                ],
-                ['terakhir_aktif' => now()]
-            );
-        }
-
-        return view('test.detail-produk', compact('itemProduksi', 'percakapan', 'userId'));
+        return view('test.detail-produk', compact('itemProduksi', 'userId'));
     }
 
     public function showTagihan(Pesanan $pesanan)
     {
         $pesanan->load('statusPesanan', 'pembayaran');
         return view('test.tagihan-dp', compact('pesanan'));
+    }
+
+    public function riwayatPesanan(Request $request)
+    {
+        $filters = $request->validate([
+            'status' => ['nullable', Rule::in([
+                'Menunggu Pembayaran',
+                'Diproses',
+                'Selesai',
+                'Kedaluwarsa',
+            ])],
+        ]);
+
+        $userId = Auth::id();
+
+        $query = Pesanan::query()
+            ->where('id_pengguna', $userId)
+            ->with([
+                'detailProduk.itemProduksi',
+                'statusPesanan',
+                'latestPembayaran',
+            ])
+            ->latest('tanggal_pesan');
+
+        if (($filters['status'] ?? null) === 'Kedaluwarsa') {
+            $query->where(function ($q) {
+                $q->whereHas('statusPesanan', fn($s) => $s->where('nama_status_pesanan', 'Dibatalkan'))
+                    ->orWhere(function ($q2) {
+                        $q2->whereHas('statusPesanan', fn($s) => $s->where('nama_status_pesanan', 'Menunggu Pembayaran'))
+                            ->whereHas('pembayaran', fn($p) => $p->where('status_bayar', 'Pending')
+                                ->where('created_at', '<', now()->subHours(24)));
+                    });
+            });
+        } elseif (!empty($filters['status'])) {
+            $query->whereHas('statusPesanan', fn($s) => $s->where('nama_status_pesanan', $filters['status']));
+        }
+
+        $pesanan = $query->paginate(10)->withQueryString();
+
+        return view('test.klien-riwayat-pesanan', compact('pesanan', 'filters'));
     }
 }

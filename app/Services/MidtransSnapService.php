@@ -34,10 +34,20 @@ class MidtransSnapService
             ],
 
             // Batasi hanya Mandiri VA:
-            'enabled_payments' => ['mandiri_va'],
+            // 'enabled_payments' => [
+            //     "bca_va",
+            //     "bni_va",
+            //     "bri_va",
+            //     "echannel",
+            //     "permata_va",
+            //     "cimb_va",
+            //     "other_va",
+            //     "qris",
+            //     "gopay"
+            // ],
 
             // Jika akun Anda butuh parameter bank_transfer:
-            'bank_transfer' => ['bank' => 'mandiri'],
+            // 'bank_transfer' => ['bank' => 'mandiri'],
         ];
 
         try {

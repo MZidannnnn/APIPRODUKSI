@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreChatMessageRequest;
+use App\Models\ItemProduksi;
 use App\Models\Percakapan;
 use App\Models\Pesan;
 use App\Models\PesanLampiran;
@@ -251,5 +252,24 @@ class ChatController extends Controller
             'height' => $height,
             'checksum' => hash_file('sha256', $file->getPathname()) ?: '',
         ]);
+    }
+
+    public function start(ItemProduksi $itemProduksi)
+    {
+        $userId = Auth::id();
+
+        $percakapan = Percakapan::firstOrCreate(
+            [
+                'id_pengguna' => $userId,
+                'id_item_produksi' => $itemProduksi->id_item_produksi,
+                'id_kategori' => $itemProduksi->id_kategori,
+            ],
+            ['terakhir_aktif' => now()]
+        );
+
+        // Opsional: update terakhir_aktif juga untuk percakapan yang sudah ada
+        $percakapan->update(['terakhir_aktif' => now()]);
+
+        return redirect()->route('chat.show', $percakapan->id_percakapan);
     }
 }
