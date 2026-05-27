@@ -56,7 +56,7 @@
                 <p class="item-desc">{{ $itemProduksi->deskripsi_item }}</p>
 
                 @php
-                ($detailDefault = $itemProduksi->detailProduk->first())
+                    ($detailDefault = $itemProduksi->detailProduk->first())
                 @endphp
                 @if ($detailDefault)
                     <div class="item-detail">
@@ -213,13 +213,19 @@
             submitBtn.setAttribute('aria-busy', String(isLoading));
         };
 
-        const showError = (message) => {
+        // const showError = (message) => {
+        //     errorBox.textContent = message;
+        // };
+
+        const showNotice = (message, type = "error") => {
             errorBox.textContent = message;
+            errorBox.dataset.type = type;
+            errorBox.hidden = !message;
         };
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            showError('');
+            showNotice('');
             setLoading(true);
 
             try {
@@ -266,14 +272,15 @@
                         window.location.href = `/pembayaran/${bayar.id_pembayaran}/upload-bukti`;
                     },
                     onPending: function() {
-                        window.location.href = `/pembayaran/${bayar.id_pembayaran}/upload-bukti`;
+                        // window.location.href = `/pembayaran/${bayar.id_pembayaran}/upload-bukti`;
                     },
                     onError: function() {
-                        showError("Pembayaran gagal. Silakan ulangi.");
+                        showNotice("Pembayaran gagal. Silakan coba lagi atau pilih metode lain.",
+                            "error");
                     }
                 });
             } catch (err) {
-                showError(err.message || "Terjadi kesalahan jaringan.");
+                showNotice(err.message || "Terjadi kesalahan jaringan.");
             } finally {
                 setLoading(false);
             }
@@ -516,10 +523,23 @@
         }
 
         .form-error {
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
             color: #b91c1c;
-            font-size: 13px;
-            margin: 4px 0 10px;
-            min-height: 18px;
+        }
+
+        .form-error[data-type="info"] {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            color: #1d4ed8;
+        }
+
+        .form-error[data-type="warning"] {
+            background: #fffbeb;
+            border-color: #fde68a;
+            color: #b45309;
         }
 
         .btn-spinner {

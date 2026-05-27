@@ -133,7 +133,7 @@ class PesananController extends Controller
             $validated = array_merge($base, $extra);
         }
 
-        $statusName = $isSablon ? 'Menunggu Persetujuan' : 'Menunggu Pembayaran';
+        $statusName = 'Menunggu Pembayaran';
         $status = StatusPesanan::where('nama_status_pesanan', $statusName)->first();
 
         $pesanan = Pesanan::create([
@@ -216,10 +216,12 @@ class PesananController extends Controller
         $filters = $request->validate([
             'status' => ['nullable', Rule::in([
                 'Menunggu Pembayaran',
+                'Menunggu Diproses',
                 'Diproses',
                 'Selesai',
                 'Kedaluwarsa',
             ])],
+            'tipe' => ['nullable', Rule::in(['Full', 'DP'])],
         ]);
 
         $userId = Auth::id();
@@ -229,9 +231,32 @@ class PesananController extends Controller
             ->with([
                 'detailProduk.itemProduksi',
                 'statusPesanan',
-                'latestPembayaran',
+                'latestPembayaran' => function ($q) {
+                    $q->select([
+                        'pembayaran.id_pembayaran',
+                        'pembayaran.id_pesanan',
+                        'pembayaran.tipe_pembayaran',
+                        'pembayaran.jumlah_bayar',
+                        'pembayaran.status_bayar',
+                        'pembayaran.created_at',
+                    ]);
+                },
+                'pembayaran' => function ($q) {
+                    $q->select([
+                        'pembayaran.id_pembayaran',
+                        'pembayaran.id_pesanan',
+                        'pembayaran.tipe_pembayaran',
+                        'pembayaran.jumlah_bayar',
+                        'pembayaran.status_bayar',
+                        'pembayaran.created_at',
+                    ])->latest('created_at');
+                },
             ])
             ->latest('tanggal_pesan');
+
+        if (!empty($filters['tipe'])) {
+            $query->whereHas('pembayaran', fn($p) => $p->where('tipe_pembayaran', $filters['tipe']));
+        }
 
         if (($filters['status'] ?? null) === 'Kedaluwarsa') {
             $query->where(function ($q) {

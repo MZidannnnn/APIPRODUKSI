@@ -20,22 +20,63 @@
         </div>
 
         <form class="order-filters" method="GET">
-            <button name="status" value="" class="{{ empty($filters['status']) ? 'active' : '' }}">Semua</button>
-            <button name="status" value="Menunggu Pembayaran">Menunggu Pembayaran</button>
-            <button name="status" value="Diproses">Diproses</button>
-            <button name="status" value="Selesai">Selesai</button>
-            <button name="status" value="Kedaluwarsa/Batal">Kedaluwarsa/Batal</button>
+            <input type="hidden" name="status" value="{{ $filters['status'] ?? '' }}">
+            <input type="hidden" name="tipe" value="{{ $filters['tipe'] ?? '' }}">
+
+            <div class="filter-group">
+                <span class="filter-label">Tipe Pembayaran</span>
+                <button name="tipe" value="" class="{{ empty($filters['tipe']) ? 'active' : '' }}">Semua
+                    Tipe</button>
+                <button name="tipe" value="Full"
+                    class="{{ ($filters['tipe'] ?? '') === 'Full' ? 'active' : '' }}">Full</button>
+                <button name="tipe" value="DP"
+                    class="{{ ($filters['tipe'] ?? '') === 'DP' ? 'active' : '' }}">DP</button>
+            </div>
+
+            <div class="filter-group">
+                <span class="filter-label">Status Pesanan</span>
+                <button name="status" value="" class="{{ empty($filters['status']) ? 'active' : '' }}">Semua
+                    Status</button>
+                <button name="status" value="Menunggu Pembayaran">Menunggu Pembayaran</button>
+                <button name="status" value="Menunggu Diproses">Menunggu Diproses</button>
+                <button name="status" value="Diproses">Diproses</button>
+                <button name="status" value="Selesai">Selesai</button>
+                <button name="status" value="Kedaluwarsa">Kedaluwarsa</button>
+            </div>
         </form>
 
         @foreach ($pesanan as $order)
             @php
                 $status = $order->statusPesanan->nama_status_pesanan ?? '-';
                 $latest = $order->latestPembayaran;
+                $latestStatus = $latest?->status_bayar;
+                $displayAmount = $latest?->jumlah_bayar ?? ($order->total_harga ?? 0);
+                $expiresAt = $latest?->snap_expires_at ?? $latest?->created_at?->copy()->addHours(24);
                 $isExpired =
                     $status === 'Menunggu Pembayaran' &&
                     $latest &&
-                    $latest->status_bayar === 'Pending' &&
-                    $latest->created_at->lt(now()->subHours(24));
+                    ($latestStatus === 'Kedaluwarsa' ||
+                        ($latestStatus === 'Pending' && $expiresAt && $expiresAt->isPast()));
+
+                $dpPaid = $order->pembayaran->contains(
+                    fn($p) => $p->tipe_pembayaran === 'DP' && $p->status_bayar === 'Lunas',
+                );
+
+                $pelunasanPaid = $order->pembayaran->contains(
+                    fn($p) => $p->tipe_pembayaran === 'Pelunasan' && $p->status_bayar === 'Lunas',
+                );
+
+                $paidTotal = $order->pembayaran->sum('jumlah_bayar');
+                $sisaBayar = ($order->total_harga ?? 0) - $paidTotal;
+
+                $latestType = $latest?->tipe_pembayaran;
+                $latestStatus = $latest?->status_bayar;
+
+                $canPayDp = $status === 'Menunggu Pembayaran' && $latestType === 'DP' && $latestStatus !== 'Lunas';
+
+                $canPayFull = $status === 'Menunggu Pembayaran' && $latestType === 'Full' && $latestStatus !== 'Lunas';
+
+                $canPayPelunasan = $status === 'Selesai' && !$pelunasanPaid && $sisaBayar > 0;
             @endphp
 
             <div class="order-card">
@@ -50,14 +91,26 @@
                     {{ $isExpired ? 'Kedaluwarsa' : $status }}
                 </div>
                 <div class="order-total">
-                    Rp {{ number_format($order->total_harga ?? 0, 0, ',', '.') }}
+                    Rp {{ number_format((float) $displayAmount, 0, ',', '.') }}
                 </div>
 
-                @if ($status === 'Menunggu Pembayaran')
-                    <button class="pay-btn" data-id="{{ $order->id_pesanan }}"
-                        data-tipe="{{ $latest->tipe_pembayaran ?? 'Full' }}">
-                        Bayar Sekarang
-                    </button>
+                @if ($isExpired)
+                    <div class="order-expired">
+                        Pembayaran kadaluwarsa. Silakan buat pesanan baru.
+                    </div>
+                @endif
+
+                @if (!$isExpired)
+                    @if ($canPayDp)
+                        <button class="pay-btn" data-id="{{ $order->id_pesanan }}" data-tipe="DP">Bayar DP</button>
+                    @elseif ($canPayFull)
+                        <button class="pay-btn" data-id="{{ $order->id_pesanan }}" data-tipe="Full">Bayar Sekarang</button>
+                    @endif
+
+                    @if ($canPayPelunasan)
+                        <button class="pay-btn" data-id="{{ $order->id_pesanan }}" data-tipe="Pelunasan">Bayar
+                            Pelunasan</button>
+                    @endif
                 @endif
             </div>
         @endforeach
@@ -68,7 +121,12 @@
     <script>
         document.querySelectorAll('.pay-btn').forEach(btn => {
             btn.addEventListener('click', async () => {
-                const res = await fetch("{{ route('pembayaran.retry') }}", {
+                const endpoint =
+                    btn.dataset.tipe === "Pelunasan" ?
+                    "{{ route('pembayaran.midtrans') }}" :
+                    "{{ route('pembayaran.retry') }}";
+
+                const res = await fetch(endpoint, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -107,6 +165,17 @@
             --rp-card: #ffffff;
             --rp-border: #ece6db;
             --rp-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+        }
+
+        .order-expired {
+            margin-top: 8px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: #fff1e5;
+            color: #9a3412;
+            border: 1px solid #fed7aa;
+            font-size: 12px;
+            font-weight: 600;
         }
 
         .order-page {
