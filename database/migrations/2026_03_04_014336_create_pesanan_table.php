@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id_pengguna');
             $table->unsignedBigInteger('id_detail_produk');
             $table->unsignedBigInteger('id_status_pesanan');
+            $table->string('kode_resi_pesanan', 40)->nullable()->unique();
             $table->date('tanggal_pesan');
             $table->string('nama_penerima', 100);
             $table->text('alamat_penerima');

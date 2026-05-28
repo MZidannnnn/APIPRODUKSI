@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateTransactionRequest;
 use App\Http\Requests\MidtransNotificationRequest;
+use App\Http\Requests\UploadBuktiPembayaranRequest;
 use App\Models\Pembayaran;
 use App\Models\Pesanan;
 use App\Models\StatusPesanan;
@@ -11,6 +12,8 @@ use App\Services\MidtransSnapService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Midtrans\Config;
 use Midtrans\Snap;
@@ -121,23 +124,57 @@ class PembayaranController extends Controller
 
     public function showUploadForm(Pembayaran $pembayaran)
     {
-        return view('pembayaran.upload_bukti', compact('pembayaran'));
+        $pembayaran->loadMissing('pesanan');
+
+        abort_unless(
+            (int) $pembayaran->pesanan?->id_pengguna === (int) Auth::id(),
+            403,
+            'Anda tidak berhak mengakses transaksi ini.'
+        );
+
+        return view('test.upload_bukti_pembayaran_klien', compact('pembayaran'));
     }
 
     // proses upload
-    public function uploadBukti(Request $request, Pembayaran $pembayaran)
+    public function uploadBukti(UploadBuktiPembayaranRequest $request, Pembayaran $pembayaran)
     {
-        $validated = $request->validate([
-            'bukti_bayar' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
-        ]);
+        $file = $request->file('bukti_bayar');
 
-        $path = $request->file('bukti_bayar')->store('bukti-bayar', 'public');
+        $baseName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $safeBase = Str::slug($baseName);
+        if ($safeBase === '') {
+            $safeBase = 'bukti-bayar';
+        }
+
+        $ext = strtolower($file->guessExtension() ?: $file->extension());
+        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'pdf'], true)) {
+            return back()->withErrors(['bukti_bayar' => 'Ekstensi file tidak valid.'])->withInput();
+        }
+
+        $fileName = $safeBase
+            . '-'
+            . $pembayaran->id_pembayaran
+            . '-'
+            . now()->format('YmdHis')
+            . '-'
+            . Str::lower(Str::random(10))
+            . '.'
+            . $ext;
+
+        $directory = 'bukti-bayar/' . Auth::id() . '/' . now()->format('Y/m');
+        $newPath = Storage::disk('local')->putFileAs($directory, $file, $fileName);
+
+        if ($pembayaran->bukti_bayar) {
+            Storage::disk('local')->delete($pembayaran->bukti_bayar);
+        }
 
         $pembayaran->update([
-            'bukti_bayar' => $path,
+            'bukti_bayar' => $newPath,
         ]);
 
-        return back()->with('success', 'Bukti bayar berhasil diupload');
+        return redirect()
+            ->route('pembayaran.upload.form', $pembayaran->id_pembayaran)
+            ->with('success', 'Bukti bayar berhasil diunggah.');
     }
 
     public function TampilRiwayatTransaksi()

@@ -152,7 +152,7 @@
                         <input type="text" name="No_hp_penerima" required>
                     </div>
 
-                    <div id="payment-error" class="form-error" role="alert" aria-live="polite"></div>
+                    <div id="payment-error" class="form-error" role="alert" aria-live="polite" hidden></div>
 
                     <button class="btn btn-primary" type="submit" data-submit>
                         <span class="btn-text">Beli Sekarang</span>
@@ -269,7 +269,7 @@
 
                 window.snap.pay(bayar.snap_token, {
                     onSuccess: function() {
-                        window.location.href = `/pembayaran/${bayar.id_pembayaran}/upload-bukti`;
+                        window.location.href = '/pembayaran/' + bayar.id_pembayaran + '/upload-bukti';
                     },
                     onPending: function() {
                         // window.location.href = `/pembayaran/${bayar.id_pembayaran}/upload-bukti`;

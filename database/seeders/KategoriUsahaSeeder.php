@@ -16,6 +16,7 @@ class KategoriUsahaSeeder extends Seeder
         DB::table('kategori_usaha')->insert([
             [
                 'id_jenis_pembayaran' => 1,
+                'kode_unik' => 'CTB',
                 'nama_kategori' => 'Cetak Banner',
                 'jenis_harga' => 'Harga Tetap',
                 'deskripsi' => 'Cetak banner dan spanduk',
@@ -24,6 +25,7 @@ class KategoriUsahaSeeder extends Seeder
             ],
             [
                 'id_jenis_pembayaran' => 2,
+                'kode_unik' => 'DSL',
                 'nama_kategori' => 'Desain Logo',
                 'jenis_harga' => 'Harga Kostum',
                 'deskripsi' => 'Jasa desain logo custom',
@@ -32,6 +34,7 @@ class KategoriUsahaSeeder extends Seeder
             ],
             [
                 'id_jenis_pembayaran' => 2,
+                'kode_unik' => 'SBL',
                 'nama_kategori' => 'Sablon',
                 'jenis_harga' => 'Harga Kostum',
                 'deskripsi' => 'Jasa sablon custom',

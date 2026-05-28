@@ -37,11 +37,16 @@
                 <span class="filter-label">Status Pesanan</span>
                 <button name="status" value="" class="{{ empty($filters['status']) ? 'active' : '' }}">Semua
                     Status</button>
-                <button name="status" value="Menunggu Pembayaran">Menunggu Pembayaran</button>
-                <button name="status" value="Menunggu Diproses">Menunggu Diproses</button>
-                <button name="status" value="Diproses">Diproses</button>
-                <button name="status" value="Selesai">Selesai</button>
-                <button name="status" value="Kedaluwarsa">Kedaluwarsa</button>
+                <button name="status" class="{{ ($filters['status'] ?? '') === 'Menunggu Pembayaran' ? 'active' : '' }}"
+                    value="Menunggu Pembayaran">Menunggu Pembayaran</button>
+                <button name="status" class="{{ ($filters['status'] ?? '') === 'Menunggu Diproses' ? 'active' : '' }}"
+                    value="Menunggu Diproses">Menunggu Diproses</button>
+                <button name="status" class="{{ ($filters['status'] ?? '') === 'Diproses' ? 'active' : '' }}"
+                    value="Diproses">Diproses</button>
+                <button name="status" class="{{ ($filters['status'] ?? '') === 'Selesai' ? 'active' : '' }}"
+                    value="Selesai">Selesai</button>
+                <button name="status" class="{{ ($filters['status'] ?? '') === 'Kedaluwarsa' ? 'active' : '' }}"
+                    value="Kedaluwarsa">Kedaluwarsa</button>
             </div>
         </form>
 
@@ -81,7 +86,7 @@
 
             <div class="order-card">
                 <div class="order-meta">
-                    <strong>#{{ $order->id_pesanan }}</strong>
+                    <strong>#{{ $order->kode_resi_pesanan }}</strong>
                     <span>{{ optional($order->tanggal_pesan)->format('d M Y') }}</span>
                 </div>
                 <div class="order-product">
@@ -147,9 +152,16 @@
                 }
 
                 window.snap.pay(data.snap_token, {
-                    onSuccess: () => window.location.reload(),
-                    onPending: () => window.location.reload(),
-                    onError: () => alert('Pembayaran gagal')
+                    onSuccess: function() {
+                        window.location.href = '/pembayaran/' + data.id_pembayaran +
+                            '/upload-bukti';
+                    },
+                    onPending: function() {
+                        window.location.reload();
+                    },
+                    onError: function() {
+                        alert('Pembayaran gagal');
+                    }
                 });
             });
         });

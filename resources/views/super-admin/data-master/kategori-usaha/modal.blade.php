@@ -21,6 +21,11 @@
                 </div>
 
                 <div class="row">
+                    <div class="col-6">Kode Unik</div>
+                    <div class="col-6">: {{ $item->kode_unik }}</div>
+                </div>
+
+                <div class="row">
                     <div class="col-6">Jenis Harga</div>
                     <div class="col-6">: {{ $item->jenis_harga }}</div>
                 </div>

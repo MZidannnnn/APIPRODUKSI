@@ -14,6 +14,7 @@ class Pesanan extends Model
         'id_pengguna',
         'id_detail_produk',
         'id_status_pesanan',
+        'kode_resi_pesanan',
         'tanggal_pesan',
         'nama_penerima',
         'alamat_penerima',
