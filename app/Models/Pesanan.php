@@ -14,6 +14,7 @@ class Pesanan extends Model
         'id_pengguna',
         'id_detail_produk',
         'id_status_pesanan',
+        'kode_resi_pesanan',
         'tanggal_pesan',
         'nama_penerima',
         'alamat_penerima',
@@ -88,5 +89,12 @@ class Pesanan extends Model
     public function sudahLunas()
     {
         return $this->sisaBayar() <= 0;
+    }
+
+    // relasi untuk klien riwayat pesanan
+    public function latestPembayaran()
+    {
+        return $this->hasOne(Pembayaran::class, 'id_pesanan', 'id_pesanan')
+                    ->latestOfMany('id_pembayaran');
     }
 }

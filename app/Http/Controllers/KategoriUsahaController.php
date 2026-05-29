@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\KategoriUsaha;
 use App\Models\JenisPembayaran;
+use App\Models\KategoriUsaha;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class KategoriUsahaController extends Controller
 {
@@ -30,27 +31,32 @@ class KategoriUsahaController extends Controller
             'master' => 'kategoriUsaha',
             'jenisPembayaran' => JenisPembayaran::all()
         ];
-    
+
         return view('super-admin/data-master/kategori-usaha/create', $data);
     }
 
     public function store(Request $request)
     {
         $request->validate([
+            'kode_unik'           => ['required', 'string', 'max:10', 'regex:/^[A-Z0-9]+$/', Rule::unique('kategori_usaha', 'kode_unik')],
             'nama_kategori'         => 'required|max:100',
             'id_jenis_pembayaran'   => 'required',
             'jenis_harga'           => 'required|in:Harga Tetap,Harga Kostum',
             'deskripsi'             => 'nullable',
         ], [
+            'kode_unik.required'  => 'Kode unik wajib diisi',
+            'kode_unik.regex'     => 'Kode unik harus huruf besar dan angka',
+            'kode_unik.unique'    => 'Kode unik sudah digunakan',
             'nama_kategori.required'         => 'Nama kategori usaha wajib diisi',
             'nama_kategori.max'              => 'Nama kategori usaha maksimal 100 karakter',
             'id_jenis_pembayaran.required'   => 'Jenis pembayaran wajib dipilih',
             'jenis_harga.required'           => 'Jenis harga wajib dipilih',
-            'jenis_harga.in'                 => 'Jenis harga tidak valid', 
+            'jenis_harga.in'                 => 'Jenis harga tidak valid',
         ]);
 
         KategoriUsaha::create([
             'id_jenis_pembayaran' => $request->id_jenis_pembayaran,
+            'kode_unik'           => $request->kode_unik,
             'nama_kategori'       => $request->nama_kategori,
             'jenis_harga'         => $request->jenis_harga,
             'deskripsi'           => $request->deskripsi,
@@ -78,11 +84,15 @@ class KategoriUsahaController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
+            'kode_unik'           => ['required', 'string', 'max:10', 'regex:/^[A-Z0-9]+$/', Rule::unique('kategori_usaha', 'kode_unik')->ignore($id, 'id_kategori')],
             'nama_kategori'         => 'required|max:100',
             'id_jenis_pembayaran'   => 'required',
             'jenis_harga'           => 'required|in:Harga Tetap,Harga Kostum',
             'deskripsi'             => 'nullable',
         ], [
+            'kode_unik.required'  => 'Kode unik wajib diisi',
+            'kode_unik.regex'     => 'Kode unik harus huruf besar dan angka',
+            'kode_unik.unique'    => 'Kode unik sudah digunakan',
             'nama_kategori.required'         => 'Nama kategori usaha wajib diisi',
             'nama_kategori.max'              => 'Nama kategori usaha maksimal 100 karakter',
             'id_jenis_pembayaran.required'   => 'Jenis pembayaran wajib dipilih',
@@ -94,6 +104,7 @@ class KategoriUsahaController extends Controller
 
         $kategori->update([
             'id_jenis_pembayaran' => $request->id_jenis_pembayaran,
+            'kode_unik'           => $request->kode_unik,
             'nama_kategori'       => $request->nama_kategori,
             'jenis_harga'         => $request->jenis_harga,
             'deskripsi'           => $request->deskripsi,

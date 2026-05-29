@@ -143,6 +143,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/chat/{id}/messages', [ChatController::class, 'send'])->name('chat.send');
         Route::get('/chat/unread-count', [ChatController::class, 'unreadCount'])->name('chat.unread');
         Route::get('/chat/{id}', [ChatController::class, 'show'])->name('chat.show');
+        Route::post('/chat/start/{itemProduksi}', [ChatController::class, 'start'])->name('chat.start');
+
+        // fitur bayar kembali riwayatPesanan
+        Route::post('/pembayaran/retry', [PembayaranController::class, 'retrySnap'])->name('pembayaran.retry');
+        Route::get('/pesanan/riwayat', [PesananController::class, 'riwayatPesanan'])->name('klienpesanan.riwayat');
     });
 
 
@@ -237,7 +242,7 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/admin/chat/{percakapan}/messages', [ChatAdminController::class, 'send'])->name('admin.chat.send')
             ->middleware('can:accessAdmin,percakapan');
-        
+
         // route riwayat transaksi admin
         Route::get('/admin/riwayat-transaksi', [PembayaranController::class, 'TampilRiwayatTransaksi'])->name('admin.transaksi');
         // end route riwayat transaksi admin
@@ -251,6 +256,8 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('checkRole:1,2')->group(function () { 
 
+        // CRUD item produksi
+        // Route::resource('itemProduksi', ItemProduksiController::class);
     // CRUD item produksi
         Route::resource('/admin/item-produksi', ItemProduksiController::class) ->names('admin.itemProduksi');
     });

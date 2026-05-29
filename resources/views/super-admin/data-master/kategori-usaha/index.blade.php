@@ -22,6 +22,7 @@
                         <tr class="text-center">
                             <th width="5%">No</th>
                             <th>Nama Kategori</th>
+                            <th>Kode Unik</th>
                             <th>Jenis Harga</th>
                             <th>Jenis Pembayaran</th>
                             <th>Deskripsi</th>
@@ -37,6 +38,8 @@
                                 <td>{{ $loop->iteration }}</td>
 
                                 <td>{{ $item->nama_kategori }}</td>
+
+                                <td>{{ $item->kode_unik }}</td>
 
                                 <td class="text-center">
                                     @if ($item->jenis_harga == 'Harga Tetap')

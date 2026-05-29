@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Pesanan;
+use App\Observers\PesananObserver;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -25,5 +27,7 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.env') !== 'local' || isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
             URL::forceScheme('https');
         }
+
+        Pesanan::observe(PesananObserver::class);
     }
 }

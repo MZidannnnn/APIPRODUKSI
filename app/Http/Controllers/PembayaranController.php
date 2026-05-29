@@ -2,143 +2,131 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateTransactionRequest;
+use App\Http\Requests\MidtransNotificationRequest;
+use App\Http\Requests\UploadBuktiPembayaranRequest;
 use App\Models\Pembayaran;
 use App\Models\Pesanan;
 use App\Models\StatusPesanan;
+use App\Services\MidtransSnapService;
+use App\Services\PembayaranStatusService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Midtrans\Config;
 use Midtrans\Snap;
 
 class PembayaranController extends Controller
 {
 
-    public function createTransaction(Request $request)
+    public function createTransaction(CreateTransactionRequest $request, MidtransSnapService $midtrans)
     {
-        $validated = $request->validate([
-            'id_pesanan' => 'required|exists:pesanan,id_pesanan',
-            'tipe_pembayaran' => 'required|in:DP,Full,Pelunasan',
-        ]);
+        $pesanan = Pesanan::query()
+            ->where('id_pesanan', $request->id_pesanan)
+            ->where('id_pengguna', $request->user()->id_pengguna ?? Auth::id())
+            ->firstOrFail();
 
-        $pesanan = Pesanan::with('pengguna')->findOrFail($validated['id_pesanan']);
+        $status = $pesanan->statusPesanan->nama_status_pesanan ?? null;
 
-        // untuk pesanan harga tawar, pastikan harga sudah disetujui sebelum membuat transaksi pembayaran
-        $persetujuan = $pesanan->persetujuanHarga;
-        if ($persetujuan && $persetujuan->status_persetujuan !== 'Disetujui') {
-            return response()->json(['message' => 'Harga belum disetujui'], 422);
+        if ($request->tipe_pembayaran === 'DP') {
+            abort_unless($status === 'Menunggu Pembayaran', 422, 'Status pesanan tidak valid.');
+            $dpPaid = $pesanan->pembayaran()
+                ->where('tipe_pembayaran', 'DP')
+                ->where('status_bayar', 'Lunas')
+                ->exists();
+            abort_if($dpPaid, 422, 'DP sudah dibayar.');
         }
 
-        // konfig midtrans
-        Config::$serverKey = config('midtrans.server_key');
-        Config::$isProduction = (bool) config('midtrans.is_production');
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
-
-        $nominal = $pesanan->total_harga;
-
-
-        if ($validated['tipe_pembayaran'] === 'DP') {
-            $nominal = round($pesanan->total_harga / 2);
-        } elseif ($validated['tipe_pembayaran'] === 'Pelunasan') {
-            $nominal = $pesanan->sisaBayar();
+        if ($request->tipe_pembayaran === 'Pelunasan') {
+            abort_unless($status === 'Selesai', 422, 'Pesanan belum selesai.');
+            abort_if($pesanan->sisaBayar() <= 0, 422, 'Tagihan sudah lunas.');
         }
+        try {
+            $snap = $midtrans->createSnapToken($pesanan, $request->tipe_pembayaran);
 
-        $orderId = 'ORDER-' . $pesanan->id_pesanan . '-' . strtoupper($validated['tipe_pembayaran']) . '-' . time();
+            $pembayaran = Pembayaran::create([
+                'id_pesanan' => $pesanan->id_pesanan,
+                'tipe_pembayaran' => $request->tipe_pembayaran,
+                'jumlah_bayar' => $snap['gross_amount'],
+                'order_id' => $snap['order_id'],
+                'snap_token' => $snap['snap_token'],
+                'snap_expires_at' => now()->addHours(24),
+                'status_bayar' => 'Pending',
+            ]);
 
-        $params = [
-            'transaction_details' => [
-                'order_id' => $orderId,
-                'gross_amount' => (int) $nominal,
-            ],
-            'customer_details' => [
-                'first_name' => $pesanan->nama_penerima,
-                'phone' => $pesanan->No_hp_penerima,
-                'billing_address' => [
-                    'address' => $pesanan->alamat_penerima,
-                ],
-            ],
-        ];
-
-        $snapToken = Snap::getSnapToken($params);
-
-        $pembayaran = Pembayaran::create([
-            'id_pesanan' => $pesanan->id_pesanan,
-            'tipe_pembayaran' => $validated['tipe_pembayaran'],
-            'jumlah_bayar' => $nominal,
-            'order_id' => $orderId,
-            'status_bayar' => 'Pending',
-        ]);
-
-        return response()->json([
-            'snap_token' => $snapToken,
-            'id_pembayaran' => $pembayaran->id_pembayaran,
-        ]);
+            return response()->json([
+                'snap_token' => $snap['snap_token'],
+                'id_pembayaran' => $pembayaran->id_pembayaran,
+            ]);
+        } catch (\Throwable $e) {
+            report($e);
+            return response()->json(['message' => 'Gagal membuat transaksi.'], 500);
+        }
     }
 
-    public function notification(Request $request)
+    public function notification(MidtransNotificationRequest $request, PembayaranStatusService $service)
     {
-        Config::$serverKey = config('midtrans.server_key');
-        Config::$isProduction = config('midtrans.is_production');
-
-        $payload = $request->all();
-        $orderId = $payload['order_id'] ?? null;
-        $transactionStatus = $payload['transaction_status'] ?? null;
-        $paymentType = $payload['payment_type'] ?? null;
-        $transactionId = $payload['transaction_id'] ?? null;
-        $grossAmount = $payload['gross_amount'] ?? null;
-
-        if (!$orderId) {
-            return response()->json(['message' => 'Invalid payload'], 400);
-        }
-
-        $pembayaran = Pembayaran::where('order_id', $orderId)->first();
-        if (!$pembayaran) {
-            return response()->json(['message' => 'Order not found'], 404);
-        }
-
-        $statusBayar = in_array($transactionStatus, ['settlement', 'capture']) ? 'Lunas' : 'Pending';
-
-        $pembayaran->update([
-            'status_bayar' => $statusBayar,
-            'payment_type' => $paymentType,
-            'transaction_id' => $transactionId,
-            'jumlah_bayar' => $grossAmount ?? $pembayaran->jumlah_bayar,
-            'payload' => $payload,
-        ]);
-
-        if ($statusBayar === 'Lunas') {
-            $pesanan = $pembayaran->pesanan;
-            if ($pesanan) {
-                $statusSelesai = StatusPesanan::where('nama_status_pesanan', 'Lunas')->first();
-                if ($statusSelesai) {
-                    $pesanan->update(['id_status_pesanan' => $statusSelesai->id_status_pesanan]);
-                }
-            }
-        }
-
+        $service->handleMidtransNotification($request->validated());
 
         return response()->json(['message' => 'OK']);
     }
 
     public function showUploadForm(Pembayaran $pembayaran)
     {
-        return view('pembayaran.upload_bukti', compact('pembayaran'));
+        $pembayaran->loadMissing('pesanan');
+
+        abort_unless(
+            (int) $pembayaran->pesanan?->id_pengguna === (int) Auth::id(),
+            403,
+            'Anda tidak berhak mengakses transaksi ini.'
+        );
+
+        return view('test.upload_bukti_pembayaran_klien', compact('pembayaran'));
     }
 
     // proses upload
-    public function uploadBukti(Request $request, Pembayaran $pembayaran)
+    public function uploadBukti(UploadBuktiPembayaranRequest $request, Pembayaran $pembayaran)
     {
-        $validated = $request->validate([
-            'bukti_bayar' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
-        ]);
+        $file = $request->file('bukti_bayar');
 
-        $path = $request->file('bukti_bayar')->store('bukti-bayar', 'public');
+        $baseName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $safeBase = Str::slug($baseName);
+        if ($safeBase === '') {
+            $safeBase = 'bukti-bayar';
+        }
+
+        $ext = strtolower($file->guessExtension() ?: $file->extension());
+        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'pdf'], true)) {
+            return back()->withErrors(['bukti_bayar' => 'Ekstensi file tidak valid.'])->withInput();
+        }
+
+        $fileName = $safeBase
+            . '-'
+            . $pembayaran->id_pembayaran
+            . '-'
+            . now()->format('YmdHis')
+            . '-'
+            . Str::lower(Str::random(10))
+            . '.'
+            . $ext;
+
+        $directory = 'bukti-bayar/' . Auth::id() . '/' . now()->format('Y/m');
+        $newPath = Storage::disk('local')->putFileAs($directory, $file, $fileName);
+
+        if ($pembayaran->bukti_bayar) {
+            Storage::disk('local')->delete($pembayaran->bukti_bayar);
+        }
 
         $pembayaran->update([
-            'bukti_bayar' => $path,
+            'bukti_bayar' => $newPath,
         ]);
 
-        return back()->with('success', 'Bukti bayar berhasil diupload');
+        return redirect()
+            ->route('pembayaran.upload.form', $pembayaran->id_pembayaran)
+            ->with('success', 'Bukti bayar berhasil diunggah.');
     }
 
     public function TampilRiwayatTransaksi() 
@@ -149,12 +137,12 @@ class PembayaranController extends Controller
             'pesanan:id_pesanan,nama_penerima',
             'pesanan.detailProduk.itemProduksi:id_item_produksi,id_kategori'
         ])
-        ->whereHas('pesanan.detailProduk.itemProduksi', function ($query) use ($admin) {
-            // Logika filter id_kategori harus berada di dalam fungsi ini
-            $query->where('id_kategori', $admin);
-        })
-        ->get();
-
+            ->whereHas('pesanan.detailProduk.itemProduksi', function ($query) use ($admin) {
+                // Logika filter id_kategori harus berada di dalam fungsi ini
+                $query->where('id_kategori', $admin);
+            })
+            ->get();
+            
         $data = [
             'title' => 'Riwayat Transaksi Klien',
             'menuRiwayatTransaksi' => 'active',
@@ -162,5 +150,56 @@ class PembayaranController extends Controller
         ];
 
         return view('admin/riwayat-transaksi/index', $data);
+    }
+
+    public function retrySnap(Request $request)
+    {
+        $data = $request->validate([
+            'id_pesanan' => ['required', 'integer', 'exists:pesanan,id_pesanan'],
+            // 'tipe_pembayaran' => ['nullable', Rule::in(['DP', 'Full', 'Pelunasan'])],
+        ]);
+
+        $pesanan = Pesanan::query()
+            ->with(['statusPesanan', 'latestPembayaran'])
+            ->where('id_pesanan', $data['id_pesanan'])
+            ->where('id_pengguna', $request->user()->id_pengguna ?? Auth::id())
+            ->firstOrFail();
+
+        if (($pesanan->statusPesanan->nama_status_pesanan ?? '') !== 'Menunggu Pembayaran') {
+            return response()->json(['message' => 'Status pesanan tidak valid.'], 422);
+        }
+
+        $last = $pesanan->latestPembayaran;
+
+        if (!$last) {
+            return response()->json(['message' => 'Belum ada transaksi untuk pesanan ini.'], 404);
+        }
+
+        if ($last->status_bayar === 'Lunas') {
+            return response()->json(['message' => 'Pesanan sudah lunas.'], 422);
+        }
+        $expiresAt = $last->snap_expires_at
+            ?? $last->created_at?->copy()->addHours(24);
+
+        if (
+            $last->status_bayar === 'Pending'
+            && $expiresAt
+            && $expiresAt->isFuture()
+        ) {
+            return response()->json([
+                'snap_token' => $last->snap_token,
+                'id_pembayaran' => $last->id_pembayaran,
+            ]);
+        }
+
+        $last->update(['status_bayar' => 'Kedaluwarsa']);
+
+        $statusBatal = StatusPesanan::where('nama_status_pesanan', 'Dibatalkan')->first();
+        if ($statusBatal) {
+            $pesanan->update(['id_status_pesanan' => $statusBatal->id_status_pesanan]);
+        }
+
+        return response()->json(['message' => 'Token pembayaran sudah kedaluwarsa.'], 422);
+        
     }
 }

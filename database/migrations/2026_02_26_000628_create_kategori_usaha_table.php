@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('kategori_usaha', function (Blueprint $table) {
             $table->bigIncrements('id_kategori');
             $table->unsignedBigInteger('id_jenis_pembayaran');
+            $table->string('kode_unik', 10)->unique();
             $table->string('nama_kategori', 100);
             $table->enum('jenis_harga', ['Harga Tetap', 'Harga Kostum']);
             $table->text('deskripsi')->nullable();

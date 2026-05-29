@@ -11,6 +11,7 @@ class KategoriUsaha extends Model
     public $timestamps = true;
     protected $fillable = [
         'id_jenis_pembayaran',
+        'kode_unik',
         'nama_kategori',
         'jenis_harga',
         'deskripsi',
@@ -19,5 +20,11 @@ class KategoriUsaha extends Model
     public function jenisPembayaran()
     {
         return $this->belongsTo(JenisPembayaran::class, 'id_jenis_pembayaran');
+    }
+
+    // mewajibkan kode unik selalu dalam huruf kapital
+    public function setKodeUnikAttribute($value): void
+    {
+        $this->attributes['kode_unik'] = strtoupper($value);
     }
 }

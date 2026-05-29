@@ -37,6 +37,23 @@
 
             </div>
 
+            {{-- kode unik --}}
+            <div class="form-group">
+                <label>Kode Unik</label>
+                <input type="text"
+                    name="kode_unik"
+                    class="form-control @error('kode_unik') is-invalid @enderror"
+                    value="{{ old('kode_unik') }}"
+                    maxlength="10"
+                    pattern="[A-Z0-9]+"
+                    oninput="this.value = this.value.toUpperCase()"
+                    placeholder="Contoh: SBL"
+                    style="text-transform: uppercase;">
+                @error('kode_unik')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
             {{-- Jenis Harga --}}
             <div class="form-group">
 

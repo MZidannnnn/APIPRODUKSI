@@ -2,27 +2,76 @@
 @push('head')
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
 @endpush
+
 @section('content')
     <div class="detail-page">
+        <header class="detail-hero">
+            <a class="back-link" href="{{ route('pesanan.listItem') }}">&larr; Kembali</a>
+            <h2 class="item-title">{{ $itemProduksi->nama_item }}</h2>
+            <div class="item-meta">
+                <span class="meta-pill">Kategori: {{ $itemProduksi->kategoriUsaha->nama_kategori ?? '-' }}</span>
+                <span class="meta-pill">Status: {{ $itemProduksi->status_aktif }}</span>
+            </div>
+        </header>
+
         <div class="detail-grid">
             <section class="detail-card">
-                <a class="back-link" href="{{ route('pesanan.listItem') }}">← Kembali</a>
-                <h2 class="item-title">{{ $itemProduksi->nama_item }}</h2>
-                <div class="item-meta">
-                    <span>Kategori: {{ $itemProduksi->kategoriUsaha->nama_kategori ?? '-' }}</span>
-                    <span>Status: {{ $itemProduksi->status_aktif }}</span>
+                <div class="gallery">
+                    @if ($itemProduksi->fotoProduk->isNotEmpty())
+                        <div class="swiper main-swiper">
+                            <div class="swiper-wrapper">
+                                @foreach ($itemProduksi->fotoProduk as $foto)
+                                    <div class="swiper-slide">
+                                        <img src="{{ asset($foto->nama_foto) }}" alt="Foto {{ $loop->iteration }}"
+                                            loading="lazy">
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="swiper-pagination"></div>
+                            <div class="swiper-button-prev"></div>
+                            <div class="swiper-button-next"></div>
+                        </div>
+                        <div class="swiper thumbs-swiper" aria-label="Thumbnail produk">
+                            <div class="swiper-wrapper">
+                                @foreach ($itemProduksi->fotoProduk as $foto)
+                                    <button class="swiper-slide thumb" type="button">
+                                        <img src="{{ asset($foto->nama_foto) }}" alt="Thumb {{ $loop->iteration }}"
+                                            loading="lazy">
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <div class="gallery-empty">Tidak ada gambar produk</div>
+                    @endif
                 </div>
-                <p class="item-desc">{{ $itemProduksi->deskripsi_item }}</p>
-                @if ($itemProduksi->gambar_item)
-                    <img class="item-image" src="{{ asset('storage/' . $itemProduksi->gambar_item) }}" alt="Gambar">
-                @endif
 
-                @if ($itemProduksi->detailProduk && $itemProduksi->detailProduk->isNotEmpty())
+                <p class="item-desc">{{ $itemProduksi->deskripsi_item }}</p>
+
+                @php
+                    ($detailDefault = $itemProduksi->detailProduk->first())
+                @endphp
+                @if ($detailDefault)
                     <div class="item-detail">
-                        {{-- Satuan Harga dipanggil LANGSUNG dari $itemProduksi karena sudah dipindah --}}
-                        <div class="fw-bold text-secondary mb-1">
-                            Satuan: {{ $itemProduksi->satuanHarga->nama_satuan ?? '-' }}
+                        <div>
+                            <span class="label">Satuan</span>
+                            <span class="value">{{ $itemProduksi->satuanHarga->nama_satuan ?? '-' }}</span>
+                        </div>
+                        <div>
+                            <span class="label">Ukuran</span>
+                            <span class="value">{{ $detailDefault->ukuran ?? '-' }}</span>
+                        </div>
+                        <div>
+                            <span class="label">Harga Dasar</span>
+                            <span
+                                class="value price">Rp{{ number_format($detailDefault->harga_dasar, 0, ',', '.') }}</span>
                         </div>
                         
                         {{-- Looping detailProduk untuk menampilkan semua variasi ukuran & harganya --}}
@@ -36,33 +85,55 @@
                 @endif
 
                 @auth
-                    <a class="btn chat-cta" href="{{ route('chat.show', $percakapan->id_percakapan) }}"">Chat Admin</a>
+                    <form method="POST" action="{{ route('chat.start', $itemProduksi->id_item_produksi) }}">
+                        @csrf
+                        <button class="btn btn-outline chat-cta" type="submit">Chat Admin</button>
+                    </form>
                 @endauth
             </section>
 
             <section class="purchase-card">
                 <h3 class="section-title">Beli Sekarang</h3>
-                {{-- Pindahkan form pembelian kamu yang sudah ada ke sini, tanpa mengubah field --}}
-                <form id="form-pesanan" method="post" action="{{ route('pesanan.beli') }}">
+
+                <form id="form-pesanan" method="post" action="{{ route('pesanan.beli') }}" enctype="multipart/form-data">
                     @csrf
                     @php
                         $bolehDp =
                             strtolower($itemProduksi->kategoriUsaha->jenisPembayaran->nama_jenis_pembayaran ?? '') ===
                             'dp';
                     @endphp
+
                     @if ($bolehDp)
-                        <label><input type="radio" name="tipe_pembayaran" value="DP" checked> Bayar DP 50%</label><br>
-                        <label><input type="radio" name="tipe_pembayaran" value="Full"> Bayar Full 100%</label><br><br>
+                        <div class="field radio-group">
+                            <label class="radio">
+                                <input type="radio" name="tipe_pembayaran" value="DP" checked>
+                                <span>Bayar DP 50%</span>
+                            </label>
+                            <label class="radio">
+                                <input type="radio" name="tipe_pembayaran" value="Full">
+                                <span>Bayar Full 100%</span>
+                            </label>
+                        </div>
                     @else
                         <input type="hidden" name="tipe_pembayaran" value="Full">
                     @endif
 
-                    <input type="hidden" name="id_detail_produk"
-                        value="{{ $itemProduksi->detailProduk->id_detail_produk ?? '' }}">
+                    <div class="field">
+                        <label>Pilihan Ukuran</label>
+                        <select name="id_detail_produk" required>
+                            @foreach ($itemProduksi->detailProduk as $detail)
+                                <option value="{{ $detail->id_detail_produk }}">
+                                    {{ $detail->ukuran ?? 'Standar' }} -
+                                    Rp{{ number_format($detail->harga_dasar, 0, ',', '.') }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
                     @php
                         $sablon = strtolower($itemProduksi->kategoriUsaha->nama_kategori ?? '') === 'sablon';
                     @endphp
+
                     
                     @if ($sablon)
                         <div class="field">
@@ -89,24 +160,86 @@
                         <label>No HP Penerima</label>
                         <input type="text" name="No_hp_penerima" required>
                     </div>
+
+                    <div id="payment-error" class="form-error" role="alert" aria-live="polite" hidden></div>
+
+                    <button class="btn btn-primary" type="submit" data-submit>
+                        <span class="btn-text">Beli Sekarang</span>
+                        <span class="btn-spinner" aria-hidden="true"></span>
+                    </button>
+                </form>
+            </section>
         </div>
+    </div>
 
-        <br>
-        <button class="btn" type="submit">Beli Sekarang</button>
-        </form>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        const mainEl = document.querySelector('.main-swiper');
+        const thumbsEl = document.querySelector('.thumbs-swiper');
 
+        if (mainEl && thumbsEl) {
+            const thumbs = new Swiper(thumbsEl, {
+                slidesPerView: 5,
+                spaceBetween: 10,
+                watchSlidesProgress: true,
+                breakpoints: {
+                    0: {
+                        slidesPerView: 4
+                    },
+                    640: {
+                        slidesPerView: 5
+                    },
+                    960: {
+                        slidesPerView: 6
+                    }
+                }
+            });
 
-        {{-- script pembayaran --}}
-        <script>
-            const form = document.getElementById('form-pesanan');
-            // const isCustom = @json($sablon ?? false);
+            new Swiper(mainEl, {
+                spaceBetween: 12,
+                loop: false,
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true
+                },
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev'
+                },
+                thumbs: {
+                    swiper: thumbs
+                }
+            });
+        }
 
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
+        const form = document.getElementById('form-pesanan');
+        const submitBtn = form.querySelector('[data-submit]');
+        const errorBox = document.getElementById('payment-error');
 
+        const setLoading = (isLoading) => {
+            form.classList.toggle('is-loading', isLoading);
+            submitBtn.disabled = isLoading;
+            submitBtn.setAttribute('aria-busy', String(isLoading));
+        };
+
+        // const showError = (message) => {
+        //     errorBox.textContent = message;
+        // };
+
+        const showNotice = (message, type = "error") => {
+            errorBox.textContent = message;
+            errorBox.dataset.type = type;
+            errorBox.hidden = !message;
+        };
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showNotice('');
+            setLoading(true);
+
+            try {
                 const formData = new FormData(form);
 
-                // 1) Buat pesanan
                 const resPesanan = await fetch("{{ route('pesanan.beli') }}", {
                     method: "POST",
                     headers: {
@@ -116,19 +249,11 @@
                     body: formData
                 });
 
-                const pesanan = await resPesanan.json();
-                if (!pesanan.id_pesanan) {
-                    alert("Gagal buat pesanan");
-                    return;
+                const pesanan = await resPesanan.json().catch(() => ({}));
+                if (!resPesanan.ok || !pesanan.id_pesanan) {
+                    throw new Error(pesanan.message || "Gagal membuat pesanan. Coba lagi.");
                 }
 
-                // 2) Jika item custom/sablon, arahkan ke status penawaran
-                // if (isCustom) {
-                //     window.location.href = `/pesanan/${pesanan.id_pesanan}/status-harga`;
-                //     return;
-                // }
-
-                // 3) Jika bukan custom, lanjut ke Midtrans
                 const tipePembayaran = form.querySelector('input[name="tipe_pembayaran"]:checked') ?
                     form.querySelector('input[name="tipe_pembayaran"]:checked').value :
                     form.querySelector('input[name="tipe_pembayaran"]').value;
@@ -146,151 +271,336 @@
                     })
                 });
 
-                const bayar = await resBayar.json();
-                const pembayaranId = bayar.id_pembayaran;
-                if (!bayar.snap_token) {
-                    alert("Gagal buat transaksi");
-                    return;
+                const bayar = await resBayar.json().catch(() => ({}));
+                if (!resBayar.ok || !bayar.snap_token || !bayar.id_pembayaran) {
+                    throw new Error(bayar.message || "Gagal membuat transaksi. Coba lagi.");
                 }
 
                 window.snap.pay(bayar.snap_token, {
                     onSuccess: function() {
-                        window.location.href = `/pembayaran/${pembayaranId}/upload-bukti`;
+                        window.location.href = '/pembayaran/' + bayar.id_pembayaran + '/upload-bukti';
                     },
                     onPending: function() {
-                        window.location.href = `/pembayaran/${pembayaranId}/upload-bukti`;
+                        // window.location.href = `/pembayaran/${bayar.id_pembayaran}/upload-bukti`;
                     },
                     onError: function() {
-                        alert("Pembayaran gagal");
+                        showNotice("Pembayaran gagal. Silakan coba lagi atau pilih metode lain.",
+                            "error");
                     }
                 });
-            });
-        </script>
-        </section>
-    </div>
-
-
-    </div>
+            } catch (err) {
+                showNotice(err.message || "Terjadi kesalahan jaringan.");
+            } finally {
+                setLoading(false);
+            }
+        });
+    </script>
 
     <style>
+        :root {
+            --bg: #f7f5f2;
+            --card: #ffffff;
+            --ink: #1f2933;
+            --muted: #5b6570;
+            --primary: #0f766e;
+            --primary-dark: #0a5a55;
+            --accent: #f59e0b;
+            --border: #e6e3de;
+            --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        }
+
         .detail-page {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
+            padding: 28px 16px 40px;
+            font-family: "Instrument Sans", "Segoe UI", Tahoma, sans-serif;
+            color: var(--ink);
         }
 
-        .detail-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
+        .detail-hero {
+            margin-bottom: 18px;
         }
 
-        .detail-card,
-        .purchase-card,
-        .chat-card {
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 18px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        .back-link {
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .item-title {
-            font-size: 22px;
-            margin: 10px 0;
+            font-family: "Space Grotesk", "Segoe UI", Tahoma, sans-serif;
+            font-size: 28px;
+            margin: 10px 0 6px;
+            letter-spacing: 0.2px;
         }
 
         .item-meta {
             display: flex;
-            gap: 16px;
-            font-size: 13px;
-            color: #555;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        .item-desc {
-            margin: 12px 0;
-            line-height: 1.6;
+        .meta-pill {
+            background: #f1f4f2;
+            border: 1px solid var(--border);
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            color: var(--muted);
         }
 
-        .item-image {
-            max-width: 100%;
-            border-radius: 8px;
-            border: 1px solid #eee;
-        }
-
-        .item-detail {
-            margin-top: 12px;
-            font-size: 14px;
-            color: #333;
+        .detail-grid {
             display: grid;
-            gap: 6px;
+            grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+            gap: 22px;
         }
 
-        .section-title {
-            font-size: 18px;
-            margin-bottom: 10px;
+        .detail-card,
+        .purchase-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
         }
 
-        .chat-cta {
-            display: inline-block;
-            margin-top: 12px;
+        .gallery {
+            margin-bottom: 16px;
         }
 
-        .chat-card {
-            margin-top: 24px;
+        .main-swiper {
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--border);
         }
 
-        .chat-header {
-            font-weight: 700;
-            margin-bottom: 10px;
+        .main-swiper img {
+            display: block;
+            width: 100%;
+            height: 380px;
+            object-fit: cover;
         }
 
-        .chat-messages {
-            border: 1px solid #e5e5e5;
-            border-radius: 8px;
-            padding: 12px;
-            height: 340px;
-            overflow-y: auto;
-            background: #fafafa;
-        }
-
-        .chat-bubble {
-            background: #ffffff;
-            border: 1px solid #eee;
-            border-radius: 10px;
-            padding: 8px 10px;
-            margin-bottom: 8px;
-            max-width: 80%;
-        }
-
-        .chat-bubble.me {
-            background: #e9f6ff;
-            border-color: #d0ecff;
-            margin-left: auto;
-        }
-
-        .chat-text {
-            font-size: 14px;
-        }
-
-        .chat-time {
-            font-size: 11px;
-            color: #777;
-            margin-top: 4px;
-            text-align: right;
-        }
-
-        .chat-form {
-            display: flex;
-            gap: 8px;
+        .thumbs-swiper {
             margin-top: 10px;
         }
 
-        .chat-form textarea {
-            flex: 1;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            padding: 8px;
+        .thumbs-swiper .thumb {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            padding: 0;
+            background: #fff;
+        }
+
+        .thumbs-swiper img {
+            width: 100%;
+            height: 70px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .gallery-empty {
+            border: 1px dashed var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            text-align: center;
+            color: var(--muted);
+            background: #faf9f7;
+        }
+
+        .item-desc {
+            color: var(--muted);
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        .item-detail {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .item-detail .label {
+            display: block;
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .item-detail .value {
+            font-weight: 600;
+        }
+
+        .item-detail .price {
+            color: var(--primary);
+        }
+
+        .section-title {
+            font-family: "Space Grotesk", "Segoe UI", Tahoma, sans-serif;
+            font-size: 20px;
+            margin-bottom: 14px;
+        }
+
+        .field {
+            display: grid;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .field label {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="file"],
+        select,
+        textarea {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+        }
+
+        .radio-group {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .radio {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .btn {
+            border-radius: 999px;
+            padding: 12px 18px;
+            font-weight: 700;
+            border: 1px solid transparent;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(15, 118, 110, 0.25);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: #fff;
+        }
+
+        .btn-outline:hover {
+            background: rgba(15, 118, 110, 0.08);
+        }
+
+        .form-error {
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+        }
+
+        .form-error[data-type="info"] {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            color: #1d4ed8;
+        }
+
+        .form-error[data-type="warning"] {
+            background: #fffbeb;
+            border-color: #fde68a;
+            color: #b45309;
+        }
+
+        .btn-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            display: none;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .is-loading .btn-text {
+            opacity: 0.7;
+        }
+
+        .is-loading .btn-spinner {
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 960px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-swiper img {
+                height: 320px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .detail-page {
+                padding: 18px 12px 28px;
+            }
+
+            .item-title {
+                font-size: 22px;
+            }
+
+            .main-swiper img {
+                height: 240px;
+            }
+
+            .btn {
+                width: 100%;
+            }
         }
     </style>
-
 @endsection
