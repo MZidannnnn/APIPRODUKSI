@@ -32,6 +32,11 @@ class MidtransSnapService
                     'address' => $pesanan->alamat_penerima,
                 ],
             ],
+            'expiry' => [
+                'start_time' => date("Y-m-d H:i:s O"),
+                'unit'       => 'hours',
+                'duration'   => 24 // Agar sejalan dengan now()->addHours(24) di Controller
+            ]
 
             // Batasi hanya Mandiri VA:
             // 'enabled_payments' => [

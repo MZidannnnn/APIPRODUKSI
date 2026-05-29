@@ -9,6 +9,7 @@ use App\Models\Pembayaran;
 use App\Models\Pesanan;
 use App\Models\StatusPesanan;
 use App\Services\MidtransSnapService;
+use App\Services\PembayaranStatusService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +26,7 @@ class PembayaranController extends Controller
     {
         $pesanan = Pesanan::query()
             ->where('id_pesanan', $request->id_pesanan)
-            ->where('id_pengguna', $request->user()->id ?? Auth::id())
+            ->where('id_pengguna', $request->user()->id_pengguna ?? Auth::id())
             ->firstOrFail();
 
         $status = $pesanan->statusPesanan->nama_status_pesanan ?? null;
@@ -66,60 +67,11 @@ class PembayaranController extends Controller
         }
     }
 
-    public function notification(MidtransNotificationRequest $request)
+    public function notification(MidtransNotificationRequest $request, PembayaranStatusService $service)
     {
-        // Config::$serverKey = config('midtrans.server_key');
-        // Config::$isProduction = config('midtrans.is_production');
+        $service->handleMidtransNotification($request->validated());
 
-        $payload = $request->all();
-        // $orderId = $payload['order_id'] ?? null;
-        // $transactionStatus = $payload['transaction_status'] ?? null;
-        // $paymentType = $payload['payment_type'] ?? null;
-        // $transactionId = $payload['transaction_id'] ?? null;
-        // $grossAmount = $payload['gross_amount'] ?? null;
-        return DB::transaction(function () use ($payload) {
-
-            $pembayaran = Pembayaran::where('order_id', $payload['order_id'])
-                ->lockForUpdate()
-                ->first();
-
-            if (!$pembayaran) {
-                return response()->json(['message' => 'Order not found'], 404);
-            }
-
-            $transactionStatus = $payload['transaction_status'];
-
-            $statusBayar = match ($transactionStatus) {
-                'settlement', 'capture' => 'Lunas',
-                'expire', 'cancel', 'deny' => 'Kedaluwarsa',
-                default => 'Pending',
-            };
-
-            $pembayaran->update([
-                'status_bayar' => $statusBayar,
-                'payment_type' => $payload['payment_type'] ?? null,
-                'transaction_id' => $payload['transaction_id'] ?? null,
-                'jumlah_bayar' => $payload['gross_amount'] ?? $pembayaran->jumlah_bayar,
-                'payload' => $payload,
-            ]);
-
-            if ($statusBayar === 'Lunas' && in_array($pembayaran->tipe_pembayaran, ['DP', 'Full'], true)) {
-                $pesanan = $pembayaran->pesanan()->lockForUpdate()->first();
-
-                if ($pesanan) {
-                    $statusId = StatusPesanan::where('nama_status_pesanan', 'Menunggu Diproses')
-                        ->value('id_status_pesanan');
-
-                    if ($statusId) {
-                        $pesanan->update(['id_status_pesanan' => $statusId]);
-                    }
-                }
-            }
-
-            // Pelunasan tidak mengubah status pesanan
-
-            return response()->json(['message' => 'OK']);
-        });
+        return response()->json(['message' => 'OK']);
     }
 
     public function showUploadForm(Pembayaran $pembayaran)

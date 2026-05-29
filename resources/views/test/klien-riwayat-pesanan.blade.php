@@ -146,8 +146,21 @@
                 });
 
                 const data = await res.json();
+                if (!res.ok) {
+                    // Menampilkan pesan error asli dari controller 
+                    // (misal: "Token pembayaran sudah kedaluwarsa.")
+                    alert(data.message || 'Terjadi kesalahan saat memproses pembayaran.');
+
+                    // Jika ditolak dari controller (termasuk kasus kedaluwarsa), otomatis refresh halaman
+                    // agar tombol bayar hilang dan UI berubah menampilkan teks order-expired
+                    if (res.status === 422) {
+                        window.location.reload();
+                    }
+                    return;
+                }
+
                 if (!data.snap_token) {
-                    alert('Gagal membuat transaksi');
+                    alert('Sistem gagal menerbitkan token Midtrans.');
                     return;
                 }
 
