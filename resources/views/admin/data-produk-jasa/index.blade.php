@@ -9,7 +9,7 @@
     <div class="card">
         <div class="card-header d-flex flex-wrap justify-content-center justify-content-xl-between">
             <div class="mb-1 mr-2">
-                <a href="{{ route('itemProduksi.create') }}" class="btn btn-primary btn-sm">
+                <a href="{{ route('admin.itemProduksi.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus mr-2"></i> Tambah Data Produk
                 </a>
             </div>
@@ -70,15 +70,15 @@
                                 <td>{{ $item->deskripsi_item ?? '-' }}</td>
 
                                 <td>
-                                    <a href="{{ route('itemProduksi.show', $item->id_item_produksi) }}" class="btn btn-sm btn-info">
+                                    <a href="{{ route('admin.itemProduksi.show', $item->id_item_produksi) }}" class="btn btn-sm btn-info">
                                         <i class="fas fa-eye"></i>
                                     </a>
 
-                                    <a href="{{ route('itemProduksi.edit', $item->id_item_produksi) }}" class="btn btn-sm btn-warning">
+                                    <a href="{{ route('admin.itemProduksi.edit', $item->id_item_produksi) }}" class="btn btn-sm btn-warning">
                                         <i class="fas fa-edit"></i>
                                     </a>
 
-                                    <form action="{{ route('itemProduksi.destroy', $item->id_item_produksi) }}" method="POST" class="d-inline">
+                                    <form action="{{ route('admin.itemProduksi.destroy', $item->id_item_produksi) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="button" class="btn btn-danger btn-sm btn-hapus">

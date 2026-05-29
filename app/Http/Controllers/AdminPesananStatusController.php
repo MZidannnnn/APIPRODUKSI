@@ -26,7 +26,7 @@ class AdminPesananStatusController extends Controller
             ->orderBy('nama_status_pesanan')
             ->get();
 
-        return view('test.view-admin-edit-status-pesanan', compact('pesanan', 'statusPesanan'));
+        return view('admin/progres-pesanan/index', compact('pesanan', 'statusPesanan'));
     }
 
     public function updateStatusPesanan(UpdateStatusPesananRequest $request, Pesanan $pesanan)
@@ -66,9 +66,14 @@ class AdminPesananStatusController extends Controller
                 $q->where('id_kategori', (int) $admin->id_kategori);
             })
             ->orderByDesc('tanggal_pesan')
-            ->paginate(10)
             ->withQueryString();
 
-        return view('test.list-admin-pesanan', compact('pesanan'));
+        $data = [
+            'title' => 'Progres Pesanan Klien',
+            'menuProgresPesanan' => 'active',
+            'pesanan' => $pesanan,
+        ];
+
+        return view('admin/progres-pesanan/index', $data);
     }
 }

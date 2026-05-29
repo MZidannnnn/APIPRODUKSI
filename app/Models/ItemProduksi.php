@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\DetailProduk;
+use App\Models\FotoProduk;
 use Illuminate\Database\Eloquent\Model;
 
 class ItemProduksi extends Model
@@ -13,9 +14,9 @@ class ItemProduksi extends Model
     protected $fillable = [
         'id_kategori',
         'nama_item',
-        'deskripsi_item',
+        'deskripsi_item', 
         'id_satuan',
-        'status_aktif',
+        'status_aktif', 
     ];
 
     public function kategoriUsaha()
@@ -40,6 +41,6 @@ class ItemProduksi extends Model
     
     public function fotoProduk()
     {
-        return $this->hasMany(FotoProduk::class, 'id_item_produksi');
+        return $this->hasMany(FotoProduk::class, 'id_item_produksi', 'id_item_produksi');
     }
 }

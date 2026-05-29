@@ -8,12 +8,12 @@
 
     <div class="row">
         <div class="col-xl-8 col-lg-10 mx-auto">
-            
+              
             <div class="mb-3">
-                <a href="{{ route('itemProduksi.index') }}" class="btn btn-secondary btn-sm shadow-sm">
+                <a href="{{ route('admin.itemProduksi.index') }}" class="btn btn-secondary btn-sm shadow-sm">
                     <i class="fas fa-arrow-left mr-2"></i> Kembali
                 </a>
-                <a href="{{ route('itemProduksi.edit', $itemProduksi->id_item_produksi) }}" class="btn btn-primary btn-sm shadow-sm float-right">
+                <a href="{{ route('admin.itemProduksi.edit', $itemProduksi->id_item_produksi) }}" class="btn btn-primary btn-sm shadow-sm float-right">
                     <i class="fas fa-edit mr-2"></i> Edit Produk Jasa
                 </a>
             </div>

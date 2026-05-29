@@ -8,13 +8,13 @@
 
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <a href="{{ route('itemProduksi.index') }}" class="btn btn-secondary btn-sm">
+            <a href="{{ route('admin.itemProduksi.index') }}" class="btn btn-secondary btn-sm">
                 <i class="fas fa-arrow-left mr-2"></i> Kembali
             </a>
         </div>
 
         <div class="card-body">
-            <form action="{{ route('itemProduksi.update', $itemProduksi->id_item_produksi) }}" method="POST" enctype="multipart/form-data" autocomplete="off" novalidate>
+            <form action="{{ route('admin.itemProduksi.update', $itemProduksi->id_item_produksi) }}" method="POST" enctype="multipart/form-data" autocomplete="off" novalidate>
                 @csrf
                 @method('PUT')
 

@@ -141,7 +141,7 @@ class PembayaranController extends Controller
         return back()->with('success', 'Bukti bayar berhasil diupload');
     }
 
-    public function TampilRiwayatTransaksi()
+    public function TampilRiwayatTransaksi() 
     {
         $admin = Auth::user()->id_kategori;
 
@@ -154,6 +154,13 @@ class PembayaranController extends Controller
             $query->where('id_kategori', $admin);
         })
         ->get();
-            return view('test.list-transaksi-admin', compact('riwayatTransaksi'));
+
+        $data = [
+            'title' => 'Riwayat Transaksi Klien',
+            'menuRiwayatTransaksi' => 'active',
+            'riwayatTransaksi' => $riwayatTransaksi,
+        ];
+
+        return view('admin/riwayat-transaksi/index', $data);
     }
 }
