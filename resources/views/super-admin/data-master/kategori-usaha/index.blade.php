@@ -29,7 +29,7 @@
                             <th width="15%">
                                 <i class="fas fa-cog"></i>
                             </th>
-                        </tr>
+                        </tr> 
                     </thead> 
 
                     <tbody>

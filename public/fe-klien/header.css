@@ -1,0 +1,408 @@
+/* RESET STYLE */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* BODY */
+body {
+    font-family: Arial, sans-serif;
+    background: #fff;
+    color: #222;
+}
+
+/* HEADER */
+.header {
+    position: relative;
+    padding: 22px 20px;
+    border-bottom: none;
+    overflow: visible;
+    z-index: 100;
+}
+
+/* garis header */
+.header::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 152px;
+    bottom: 0;
+    height: 3px;
+    background: #777;
+    z-index: 1;
+}
+
+/* BACKGROUND HEADER */
+.bg {
+    position: absolute;
+    width: 170px;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.bg-header-left {
+    left: 0;
+    top: 58px;
+}
+
+.bg-header-right {
+    right: 0;
+    top: 0;
+}
+
+/* ISI HEADER */
+.header-content {
+    max-width: 1000px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    position: relative;
+    z-index: 101;
+}
+
+/* LOGO */
+.logo img {
+    width: 95px;
+}
+
+/* SEARCH */
+.search-box {
+    flex: 1;
+    display: flex;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.search-box input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #aaa;
+    outline: none;
+}
+
+.search-box button {
+    width: 55px;
+    border: none;
+    background: #009247;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* AUTH BUTTON */
+.auth-button {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.btn {
+    background: #008a46;
+    color: white;
+    text-decoration: none;
+    padding: 11px 18px;
+    border-radius: 6px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* CHAT */
+.chat-icon {
+    font-size: 22px;
+    color: #333;
+    text-decoration: none;
+}
+
+/* PROFILE */
+.profile-wrapper {
+    position: relative;
+}
+
+.profile-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    color: #222;
+}
+
+.profile-button i {
+    font-size: 30px;
+}
+
+/* DROPDOWN */
+.profile-dropdown {
+    position: absolute;
+    top: 55px;
+    right: 0;
+    width: 300px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+    overflow: hidden;
+    display: none;
+    z-index: 9999;
+}
+
+.profile-dropdown.show {
+    display: block;
+}
+
+.dropdown-header {
+    background: #333;
+    color: white;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dropdown-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dropdown-user i {
+    font-size: 34px;
+}
+
+.setting-icon {
+    color: white;
+    font-size: 20px;
+}
+
+.dropdown-body {
+    padding: 16px;
+}
+
+.dropdown-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.dropdown-title a {
+    font-size: 11px;
+    color: #008a46;
+    text-decoration: none;
+}
+
+.order-menu {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border: 1px solid #ddd;
+}
+
+.order-menu a {
+    text-decoration: none;
+    color: #333;
+    text-align: center;
+    padding: 12px 6px;
+    border-right: 1px solid #ddd;
+}
+
+.order-menu a:last-child {
+    border-right: none;
+}
+
+.order-menu i {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 7px;
+    color: #006b3c;
+}
+
+.order-menu span {
+    font-size: 9px;
+}
+
+/* LOGOUT */
+.logout-form {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.logout-btn {
+    background: #008a46;
+    color: white;
+    text-decoration: none;
+    padding: 10px 25px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+/* =========================================================
+   RESPONSIVE TABLET - HEADER
+========================================================= */
+@media (max-width: 992px) {
+    .header-content {
+        gap: 20px;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE HP - HEADER
+========================================================= */
+@media (max-width: 768px) {
+    html,
+    body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .header {
+        width: 100%;
+        max-width: 100vw;
+        padding: 20px 15px;
+        min-height: 230px;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    .header-content {
+        width: 100%;
+        max-width: 100%;
+        flex-direction: column;
+        gap: 18px;
+        box-sizing: border-box;
+    }
+
+    .logo img {
+        width: 85px;
+    }
+
+    .search-box {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .search-box form {
+        width: 100%;
+        display: flex;
+    }
+
+    .search-box input {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .search-box button {
+        flex-shrink: 0;
+    }
+
+    .auth-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .bg {
+        width: 125px;
+        opacity: 0.85;
+    }
+
+    .bg-header-left {
+        left: -10px;
+        top: 80px;
+    }
+
+    .bg-header-right {
+        right: -10px;
+        top: 0;
+    }
+
+    .profile-wrapper {
+        position: relative;
+    }
+
+    .profile-dropdown {
+        width: 90vw;
+        max-width: 430px;
+        top: 310px;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+    }
+
+    .order-menu {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .order-menu a:nth-child(2) {
+        border-right: none;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE HP KECIL - HEADER
+========================================================= */
+@media (max-width: 480px) {
+    .header {
+        padding: 20px 12 px;
+        min-height: 230px;
+        overflow: visible;
+    }
+
+    .header-content {
+        flex-direction: column;
+        gap: 18px;
+        z-index: 101;
+    }
+
+    .logo img {
+        width: 85px;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+
+    .auth-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .bg {
+        width: 125px;
+        opacity: 0.85;
+    }
+
+    .bg-header-left {
+        left: -20px;
+        top: 83px; /* angkanya semakin besar semakin turun fotonya */
+    }
+
+    .bg-header-right {
+        right: -20px;
+        top: 0;
+    }
+
+    .profile-dropdown {
+        width: 280px;
+        top: 50px;
+        right: -60px;
+    }
+
+    .order-menu {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .order-menu a:nth-child(2) {
+        border-right: none;
+    }
+
+    .profile-dropdown {
+        width: 250px;
+        right: 0;
+    }
+}

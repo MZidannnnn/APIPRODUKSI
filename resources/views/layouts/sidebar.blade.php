@@ -113,25 +113,19 @@
             </div>
 
             <li class="nav-item {{ $menuDataProduk ?? '' }}">
-                <a class="nav-link" href="{{ route('itemProduksi.index') }}">
+                <a class="nav-link" href="{{ route('admin.itemProduksi.index') }}">
                     <i class="fas fa-fw fa-box"></i>
                     <span>Data Produk Jasa</span></a>
             </li>
 
-            <li class="nav-item #">
-                <a class="nav-link" href="#">
+            <li class="nav-item {{ $menuProgresPesanan ?? '' }}">
+                <a class="nav-link" href="{{ route('admin.tampilPesanan') }}">
                     <i class="fas fa-fw fa-shipping-fast"></i>
                     <span>Progres Pesanan</span></a>
             </li>
 
-            <li class="nav-item #">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-fw fa-file-invoice-dollar"></i>
-                    <span>Perbarui Tagihan Pesanan</span></a>
-            </li>
-
-            <li class="nav-item #">
-                <a class="nav-link" href="#">
+            <li class="nav-item {{ $menuRiwayatTransaksi ?? '' }}">
+                <a class="nav-link" href="{{ route('admin.transaksi') }}">
                     <i class="fas fa-fw fa-receipt"></i>
                     <span>Riwayat Transaksi</span></a>
             </li>

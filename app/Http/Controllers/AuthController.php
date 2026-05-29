@@ -32,17 +32,28 @@ class AuthController extends Controller
     $kategoriUsaha = KategoriUsaha::all();
     $selectedKategoriId = $request->query('kategori');
 
-    $itemProduksi = ItemProduksi::with(['kategoriUsaha', 'detailProduk.satuanHarga'])
-        ->when($selectedKategoriId, function ($query) use ($selectedKategoriId) {
-            $query->where('id_kategori', $selectedKategoriId);
-        })
-        ->get();
+    $itemProduksi = ItemProduksi::with(['kategoriUsaha', 'satuanHarga', 'detailProduk', 'fotoProduk'])
+    ->when($selectedKategoriId, function ($query) use ($selectedKategoriId) {
+        $query->where('id_kategori', $selectedKategoriId);
+    })
+    ->get();
 
     return view('klien.dashboard', compact(
         'kategoriUsaha',
         'itemProduksi',
         'selectedKategoriId'
     ));
+    }
+
+    public function detailProduk($id)
+    {
+        $item = ItemProduksi::with([
+            'kategoriUsaha',
+            'detailProduk.satuanHarga',
+            'fotoProduk'
+        ])->findOrFail($id);
+
+        return view('klien/detail-produk', compact('item'));
     }
 
     /**
@@ -168,7 +179,7 @@ class AuthController extends Controller
                     ->with('success', 'Anda berhasil login sebagai Super Admin');
             }
 
-            // Arahkan Admin ke dashboard Admin
+            // Arahkan Admin ke dashboard Admin 
             if ((int) $user->id_role === 2) {
                 return redirect()->route('dashboardAdmin')
                     ->with('success', 'Anda berhasil login sebagai Admin');
@@ -203,7 +214,7 @@ public function logout(Request $request)
 
     // Redirect berdasarkan role
     if (in_array($role, [1, 2])) {
-        return redirect('/adminprivasi')
+        return redirect('/admin/privasi')
             ->with('success', 'Berhasil logout');
     }
 

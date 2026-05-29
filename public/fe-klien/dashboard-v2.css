@@ -1,0 +1,262 @@
+.container {
+    max-width: 1000px;
+    margin: 35px auto;
+    padding: 0 20px;
+}
+
+/* PROFILE CARD */
+.profile-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    padding: 28px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+}
+
+.profile-text h1 {
+    font-size: 28px;
+    margin-bottom: 12px;
+}
+
+.profile-text p {
+    max-width: 690px;
+    line-height: 1.7;
+    font-size: 15px;
+}
+
+.profile-logo img {
+    width: 150px;
+}
+
+/* SOCIAL */
+.social-icons {
+    margin-top: 25px;
+    display: flex;
+    gap: 8px;
+}
+
+.social-icons a {
+    width: 30px;
+    height: 30px;
+    border: 2px solid #777;
+    color: #555;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+}
+
+/* SECTION */
+.section {
+    margin-top: 28px;
+}
+
+.section h2 {
+    font-size: 22px; 
+    margin-bottom: 15px;
+}
+
+/* KATEGORI */
+.kategori-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.kategori {
+    padding: 7px 16px;
+    border: 1px solid #aaa;
+    border-radius: 20px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+.kategori.active {
+    background: #222;
+    color: #fff;
+}
+
+/* PRODUK */
+.produk-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 55px;
+}
+
+.produk-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.produk-card:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+.produk-card h3 {
+    margin-top: 15px;
+    font-size: 16px;
+    font-weight: normal;
+    margin-bottom: 8px;
+    font-weight: bold;
+
+}
+
+.produk-card p {
+    font-size: 14px;
+    color: #008a46;
+}
+
+.produk-img {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.produk-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* =========================================================
+   RESPONSIVE TABLET - DASHBOARD
+========================================================= */
+@media (max-width: 992px) {
+    .produk-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+    }
+
+    .produk-img {
+        aspect-ratio: 3 / 4;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE HP - DASHBOARD
+========================================================= */
+@media (max-width: 768px) {      /*harus dibedah */
+    .profile-card {
+        flex-direction: column-reverse;
+        text-align: center;
+        padding: 22px;
+    }
+
+    .profile-text h1 {
+        font-size: 24px;
+    }
+
+    .profile-text p {
+        font-size: 14px;
+    }
+
+    .social-icons {
+        justify-content: center;
+    }
+
+    .profile-logo img {
+        width: 120px;
+    }
+
+    .produk-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 22px;
+    }
+
+    .produk-img {
+        width: 100%;
+        aspect-ratio: 3 / 4;
+        height: auto;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .produk-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .produk-card h3 {
+        font-size: 16px;
+        margin-top: 12px;
+        margin-bottom: 6px;
+    }
+
+    .produk-card p {
+        font-size: 14px;
+        margin: 0;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE HP KECIL - DASHBOARD
+========================================================= */
+@media (max-width: 480px) {      /*harus dibedah */
+    .profile-card {
+        flex-direction: column-reverse;
+        text-align: center;
+        padding: 22px;
+    }
+
+    .profile-text h1 {
+        font-size: 24px;
+    }
+
+    .profile-text p {
+        font-size: 14px;
+    }
+
+    .social-icons {
+        justify-content: center;
+    }
+
+    .profile-logo img {
+        width: 120px;
+    }
+
+    .produk-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 22px;
+    }
+
+    .produk-img {
+        width: 100%;
+        aspect-ratio: 3 / 4;
+        height: auto;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .produk-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .produk-card h3 {
+        font-size: 16px;
+        margin-top: 12px;
+        margin-bottom: 6px;
+    }
+
+    .produk-card p {
+        font-size: 14px;
+        margin: 0;
+    }
+}
+

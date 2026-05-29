@@ -129,7 +129,7 @@ class PembayaranController extends Controller
             ->with('success', 'Bukti bayar berhasil diunggah.');
     }
 
-    public function TampilRiwayatTransaksi()
+    public function TampilRiwayatTransaksi() 
     {
         $admin = Auth::user()->id_kategori;
 
@@ -142,7 +142,14 @@ class PembayaranController extends Controller
                 $query->where('id_kategori', $admin);
             })
             ->get();
-        return view('test.list-transaksi-admin', compact('riwayatTransaksi'));
+            
+        $data = [
+            'title' => 'Riwayat Transaksi Klien',
+            'menuRiwayatTransaksi' => 'active',
+            'riwayatTransaksi' => $riwayatTransaksi,
+        ];
+
+        return view('admin/riwayat-transaksi/index', $data);
     }
 
     public function retrySnap(Request $request)
@@ -193,5 +200,6 @@ class PembayaranController extends Controller
         }
 
         return response()->json(['message' => 'Token pembayaran sudah kedaluwarsa.'], 422);
+        
     }
 }

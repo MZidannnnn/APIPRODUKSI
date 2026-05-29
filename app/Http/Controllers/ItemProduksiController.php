@@ -126,7 +126,7 @@ class ItemProduksiController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('itemProduksi.index')
+                ->route('admin.itemProduksi.index')
                 ->with('success', 'Data Produk Jasa Berhasil Ditambahkan');
 
         } catch (\Exception $e) {
@@ -250,7 +250,7 @@ class ItemProduksiController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('itemProduksi.index')
+                ->route('admin.itemProduksi.index')
                 ->with('success', 'Data Produk Jasa berhasil diperbarui');
 
         } catch (\Exception $e) {
@@ -291,13 +291,13 @@ class ItemProduksiController extends Controller
             DB::commit();
 
             // 4. Kembalikan ke halaman index dengan membawa alert sukses
-            return redirect()->route('itemProduksi.index')
+            return redirect()->route('admin.itemProduksi.index')
                             ->with('success', 'Data Produk Jasa Berhasil Dihapus');
 
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->route('itemProduksi.index')
+            return redirect()->route('admin.itemProduksi.index')
                             ->with('error', 'Gagal Menghapus Data: ' . $e->getMessage());
         }
     }

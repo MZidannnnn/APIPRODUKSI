@@ -73,6 +73,14 @@
                             <span
                                 class="value price">Rp{{ number_format($detailDefault->harga_dasar, 0, ',', '.') }}</span>
                         </div>
+                        
+                        {{-- Looping detailProduk untuk menampilkan semua variasi ukuran & harganya --}}
+                        @foreach ($itemProduksi->detailProduk as $detail)
+                            <div class="pl-2" style="border-left: 2px solid #ef6c00; margin-bottom: 5px; padding-left: 8px;">
+                                <div>Ukuran: {{ $detail->ukuran ?? '-' }}</div>
+                                <div>Harga Dasar: Rp{{ number_format($detail->harga_dasar ?? 0, 0, ',', '.') }}</div>
+                            </div>
+                        @endforeach
                     </div>
                 @endif
 
@@ -126,6 +134,7 @@
                         $sablon = strtolower($itemProduksi->kategoriUsaha->nama_kategori ?? '') === 'sablon';
                     @endphp
 
+                    
                     @if ($sablon)
                         <div class="field">
                             <label>Kuantitas</label>

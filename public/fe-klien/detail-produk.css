@@ -1,56 +1,81 @@
 /* =========================================================
-   DETAIL PRODUK
+   STYLE DETAIL PRODUK - REFRESH DESIGN (MOCKUP BASED)
 ========================================================= */
 
+/* Main Container */
+.detail-produk-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 20px 80px 20px; /* Padding bottom ekstra untuk area scroll mobile */
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Tombol Kembali Lembut */
 .btn-kembali {
-    display: inline-block;
-    background: #008a46;
-    color: white;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #666;
     text-decoration: none;
-    padding: 6px 20px;
-    border-radius: 20px;
-    font-size: 12px;
-    margin-bottom: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 24px;
+    transition: color 0.2s;
 }
 
-.detail-produk {
-    width: 100%;
+.btn-kembali:hover {
+    color: #008a46;
 }
 
-/* Galeri */
+/* Grid Layout 2 Kolom */
+.detail-produk-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 40px;
+    align-items: start;
+}
+
+/* --- KOLOM KIRI --- */
+.kolom-kiri {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Galeri Slider Modern */
 .produk-gallery {
     position: relative;
-    max-width: 760px;
-    margin: 0 auto 25px auto;
-    display: flex;
-    align-items: center;
+    width: 100%;
 }
 
 .gallery-track-wrapper {
-    width: 100%;
     overflow: hidden;
+    width: 100%;
+    border-radius: 16px;
+    background: #f9f9f9;
 }
 
 .gallery-track {
     display: flex;
-    gap: 50px;
-    transition: transform 0.4s ease;
+    scroll-behavior: smooth;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+}
+
+.gallery-track::-webkit-scrollbar {
+    display: none;
 }
 
 .gallery-item {
-    min-width: 220px;
-    height: 240px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-    overflow: hidden;
-    background: #fff;
+    flex: 0 0 100%;
+    scroll-snap-align: center;
 }
 
 .gallery-item img {
     width: 100%;
-    height: 100%;
+    aspect-ratio: 1 / 1; /* Diubah menjadi proporsional kotak sesuai request */ [cite: 85]
     object-fit: cover;
+    display: block;
 }
 
 .gallery-btn {
@@ -58,164 +83,443 @@
     top: 50%;
     transform: translateY(-50%);
     border: none;
-    background: transparent;
-    color: #8a8a8a;
-    font-size: 42px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    font-size: 14px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     cursor: pointer;
-    z-index: 10;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
 }
 
-.prev-btn {
-    left: -5px;
+.gallery-btn:hover {
+    background: #ffffff;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
 }
 
-.next-btn {
-    right: -5px;
-}
+.prev-btn { left: 16px; }
+.next-btn { right: 16px; }
 
-/* Konten bawah */
-.produk-detail-content {
-    max-width: 760px;
-    margin: auto;
-    display: grid;
-    grid-template-columns: 1.1fr 1fr;
-    gap: 70px;
-}
-
+/* Deskripsi Teks */
 .produk-description h1 {
-    font-size: 24px;
-    margin-bottom: 8px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #111;
+    margin: 0 0 12px 0;
 }
 
 .produk-description p {
-    color: #888;
-    line-height: 1.5;
-    font-size: 16px;
+    color: #555;
+    line-height: 1.7;
+    font-size: 15px;
+    margin: 0;
+    max-height: 150px;
+    overflow: hidden;
+    position: relative;
 }
 
-/* Order box */
-.harga-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: end;
+.produk-description p.expanded {
+    max-height: none;
 }
 
-.harga-row h2 {
-    color: #006b3c;
-    font-size: 24px;
-}
-
-.harga-row span {
-    color: #777;
-    font-size: 12px;
-}
-
-.produk-order-box hr {
+.btn-toggle-deskripsi {
+    margin-top: 10px;
+    background: none;
     border: none;
-    border-top: 1px solid #ddd;
-    margin: 12px 0;
-}
-
-.form-group label {
-    display: block;
-    font-size: 16px;
-    margin-bottom: 10px;
-}
-
-.size-options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.size-options button {
-    padding: 4px 12px;
-    border: 1px solid #777;
-    border-radius: 5px;
-    background: #fff;
+    color: #008a46;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 0;
     cursor: pointer;
 }
 
-.size-options button:hover {
+
+/* --- KOLOM KANAN (ORDER CARD) --- */
+.order-card {
+    background: #ffffff;
+    border: 1px solid #eaeaea;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 20px;
+}
+
+/* Harga Row */
+.harga-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.harga-row h2 {
+    color: #008a46;
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.satuan-text {
+    color: #888;
+    font-size: 14px;
+}
+
+/* Form Group & Elemen Order */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+hr.divider {
+    border: none;
+    border-top: 1px solid #eaeaea;
+    margin: 16px 0;
+}
+
+/* Tombol Ukuran (Pills) */
+.size-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.size-btn {
+    padding: 8px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 50px;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.size-btn:hover {
+    border-color: #008a46;
+    color: #008a46;
+}
+
+.size-btn.active {
     background: #008a46;
     color: #fff;
+    border-color: #008a46;
+    box-shadow: 0 4px 10px rgba(0, 138, 70, 0.2);
+}
+
+/* Qty & Subtotal (Top) */
+.qty-subtotal-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.qty-box-wrapper label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    display: block;
+    margin-bottom: 10px;
 }
 
 .qty-box {
     display: flex;
     align-items: center;
-}
-
-.qty-box button,
-.qty-box input {
-    width: 28px;
-    height: 24px;
-    border: 1px solid #777;
-    text-align: center;
-    background: white;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    overflow: hidden;
+    width: fit-content;
+    height: 40px;
 }
 
 .qty-box button {
+    width: 36px;
+    height: 100%;
+    border: none;
+    background: #f5f5f5;
+    font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
+    color: #444;
+    transition: background 0.15s;
 }
 
-.date-input {
-    height: 28px;
-    padding: 3px;
-    border: 1px solid #777;
+.qty-box button:hover {
+    background: #eaeaea;
 }
 
-.button-buy-wrapper {
+.qty-box input {
+    width: 44px;
+    height: 100%;
+    border: none;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #111;
+}
+
+/* =========================================================
+   MENGHILANGKAN PANAH (SPINNER) PADA INPUT TYPE NUMBER
+========================================================= */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield; /* Khusus untuk browser Firefox */
+    appearance: textfield; /* Standar modern */
+}
+
+.subtotal-box {
     text-align: right;
 }
 
-.btn-beli {
-    background: #008a46;
-    color: white;
-    border: none;
-    padding: 11px 45px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
+.subtotal-box small {
+    display: block;
+    font-size: 13px;
+    color: #444;
+    margin-bottom: 4px;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .produk-gallery {
-        max-width: 260px;
+.subtotal-box strong {
+    font-size: 24px;
+    color: #9b0000;
+    font-weight: 800;
+}
+
+/* Wrapper Aksi Utama (Tombol Bawah) */
+.button-action-wrapper {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-chat, .btn-beli {
+    height: 46px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btn-chat {
+    flex: 0 0 130px;
+    background: #ffffff;
+    color: #008a46;
+    border: 1.5px solid #008a46;
+}
+
+.btn-chat:hover {
+    background: rgba(0, 138, 70, 0.04);
+}
+
+.btn-beli {
+    flex: 1;
+    background: #008a46;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 138, 70, 0.15);
+}
+
+.btn-beli:hover {
+    background: #007038;
+    box-shadow: 0 4px 16px rgba(0, 138, 70, 0.25);
+}
+
+/* --- LOGIKA DROPDOWN DESKTOP --- */
+.btn-dropdown-pesan {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-top: 1px solid #ddd;
+    padding: 14px 0 4px 0;
+    text-align: left;
+    font-weight: 600;
+    cursor: pointer;
+    color: #333;
+    display: none; /* Disembunyikan dulu via HTML/JS, tapi bisa dipakai sbg alternatif */
+}
+
+/* Form Dropdown Area */
+.pesan-form {
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 16px;
+}
+
+.pesan-form.show {
+    display: flex;
+}
+
+.input-pesan {
+    height: 40px;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    padding: 0 12px;
+    outline: none;
+    width: 100%;
+    font-size: 14px;
+}
+
+.input-pesan:focus {
+    border-color: #008a46;
+}
+
+.flex-row-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: center;
+}
+.align-end {
+    align-items: end;
+}
+
+.bottom-subtotal {
+    display: none; /* Di Desktop disembunyikan karena sudah ada di atas */
+}
+
+/* =========================================================
+   MEDIA QUERIES (SINKRONISASI RESPONSIVE SMARTPHONE)
+========================================================= */
+@media (max-width: 480px) {
+    .detail-produk-wrapper {
+        padding: 16px 16px 40px 16px;
     }
 
-    .gallery-track {
-        gap: 20px;
-    }
-
-    .gallery-item {
-        min-width: 260px;
-        height: 250px;
-    }
-
-    .prev-btn {
-        left: -35px;
-    }
-
-    .next-btn {
-        right: -35px;
-    }
-
-    .produk-detail-content {
+    .detail-produk-grid {
         grid-template-columns: 1fr;
-        gap: 25px;
+        gap: 24px;
     }
 
-    .produk-description {
-        text-align: center;
+    .gallery-item img {
+        height: auto;
+        aspect-ratio: 1/1; /* Tetap kotak */ [cite: 85]
     }
 
-    .button-buy-wrapper {
-        text-align: center;
+    .produk-description h1 {
+        font-size: 22px;
     }
 
-    .btn-beli {
-        width: 100%;
+    .order-card {
+        position: static;
+        padding: 20px 16px;
+        box-shadow: none;
+        border: none;
+        border-top: 1px solid #eee;
+        border-radius: 0;
     }
+
+    /* Subtotal atas SEKARANG DITAMPILKAN */
+    .main-subtotal {
+        display: block; /* Sebelumnya 'none', ubah menjadi 'block' */
+    }
+    
+    .bottom-subtotal {
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    /* --- BOTTOM SHEET LOGIC --- */
+    .pesan-form {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: -100%;
+        background: white;
+        z-index: 999;
+        padding: 12px 20px 24px 20px;
+        border-radius: 20px 20px 0 0;
+        box-shadow: 0 -6px 20px rgba(0,0,0,0.15);
+        transition: bottom 0.3s cubic-bezier(0.3, 1, 0.3, 1);
+        display: flex;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+
+    .pesan-form.show {
+        bottom: 0;
+    }
+
+    /* Drag Handle UI */
+    .drag-handle {
+        width: 40px;
+        height: 5px;
+        background: #ddd;
+        border-radius: 10px;
+        margin: 0 auto 16px auto;
+    }
+    
+    .form-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 16px;
+        color: #111;
+        text-align: left;
+    }
+
+    .btn-dropdown-pesan {
+        display: none !important; /* Jangan tampilkan toggle teks di HP */
+    }
+
+    /* Tampilkan chat di bawah */
+    .pesan-form .btn-chat {
+        display: inline-flex !important;
+        width: auto;
+    }
+
+    /* Tambahkan ini agar ada jarak bernapas sebelum tombol Beli */
+    .qty-subtotal-row {
+        margin-bottom: 16px; 
+    }
+
+}
+
+/* --- BACKDROP MOBILE --- */
+.mobile-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 998;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s ease-in-out;
+}
+
+.mobile-backdrop.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Mengunci scroll body saat bottom sheet terbuka */
+body.mobile-sheet-open {
+    overflow: hidden;
 }

@@ -5,7 +5,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatAdminController;
 use App\Http\Controllers\ChatAttachmentController;
 use App\Http\Controllers\ChatController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\KlienDashboardController;
 use App\Http\Controllers\ItemProduksiController;
 use App\Http\Controllers\JenisPembayaranController;
 use App\Http\Controllers\KategoriUsahaController;
@@ -25,6 +26,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', [AuthController::class, 'showDashboard'])->middleware('redirectRole')->name('dashboard');
+Route::get('/produk/{id}', [AuthController::class, 'detailProduk'])->name('produk.detail');
 
 // webhook midtrans
 Route::post('/midtrans/notification', [PembayaranController::class, 'notification']);
@@ -53,13 +55,13 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 
     // landing page admin
-    Route::get('/adminprivasi', function () {
+    Route::get('/admin/privasi', function () {
         return view('welcome-admin');
     })->name('welcomeAdmin');
 
     // login admin
-    Route::get('/login-admin', [AuthController::class, 'showLoginAdmin'])->name('loginAdmin');
-    Route::post('/login-admin', [AuthController::class, 'loginAdmin'])->name('loginAdminProses');
+    Route::get('/login/admin', [AuthController::class, 'showLoginAdmin'])->name('loginAdmin');
+    Route::post('/login/admin', [AuthController::class, 'loginAdmin'])->name('loginAdminProses');
 
     /*
     |--------------------------------------------------------------------------
@@ -157,7 +159,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('checkRole:1')->group(function () {
         // dashboard super admin
-        Route::get('/super-admin/dashboard', [DashboardController::class, 'dashboardSuperAdmin'])->name('dashboardSuperAdmin');
+        Route::get('/super-admin/dashboard', [AdminDashboardController::class, 'dashboardSuperAdmin'])->name('dashboardSuperAdmin');
 
         // KELOLA AKUN
 
@@ -165,46 +167,39 @@ Route::middleware('auth')->group(function () {
         Route::get('/kelola-akun/{role}', [PenggunaController::class, 'index'])->name('viewKelolaAkun');
 
         // Form tambah akun
-        Route::get('/kelola-akun/create/{role}', [PenggunaController::class, 'create'])
-            ->name('kelolaAkunCreate');
+        Route::get('/kelola-akun/create/{role}', [PenggunaController::class, 'create']) ->name('kelolaAkunCreate');
 
         // Simpan data akun
-        Route::post('/kelola-akun/store', [PenggunaController::class, 'store'])
-            ->name('kelolaAkunStore');
+        Route::post('/kelola-akun/store', [PenggunaController::class, 'store']) ->name('kelolaAkunStore');
 
         // Form edit akun
-        Route::get('/kelola-akun/edit/{id}', [PenggunaController::class, 'edit'])
-            ->name('kelolaAkunEdit');
+        Route::get('/kelola-akun/edit/{id}', [PenggunaController::class, 'edit']) ->name('kelolaAkunEdit');
 
         // Update data akun
-        Route::put('/kelola-akun/update/{id}', [PenggunaController::class, 'update'])
-            ->name('kelolaAkunUpdate');
+        Route::put('/kelola-akun/update/{id}', [PenggunaController::class, 'update']) ->name('kelolaAkunUpdate');
 
         // Hapus akun
-        Route::delete('/kelola-akun/delete/{id}', [PenggunaController::class, 'destroy'])
-            ->name('kelolaAkunDelete');
+        Route::delete('/kelola-akun/delete/{id}', [PenggunaController::class, 'destroy']) ->name('kelolaAkunDelete');
 
         // View data akun berdasarkan role
-        Route::get('/kelola-akun/{role}', [PenggunaController::class, 'index'])
-            ->name('viewKelolaAkun');
+        Route::get('/kelola-akun/{role}', [PenggunaController::class, 'index']) ->name('viewKelolaAkun');
 
 
         // Data Master
         // View data akun berdasarkan role
-        Route::get('/data-master', [KategoriUsahaController::class, 'index'])
-            ->name('viewDataMaster');
+        Route::get('/data-master', [KategoriUsahaController::class, 'index']) ->name('viewDataMaster');
 
         // Kategori Usaha
-        Route::resource('kategoriUsaha', KategoriUsahaController::class);
+        Route::resource('/super-admin/kategori-usaha', KategoriUsahaController::class) ->names('kategoriUsaha'); 
 
         // Satus Pesanan
-        Route::resource('statusPesanan', StatusPesananController::class);
+        Route::resource('/super-admin/status-pesanan', StatusPesananController::class) ->names('statusPesanan');
 
         //Satuan Harga
-        Route::resource('satuanHarga', SatuanHargaController::class);
+        Route::resource('/super-admin/satuan-harga', SatuanHargaController::class) ->names('satuanHarga');
 
         // Jenis Pembayaran
-        Route::resource('jenisPembayaran', JenisPembayaranController::class);
+        Route::resource('/super-admin/jenis-pembayaran', JenisPembayaranController::class) ->names('jenisPembayaran');
 
         // route untuk export pdf dan excel
         Route::get('/super-admin/laporan/penjualan', [LaporanPenjualanController::class, 'index'])
@@ -226,14 +221,14 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('checkRole:2')->group(function () {
         // dashboard admin
-        Route::get('/admin/dashboard', [DashboardController::class, 'dashboardAdmin'])->name('dashboardAdmin');
+        Route::get('/admin/dashboard', [AdminDashboardController::class, 'dashboardAdmin'])->name('dashboardAdmin');
 
         // Route::get('/admin/pesanan/{pesanan}/penawaran', [PersetujuanHargaController::class, 'showAdmin'])
         //     ->name('admin.pesanan.penawaran');
 
         // Route::post('/admin/pesanan/{pesanan}/penawaran', [PersetujuanHargaController::class, 'ajukanHarga'])
         //     ->name('admin.pesanan.ajukanHarga');
-
+ 
         // fitur chat admin
         Route::get('/admin/chat', [ChatAdminController::class, 'index'])->name('admin.chat.index');
         // Route::get('/admin/chat/{id}', [ChatAdminController::class, 'show'])->name('admin.chat.show');
@@ -249,7 +244,7 @@ Route::middleware('auth')->group(function () {
             ->middleware('can:accessAdmin,percakapan');
 
         // route riwayat transaksi admin
-        Route::get('/admin/transaksi', [PembayaranController::class, 'TampilRiwayatTransaksi'])->name('admin.transaksi');
+        Route::get('/admin/riwayat-transaksi', [PembayaranController::class, 'TampilRiwayatTransaksi'])->name('admin.transaksi');
         // end route riwayat transaksi admin
 
         // route update status pesanan admin
@@ -259,10 +254,12 @@ Route::middleware('auth')->group(function () {
         // end route update status pesanan admin
     });
 
-    Route::middleware('checkRole:1,2')->group(function () {
+    Route::middleware('checkRole:1,2')->group(function () { 
 
         // CRUD item produksi
-        Route::resource('itemProduksi', ItemProduksiController::class);
+        // Route::resource('itemProduksi', ItemProduksiController::class);
+    // CRUD item produksi
+        Route::resource('/admin/item-produksi', ItemProduksiController::class) ->names('admin.itemProduksi');
     });
 });
 
