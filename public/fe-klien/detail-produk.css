@@ -73,9 +73,7 @@
 
 .gallery-item img {
     width: 100%;
-    aspect-ratio: 1 / 1; /* Diubah menjadi proporsional kotak sesuai request */ [cite: 85]
-    object-fit: cover;
-    display: block;
+        aspect-ratio: 1 / 1; /* Diubah menjadi proporsional kotak sesuai request */
 }
 
 .gallery-btn {
@@ -350,6 +348,17 @@ input[type="number"] {
     box-shadow: 0 4px 16px rgba(0, 138, 70, 0.25);
 }
 
+.btn-nonaktif {
+    background: #dc3545 !important;
+    color: #fff !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+}
+
+.btn-nonaktif:hover {
+    background: #dc3545 !important;
+}
+
 /* --- LOGIKA DROPDOWN DESKTOP --- */
 .btn-dropdown-pesan {
     width: 100%;
@@ -390,6 +399,24 @@ input[type="number"] {
     border-color: #008a46;
 }
 
+.textarea-pesan {
+    width: 100%;
+    min-height: 90px;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    color: #333;
+    resize: vertical;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.textarea-pesan:focus {
+    border-color: #008a46;
+    outline: none;
+}
+
 .flex-row-group {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -403,6 +430,7 @@ input[type="number"] {
 .bottom-subtotal {
     display: none; /* Di Desktop disembunyikan karena sudah ada di atas */
 }
+
 
 /* =========================================================
    MEDIA QUERIES (SINKRONISASI RESPONSIVE SMARTPHONE)
@@ -419,7 +447,7 @@ input[type="number"] {
 
     .gallery-item img {
         height: auto;
-        aspect-ratio: 1/1; /* Tetap kotak */ [cite: 85]
+        aspect-ratio: 1/1; /* Tetap kotak */
     }
 
     .produk-description h1 {
