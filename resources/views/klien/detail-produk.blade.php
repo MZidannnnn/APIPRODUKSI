@@ -4,17 +4,29 @@
 <link rel="stylesheet" href="{{ asset('fe-klien/detail-produk.css') }}?v={{ time() }}">
 @endpush
 
+@push('head')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
+@endpush
+
 @section('content')
 <div class="detail-produk-wrapper">
 
-    <a href="{{ route('dashboard') }}" class="btn-kembali">
+    @php
+        $backUrl = match(request('from')) {
+            'search' => url()->previous(),
+            'dashboard' => route('dashboard'),
+            default => route('dashboard'),
+        };
+    @endphp
+    <a href="{{ $backUrl }}" class="btn-kembali">
         <i class="fas fa-chevron-left"></i> Kembali
     </a>
 
     @php
-        $hargaMin = $item->detailProduk->min('harga_dasar');
-        $hargaMax = $item->detailProduk->max('harga_dasar');
-        $satuan   = $item->satuanHarga->nama_satuan ?? $item->detailProduk->first()?->satuanHarga?->nama_satuan;
+        $hargaMin = $itemProduksi->detailProduk->min('harga_dasar');
+        $hargaMax = $itemProduksi->detailProduk->max('harga_dasar');
+        $satuan   = $itemProduksi->satuanHarga->nama_satuan ?? $item->detailProduk->first()?->satuanHarga?->nama_satuan;
     @endphp
 
     <section class="detail-produk-grid">
@@ -27,9 +39,9 @@
 
                 <div class="gallery-track-wrapper">
                     <div class="gallery-track" id="galleryTrack">
-                        @forelse ($item->fotoProduk as $foto)
+                        @forelse ($itemProduksi->fotoProduk as $foto)
                             <div class="gallery-item">
-                                <img src="{{ asset($foto->nama_foto) }}" alt="{{ $item->nama_item }}">
+                                <img src="{{ asset($foto->nama_foto) }}" alt="{{ $itemProduksi->nama_item }}">
                             </div>
                         @empty
                             <div class="gallery-item">
@@ -45,9 +57,10 @@
             </div>
 
             <div class="produk-description">
-                <h1>{{ $item->nama_item }}</h1>
+                <h1>{{ $itemProduksi->nama_item }}</h1>
+
                 <p id="deskripsiProduk">
-                    {{ $item->deskripsi_item ?? 'Deskripsi produk belum tersedia.' }}
+                    {{ $itemProduksi->deskripsi_item ?? 'Deskripsi produk belum tersedia.' }}
                 </p>
                 <button type="button" class="btn-toggle-deskripsi" id="toggleDeskripsi">
                     Lihat Selengkapnya
@@ -55,7 +68,7 @@
             </div>
         </div>
 
-        <form id="checkoutForm" action="#" method="POST" class="order-card">
+        <form id="checkoutForm" action="{{ route('pesanan.beli') }}" method="POST" class="order-card" enctype="multipart/form-data">
             @csrf
 
             <div class="harga-row">
@@ -76,7 +89,7 @@
             <div class="form-group mt-3">
                 <label>Ukuran</label>
                 <div class="size-options">
-                    @foreach ($item->detailProduk as $index => $detail)
+                    @foreach ($itemProduksi->detailProduk as $index => $detail)
                         <button type="button"
                             class="size-btn {{ $index == 0 ? 'active' : '' }}"
                             data-id-detail="{{ $detail->id_detail_produk }}"
@@ -87,7 +100,7 @@
                 </div>
             </div>
 
-            <input type="hidden" name="id_detail_produk" id="idDetailProduk" value="{{ $item->detailProduk->first()->id_detail_produk ?? '' }}">
+            <input type="hidden" name="id_detail_produk" id="idDetailProduk" value="{{ $itemProduksi->detailProduk->first()->id_detail_produk ?? '' }}">
             <input type="hidden" name="subtotal" id="subtotalInput">
 
             <hr class="divider">
@@ -111,11 +124,15 @@
 
             <div id="actionBeforeForm">
                 <div class="button-action-wrapper">
-                    <button type="button" class="btn-chat">
+                    <button type="submit" form="chatForm" class="btn-chat">
                         <i class="fas fa-comments"></i> Tanya Admin
                     </button>
-                    <button type="button" class="btn-beli" id="btnBeliAwal">
-                        Beli Sekarang
+                    <button
+                        type="button"
+                        class="btn-beli {{ $itemProduksi->status_aktif !== 'Aktif' ? 'btn-nonaktif' : '' }}"
+                        id="btnBeliAwal"
+                        {{ $itemProduksi->status_aktif !== 'Aktif' ? 'disabled' : '' }}>
+                        {{ $itemProduksi->status_aktif === 'Aktif' ? 'Beli Sekarang' : 'Produk Tidak Aktif' }}
                     </button>
                 </div>
             </div>
@@ -131,23 +148,28 @@
 
                 <div class="form-group">
                     <label>Nama Pemesan</label>
-                    <input type="text" name="nama_pemesan" class="input-pesan" required>
+                    <input type="text" name="nama_penerima" class="input-pesan" required>
                 </div>
 
                 <div class="form-group">
                     <label>Alamat Pemesan</label>
-                    <input type="text" name="alamat_pemesan" class="input-pesan" required>
+                    <textarea
+                        name="alamat_penerima"
+                        class="input-pesan textarea-pesan"
+                        rows="3"
+                        placeholder="Masukkan alamat lengkap"
+                        required></textarea>
                 </div>
 
                 <div class="form-group">
                     <label>No. HP / WhatsApp</label>
-                    <input type="number" name="no_wa" class="input-pesan" required>
+                    <input type="number" name="No_hp_penerima" class="input-pesan" required>
                 </div>
 
                 <div class="flex-row-group align-end">
                     <div class="form-group w-100">
                         <label>Jadwal Pemasangan</label>
-                        <small>Pilih tanggal pemasangan</small>
+                        <small class="helper-date">Pilih tanggal pemasangan</small>
                         <input type="date" name="jadwal_pemasangan" class="input-pesan date-input" required>
                     </div>
                     
@@ -157,16 +179,48 @@
                     </div>
                 </div>
 
+                @php
+                    $bolehDp = strtolower($itemProduksi->kategoriUsaha->jenisPembayaran->nama_jenis_pembayaran ?? '') === 'dp';
+                @endphp
+
+                @if ($bolehDp)
+                    <div class="form-group">
+                        <label>Pilihan Pembayaran</label>
+
+                        <label>
+                            <input type="radio" name="tipe_pembayaran" value="DP" checked>
+                            Bayar DP 50%
+                        </label>
+
+                        <label>
+                            <input type="radio" name="tipe_pembayaran" value="Full">
+                            Bayar Full 100%
+                        </label>
+                    </div>
+                @else
+                    <input type="hidden" name="tipe_pembayaran" value="Full">
+                @endif
+
                 <div class="button-action-wrapper mt-3">
-                    <button type="button" class="btn-chat d-md-none">
+                    <button type="submit" form="chatForm" class="btn-chat d-md-none">
                         <i class="fas fa-comments"></i> Tanya Admin
                     </button>
-                    <button type="submit" class="btn-beli" id="btnSubmitBeli">
-                        Beli Sekarang
+                    <button
+                        type="submit"
+                        class="btn-beli"
+                        id="btnSubmitBeli"
+                        {{ $itemProduksi->status_aktif !== 'Aktif' ? 'disabled' : '' }}>
+                        Bayar
                     </button>
                 </div>
             </div>
         </form>
+
+        @auth
+        <form id="chatForm" action="{{ route('chat.start', $itemProduksi->id_item_produksi) }}" method="POST">
+            @csrf
+        </form>
+    @endauth
 
     </section>
 </div>
@@ -221,9 +275,7 @@
         function hitungSubtotal(fallbackQty = null) {
             if (!qtyInput || !subtotalInput) return;
             
-            // Gunakan fallback jika ada, kalau tidak ambil dari input
             const qty = fallbackQty !== null ? fallbackQty : Number(qtyInput.value || 1);
-            
             const subtotal = hargaAktif * qty;
             const formatted = formatRupiah(subtotal);
 
@@ -260,24 +312,17 @@
                 hitungSubtotal();
             });
 
-            // TAMBAHKAN KODE INI: Agar subtotal update saat input diketik manual
             qtyInput.addEventListener('input', function() {
-                // Cegah input negatif atau kosong
                 let val = parseInt(this.value);
-                
-                // Jika input kosong atau bukan angka, biarkan dulu agar user bisa menghapus
-                // Tapi saat menghitung subtotal, anggap saja 1
                 if (isNaN(val) || val < 1) {
-                    hitungSubtotal(1); // Modifikasi fungsi agar bisa terima parameter sementara
+                    hitungSubtotal(1);
                 } else {
                     hitungSubtotal();
                 }
             });
 
-            // TAMBAHKAN KODE INI: Validasi saat user selesai mengetik (blur)
             qtyInput.addEventListener('blur', function() {
                 let val = parseInt(this.value);
-                // Jika user meninggalkannya kosong atau nol, paksa kembali ke angka 1
                 if (isNaN(val) || val < 1) {
                     this.value = 1;
                     hitungSubtotal();
@@ -304,12 +349,10 @@
         function bukaForm() {
             pesanForm.classList.add('show');
             
-            // Logika Desktop
             if (window.innerWidth > 768) {
                 if (togglePesan) togglePesan.style.display = 'none';
                 if (actionBeforeForm) actionBeforeForm.style.display = 'none';
             } 
-            // Logika Mobile (Bottom Sheet)
             else {
                 document.body.classList.add('mobile-sheet-open');
                 if (mobileBackdrop) mobileBackdrop.classList.add('show');
@@ -324,22 +367,19 @@
             }
         }
 
-        // Trigger buka form dari "Beli Sekarang" awal atau tulisan dropdown
         if (btnBeliAwal) btnBeliAwal.addEventListener('click', bukaForm);
         if (togglePesan) togglePesan.addEventListener('click', bukaForm);
 
-        // Tutup bottom sheet jika area gelap diklik (hanya mobile)
         if (mobileBackdrop) {
             mobileBackdrop.addEventListener('click', tutupFormMobile);
         }
 
-        // Tutup bottom sheet dengan menggeser/drag area atas form
         let startY;
         pesanForm.addEventListener('touchstart', (e) => startY = e.touches[0].clientY, {passive: true});
         pesanForm.addEventListener('touchmove', (e) => {
             if (window.innerWidth <= 768 && startY) {
                 const currentY = e.touches[0].clientY;
-                if (currentY - startY > 50) { // Jika digeser ke bawah
+                if (currentY - startY > 50) { 
                     tutupFormMobile();
                 }
             }
@@ -358,7 +398,6 @@
                 if (!input.value.trim()) isComplete = false;
             });
 
-            // Jika form belum terbuka sama sekali saat disubmit secara paksa
             if (!pesanForm.classList.contains('show')) {
                 e.preventDefault();
                 bukaForm();
@@ -367,7 +406,7 @@
 
             if (!isComplete) {
                 e.preventDefault();
-                bukaForm(); // Pastikan form terlihat
+                bukaForm(); 
                 const firstEmpty = Array.from(requiredInputs).find(input => !input.value.trim());
                 if (firstEmpty) {
                     setTimeout(() => firstEmpty.focus(), 300);

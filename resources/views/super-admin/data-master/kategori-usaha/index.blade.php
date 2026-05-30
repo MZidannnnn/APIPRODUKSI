@@ -22,10 +22,9 @@
                         <tr class="text-center">
                             <th width="5%">No</th>
                             <th>Nama Kategori</th>
-                            <th>Kode Unik</th>
+                            <th>Kode Unik Pesanan</th>
                             <th>Jenis Harga</th>
                             <th>Jenis Pembayaran</th>
-                            <th>Deskripsi</th>
                             <th width="15%">
                                 <i class="fas fa-cog"></i>
                             </th>
@@ -55,8 +54,6 @@
                                 
                                 {{-- Relasi jenis pembayaran --}}
                                 <td>{{ $item->jenisPembayaran->nama_jenis_pembayaran ?? '-' }}</td>
-
-                                <td>{{ $item->deskripsi ?? '-' }}</td>
 
                                 <td>
                                     <a href="{{ route('kategoriUsaha.edit', $item->id_kategori) }}" class="btn btn-sm btn-warning">

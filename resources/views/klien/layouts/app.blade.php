@@ -13,12 +13,20 @@
                 <img src="{{ asset('assets/images/logo-side.png') }}" alt="Logo">
             </div>
 
-            <form class="search-box">
-                <input type="text" placeholder="Cari Produk">
+            <form class="search-box" action="{{ route('klien.search') }}" method="GET" id="searchForm">
+                <div class="search-input-wrapper" style="position: relative; width: 100%;">
+                    <input type="text" name="q" id="searchInput" placeholder="Cari Produk" autocomplete="off" value="{{ request('q') }}">
+                    
+                    <ul id="searchDropdown" class="search-dropdown" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #ddd; list-style: none; padding: 0; z-index: 999;"></ul>
+                </div>
+                
                 <button type="submit">
                     <i class="fas fa-search"></i>
                 </button>
             </form>
+
+            <div id="searchDropdown" class="search-dropdown"></div>
+        </form>
 
             <div class="auth-button">
 

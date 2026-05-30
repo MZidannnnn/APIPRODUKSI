@@ -45,7 +45,7 @@ class AuthController extends Controller
     ));
     }
 
-    public function detailProduk($id)
+    /*public function detailProduk($id)
     {
         $item = ItemProduksi::with([
             'kategoriUsaha',
@@ -54,7 +54,7 @@ class AuthController extends Controller
         ])->findOrFail($id);
 
         return view('klien/detail-produk', compact('item'));
-    }
+    } */ //Route nya udah ada di PesananController
 
     /**
      * Handle registrasi klien

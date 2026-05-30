@@ -82,12 +82,12 @@
  
             @endphp
 
-            <a href="{{ route('produk.detail', $item->id_item_produksi) }}" class="produk-card">
+            <a href="{{ route('pesanan.detail', ['id' => $item->id_item_produksi, 'from' => 'dashboard']) }}" class="produk-card">
 
                 {{-- FOTO --}}
                 <div class="produk-img">
                     @if ($foto)
-                        <img src="{{ asset($foto->nama_foto) }}"
+                        <img src="{{ asset($foto->nama_foto) }}" {{-- error karena mengambil fotonya dengan ada tambahan di belakang nama_foto --}}
                             alt="{{ $item->nama_item }}">
                     @else
                         <img src="{{ asset('assets/images/no-image.png') }}"

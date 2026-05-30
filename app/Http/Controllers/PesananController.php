@@ -195,9 +195,9 @@ class PesananController extends Controller
         return view('test.list_item', compact('itemProduksi'));
     }
 
-    public function showLisDetail($id)
+    public function showListDetail($id)
     {
-        $itemProduksi = ItemProduksi::with([
+        $itemProduksi = ItemProduksi::with([ 
             'kategoriUsaha.jenisPembayaran',
             'satuanHarga',
             'detailProduk',
@@ -206,7 +206,7 @@ class PesananController extends Controller
 
         $userId = Auth::id();
 
-        return view('test.detail-produk', compact('itemProduksi', 'userId'));
+        return view('klien/detail-produk', compact('itemProduksi', 'userId'));
     }
 
     public function showTagihan(Pesanan $pesanan)

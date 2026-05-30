@@ -17,6 +17,7 @@ use App\Http\Controllers\PersetujuanHargaController;
 use App\Http\Controllers\PesananController;
 use App\Http\Controllers\SatuanHargaController;
 use App\Http\Controllers\StatusPesananController;
+use App\Http\Controllers\CariProdukController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,17 +27,26 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', [AuthController::class, 'showDashboard'])->middleware('redirectRole')->name('dashboard');
-Route::get('/produk/{id}', [AuthController::class, 'detailProduk'])->name('produk.detail');
 
 // webhook midtrans
 Route::post('/midtrans/notification', [PembayaranController::class, 'notification']);
 
 // route testing
 Route::get('/pesanan/list-item', [PesananController::class, 'showList'])->name('pesanan.listItem');
-Route::get('/pesanan/detail/{id}', [PesananController::class, 'showLisDetail'])->name('pesanan.detail');
-Route::get('/pesanan/{pesanan}/tagihan', [PesananController::class, 'showTagihan'])
-    ->name('pesanan.tagihan');
 
+// route detail produk dan pesanan
+Route::get('/pesanan/detail/{id}', [PesananController::class, 'showListDetail'])->name('pesanan.detail');
+
+Route::get('/pesanan/{pesanan}/tagihan', [PesananController::class, 'showTagihan'])->name('pesanan.tagihan');
+
+// 1. Route untuk dropdown Live Search (JavaScript)
+Route::get('/search/live', [CariProdukController::class, 'liveSearch'])->name('klien.liveSearch');
+
+// 2. Route untuk halaman grid Hasil Pencarian (ketika di-Enter)
+Route::get('/search', [CariProdukController::class, 'search'])->name('klien.search');
+
+// 3. Route untuk halaman Target (Detail Produk)
+//Route::get('/produk/{id}', [CariProdukController::class, 'detailProduk'])->name('klien.detailProduk');
 
 /*
 |--------------------------------------------------------------------------
@@ -273,8 +283,8 @@ Route::middleware('auth')->group(function () {
 //     return view('auth.login');
 // });
 
-Route::get('/login-klien', function () {
-    return view('klien.index');
+Route::get('/hasil/pencarian', function () {
+    return view('klien.hasil-pencarian');
 });
 
 // route::get('/dashboard', function () {
