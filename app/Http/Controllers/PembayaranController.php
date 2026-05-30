@@ -129,20 +129,26 @@ class PembayaranController extends Controller
             ->with('success', 'Bukti bayar berhasil diunggah.');
     }
 
-    public function TampilRiwayatTransaksi() 
+    public function TampilRiwayatTransaksi()
     {
-        $admin = Auth::user()->id_kategori;
+        // $admin = Auth::user()->id_kategori;
+        $user = Auth::user();
+        $isSuperAdmin = (int) $user->id_role === 1;
 
-        $riwayatTransaksi = Pembayaran::with([
-            'pesanan:id_pesanan,nama_penerima',
-            'pesanan.detailProduk.itemProduksi:id_item_produksi,id_kategori'
-        ])
-            ->whereHas('pesanan.detailProduk.itemProduksi', function ($query) use ($admin) {
-                // Logika filter id_kategori harus berada di dalam fungsi ini
-                $query->where('id_kategori', $admin);
+        $riwayatTransaksi = Pembayaran::query()
+            ->with([
+                'pesanan:id_pesanan,id_detail_produk,nama_penerima',
+                'pesanan.detailProduk:id_detail_produk,id_item_produksi',
+                'pesanan.detailProduk.itemProduksi:id_item_produksi,id_kategori',
+            ])
+            ->when(! $isSuperAdmin, function ($query) use ($user) {
+                $query->whereHas('pesanan.detailProduk.itemProduksi', function ($q) use ($user) {
+                    $q->where('id_kategori', (int) $user->id_kategori);
+                });
             })
+            ->latest('id_pembayaran')
             ->get();
-            
+
         $data = [
             'title' => 'Riwayat Transaksi Klien',
             'menuRiwayatTransaksi' => 'active',
@@ -200,6 +206,5 @@ class PembayaranController extends Controller
         }
 
         return response()->json(['message' => 'Token pembayaran sudah kedaluwarsa.'], 422);
-        
     }
 }

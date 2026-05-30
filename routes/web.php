@@ -253,15 +253,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/chat/{percakapan}/messages', [ChatAdminController::class, 'send'])->name('admin.chat.send')
             ->middleware('can:accessAdmin,percakapan');
 
-        // route riwayat transaksi admin
-        Route::get('/admin/riwayat-transaksi', [PembayaranController::class, 'TampilRiwayatTransaksi'])->name('admin.transaksi');
-        // end route riwayat transaksi admin
-
-        // route update status pesanan admin
-        Route::get('/admin/edit-status-pesanan/{pesanan}', [AdminPesananStatusController::class, 'editStatusPesanan'])->name('admin.editStatusPesanan');
-        Route::patch('/admin/update-status-pesanan/{pesanan}', [AdminPesananStatusController::class, 'updateStatusPesanan'])->name('admin.updateStatusPesanan');
-        Route::get('/admin/pesanan', [AdminPesananStatusController::class, 'tampilAdminPesanan'])->name('admin.tampilPesanan');
-        // end route update status pesanan admin
+       
     });
 
     Route::middleware('checkRole:1,2')->group(function () { 
@@ -270,6 +262,16 @@ Route::middleware('auth')->group(function () {
         // Route::resource('itemProduksi', ItemProduksiController::class);
     // CRUD item produksi
         Route::resource('/admin/item-produksi', ItemProduksiController::class) ->names('admin.itemProduksi');
+
+         // route riwayat transaksi admin
+        Route::get('/admin/riwayat-transaksi', [PembayaranController::class, 'TampilRiwayatTransaksi'])->name('admin.transaksi');
+        // end route riwayat transaksi admin
+
+        // route update status pesanan admin
+        Route::get('/admin/edit-status-pesanan/{pesanan}', [AdminPesananStatusController::class, 'editStatusPesanan'])->name('admin.editStatusPesanan');
+        Route::patch('/admin/update-status-pesanan/{pesanan}', [AdminPesananStatusController::class, 'updateStatusPesanan'])->name('admin.updateStatusPesanan');
+        Route::get('/admin/pesanan', [AdminPesananStatusController::class, 'tampilAdminPesanan'])->name('admin.tampilPesanan');
+        // end route update status pesanan admin
     });
 });
 

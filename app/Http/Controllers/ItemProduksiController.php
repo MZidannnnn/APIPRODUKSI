@@ -4,17 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\DetailProduk;
 use App\Models\ItemProduksi;
-use App\Models\KategoriUsaha; 
+use App\Models\KategoriUsaha;
 use App\Models\SatuanHarga;
 use App\Models\FotoProduk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+
+
 
 class ItemProduksiController extends Controller
 {
     public function index()
     {
+        Gate::authorize('viewAny', ItemProduksi::class);
+
         $data = [
             'title' => 'Data Produk Jasa',
             'menuDataProduk' => 'active',
@@ -27,6 +32,8 @@ class ItemProduksiController extends Controller
     public function show($id)
     {
         $itemProduksi = ItemProduksi::with(['detailProduk', 'fotoProduk', 'kategoriUsaha', 'satuanHarga'])->findOrFail($id);
+
+        Gate::authorize('view', $itemProduksi);
 
         $data = [
             'title'        => 'Detail Produk Jasa',
@@ -41,6 +48,8 @@ class ItemProduksiController extends Controller
      */
     public function create()
     {
+        Gate::authorize('create', ItemProduksi::class);
+
         $data = [
             'title'         => 'Tambah Data Produk Jasa',
             'kategoriUsaha' => KategoriUsaha::all(),
@@ -55,6 +64,8 @@ class ItemProduksiController extends Controller
      */
     public function store(Request $request)
     {
+        Gate::authorize('create', ItemProduksi::class);
+
         $request->validate([
             'id_kategori'      => 'required|exists:kategori_usaha,id_kategori',
             'id_satuan'        => 'required|exists:satuan_harga,id_satuan',
@@ -128,7 +139,6 @@ class ItemProduksiController extends Controller
             return redirect()
                 ->route('admin.itemProduksi.index')
                 ->with('success', 'Data Produk Jasa Berhasil Ditambahkan');
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -144,9 +154,14 @@ class ItemProduksiController extends Controller
      */
     public function edit($id)
     {
+        $itemProduksi = ItemProduksi::with(['detailProduk', 'fotoProduk', 'kategoriUsaha', 'satuanHarga'])
+            ->findOrFail($id);
+
+        Gate::authorize('update', $itemProduksi);
+
         $data = [
             'title' => 'Edit Data Produk Jasa',
-            'itemProduksi' => ItemProduksi::with(['detailProduk', 'fotoProduk', 'kategoriUsaha', 'satuanHarga',])->findOrFail($id),
+            'itemProduksi' => $itemProduksi,
             'kategoriUsaha' => KategoriUsaha::all(),
             'satuanHarga' => SatuanHarga::all(),
         ];
@@ -159,6 +174,10 @@ class ItemProduksiController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $itemProduksi = ItemProduksi::findOrFail($id);
+
+        Gate::authorize('update', $itemProduksi);
+
         $request->validate([
             'id_kategori'      => 'required|exists:kategori_usaha,id_kategori',
             'id_satuan'        => 'required|exists:satuan_harga,id_satuan',
@@ -197,8 +216,6 @@ class ItemProduksiController extends Controller
         DB::beginTransaction();
 
         try {
-            $itemProduksi = ItemProduksi::findOrFail($id);
-
             $itemProduksi->update([
                 'id_kategori'    => $request->id_kategori,
                 'id_satuan'      => $request->id_satuan,
@@ -252,7 +269,6 @@ class ItemProduksiController extends Controller
             return redirect()
                 ->route('admin.itemProduksi.index')
                 ->with('success', 'Data Produk Jasa berhasil diperbarui');
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -268,16 +284,20 @@ class ItemProduksiController extends Controller
      */
     public function destroy($id)
     {
+        $itemProduksi = ItemProduksi::with('fotoProduk')->findOrFail($id);
+
+        Gate::authorize('delete', $itemProduksi);
+
         DB::beginTransaction();
 
         try {
             // 1. Cari data item produksi yang mau dihapus beserta relasi fotonya
-            $itemProduksi = ItemProduksi::with('fotoProduk')->findOrFail($id);
+            // $itemProduksi = ItemProduksi::with('fotoProduk')->findOrFail($id);
 
             // 2. Hapus terlebih dahulu file foto fisik yang ada di folder public
             foreach ($itemProduksi->fotoProduk as $foto) {
                 $pathFotoFisik = public_path($foto->nama_foto);
-                
+
                 // Cek apakah file fisiknya beneran ada, jika ada langsung hapus dari storage
                 if (file_exists($pathFotoFisik)) {
                     unlink($pathFotoFisik);
@@ -292,13 +312,12 @@ class ItemProduksiController extends Controller
 
             // 4. Kembalikan ke halaman index dengan membawa alert sukses
             return redirect()->route('admin.itemProduksi.index')
-                            ->with('success', 'Data Produk Jasa Berhasil Dihapus');
-
+                ->with('success', 'Data Produk Jasa Berhasil Dihapus');
         } catch (\Exception $e) {
             DB::rollBack();
 
             return redirect()->route('admin.itemProduksi.index')
-                            ->with('error', 'Gagal Menghapus Data: ' . $e->getMessage());
+                ->with('error', 'Gagal Menghapus Data: ' . $e->getMessage());
         }
     }
 }

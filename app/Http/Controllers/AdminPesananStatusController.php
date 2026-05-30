@@ -42,7 +42,9 @@ class AdminPesananStatusController extends Controller
     {
         Gate::authorize('viewAny', Pesanan::class);
 
-        $admin = Auth::user();
+        // $admin = Auth::user();
+        $user = Auth::user();
+        $isSuperAdmin = (int) $user->id_role === 1;
 
         $pesanan = Pesanan::query()
             ->select([
@@ -62,11 +64,13 @@ class AdminPesananStatusController extends Controller
                 'detailProduk.itemProduksi:id_item_produksi,id_kategori,nama_item',
                 'detailProduk.itemProduksi.kategoriUsaha:id_kategori,nama_kategori',
             ])
-            ->whereHas('detailProduk.itemProduksi', function ($q) use ($admin) {
-                $q->where('id_kategori', (int) $admin->id_kategori);
+            ->when(! $isSuperAdmin, function ($query) use ($user) {
+                $query->whereHas('detailProduk.itemProduksi', function ($q) use ($user) {
+                    $q->where('id_kategori', (int) $user->id_kategori);
+                });
             })
             ->orderByDesc('tanggal_pesan')
-            ->withQueryString();
+            ->get();
 
         $data = [
             'title' => 'Progres Pesanan Klien',
