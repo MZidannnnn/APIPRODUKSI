@@ -71,6 +71,7 @@ class Pesanan extends Model
     {
         return $this->pembayaran()
             ->where('tipe_pembayaran', 'DP')
+            ->where('status_bayar', 'Lunas')
             ->sum('jumlah_bayar');
     }
 
@@ -78,6 +79,7 @@ class Pesanan extends Model
     {
         return $this->pembayaran()
             ->where('tipe_pembayaran', 'Pelunasan')
+            ->where('status_bayar', 'Lunas')
             ->sum('jumlah_bayar');
     }
 
@@ -85,7 +87,11 @@ class Pesanan extends Model
     {
         // $sudahBayar = $this->pembayaran()->sum('jumlah_bayar');
 
-        return $this->total_harga - $this->pembayaran()->sum('jumlah_bayar');
+        $sudahBayar = $this->pembayaran()
+            ->where('status_bayar', 'Lunas')
+            ->sum('jumlah_bayar');
+
+        return $this->total_harga - $sudahBayar;
     }
 
     public function sudahLunas()
@@ -97,6 +103,6 @@ class Pesanan extends Model
     public function latestPembayaran()
     {
         return $this->hasOne(Pembayaran::class, 'id_pesanan', 'id_pesanan')
-                    ->latestOfMany('id_pembayaran');
+            ->latestOfMany('id_pembayaran');
     }
 }
