@@ -3,24 +3,160 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\pengguna;
+use App\Models\ItemProduksi;
+use App\Models\KategoriUsaha;
+use App\Models\Pesanan;
+use App\Models\Pembayaran;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class AdminDashboardController extends Controller
 {
-    public function dashboardSuperAdmin()
+    public function dashboardSuperAdmin() 
     {
-        $data = [ 
-            "title"                 => "Dashboard Super Admin",
-            "menuDashboard"         => "active",
+        // Jumlah akun berdasarkan role
+        $jumlahAdmin = pengguna::where('id_role', 2)->count();
+        $jumlahKlien = pengguna::where('id_role', 3)->count();
+
+        // Jumlah produk aktif
+        $jumlahProduk = ItemProduksi::where('status_aktif', 'Aktif')->count();
+
+        // Jumlah semua pesanan
+        $jumlahPesanan = Pesanan::count();
+
+        // Total penjualan bulan ini dari pembayaran berhasil/lunas
+        $totalPenjualanBulanIni = Pembayaran::whereMonth('created_at', Carbon::now()->month)
+            ->whereYear('created_at', Carbon::now()->year)
+            ->sum('jumlah_bayar');
+
+        // Grafik penjualan 6 bulan terakhir
+        $grafikPenjualan = Pembayaran::select(
+                DB::raw('MONTH(created_at) as bulan'),
+                DB::raw('YEAR(created_at) as tahun'),
+                DB::raw('SUM(jumlah_bayar) as total')
+            )
+            ->where('created_at', '>=', Carbon::now()->subMonths(5)->startOfMonth())
+            ->groupBy('tahun', 'bulan')
+            ->orderBy('tahun')
+            ->orderBy('bulan')
+            ->get();
+
+        $labelPenjualan = [];
+        $dataPenjualan = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $tanggal = Carbon::now()->subMonths($i);
+            $bulan = $tanggal->month;
+            $tahun = $tanggal->year;
+
+            $labelPenjualan[] = $tanggal->translatedFormat('M Y');
+
+            $total = $grafikPenjualan
+                ->where('bulan', $bulan)
+                ->where('tahun', $tahun)
+                ->first();
+
+            $dataPenjualan[] = $total ? (int) $total->total : 0;
+        }
+
+        // Grafik produk per kategori
+        $kategoriData = KategoriUsaha::withCount([
+            'itemProduksi' => function ($query) {
+                $query->where('status_aktif', 'Aktif');
+            }
+        ])->get();
+
+        $labelKategori = $kategoriData->pluck('nama_kategori')->toArray();
+        $dataKategori = $kategoriData->pluck('item_produksi_count')->toArray();
+
+        // Pesanan terbaru
+        $pesananTerbaru = Pesanan::with(['pengguna', 'statusPesanan'])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Produk terbaru
+        $produkTerbaru = ItemProduksi::with(['kategoriUsaha', 'fotoProduk'])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $data = [
+            'title' => 'Dashboard Super Admin',
+            'menuDashboard' => 'active',
+
+            'jumlahAdmin' => $jumlahAdmin,
+            'jumlahKlien' => $jumlahKlien,
+            'jumlahProduk' => $jumlahProduk,
+            'jumlahPesanan' => $jumlahPesanan,
+            'totalPenjualanBulanIni' => $totalPenjualanBulanIni,
+
+            'labelPenjualan' => $labelPenjualan,
+            'dataPenjualan' => $dataPenjualan,
+
+            'labelKategori' => $labelKategori,
+            'dataKategori' => $dataKategori,
+
+            'pesananTerbaru' => $pesananTerbaru,
+            'produkTerbaru' => $produkTerbaru,
         ];
-         return view('super-admin/dashboard', $data);
+
+        return view('super-admin/dashboard', $data);
     }
 
     public function dashboardAdmin()
     {
+        $admin = Auth::user();
+
+        $pesananTerbaru = Pesanan::with([
+                'pengguna',
+                'statusPesanan',
+                'detailProduk.itemProduksi'
+            ])
+            ->whereHas('detailProduk.itemProduksi', function ($query) use ($admin) {
+                $query->where('id_kategori', $admin->id_kategori);
+            })
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Jumlah produk aktif
+        $totalProduk = ItemProduksi::where('status_aktif', 'Aktif')->count();
+
+        // Jumlah produk per kategori
+        $kategoriData = KategoriUsaha::withCount([
+            'itemProduksi' => function ($query) {
+                $query->where('status_aktif', 'Aktif');
+            }
+        ])->get();
+
+        // 5 produk terbaru
+        $produkTerbaru = ItemProduksi::with(['kategoriUsaha', 'fotoProduk'])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Pesanan selesai bulan ini
+        $pesananSelesaiBulanIni = Pesanan::whereHas('statusPesanan', function ($query) {
+                $query->where('nama_status_pesanan', 'Selesai');
+            })
+            ->whereMonth('created_at', Carbon::now()->month)
+            ->whereYear('created_at', Carbon::now()->year)
+            ->count();
+
         $data = [
-            "title"                 => "Dashboard Admin",
-            "menuDashboard"         => "active",
+            'title' => 'Dashboard Admin',
+            'menuDashboard' => 'active',
+            'kategoriData' => $kategoriData,
+            'totalProduk' => $totalProduk,
+            'produkTerbaru' => $produkTerbaru,
+            'pesananSelesaiBulanIni' => $pesananSelesaiBulanIni,
+            'pesananTerbaru' => $pesananTerbaru,
         ];
-         return view('admin/dashboard', $data);
+
+        return view('admin/dashboard', $data); 
     }
+
 }

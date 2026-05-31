@@ -30,7 +30,7 @@ class ChatAdminController extends Controller
             }])
             ->orderByDesc('terakhir_aktif')
             ->get();
-        return view('test.list-chat-admin', compact('percakapanList'));
+        return view('admin/chat-admin/chat', compact('percakapanList'));
     }
 
     public function show(Percakapan $percakapan)
@@ -41,7 +41,7 @@ class ChatAdminController extends Controller
             ->where('id_kategori', $admin->id_kategori)
             ->firstOrFail();
 
-        return view('test.detail-chat-admin', [
+        return view('admin/chat-admin/detail-chat', [
             'percakapan' => $percakapan,
             'userId' => $admin->id_pengguna,
         ]);

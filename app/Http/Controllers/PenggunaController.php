@@ -90,7 +90,7 @@ class PenggunaController extends Controller
             'collapseKelolaAkun' => 'show',
             'user' => $user,
             'role' => $user->id_role,
-            'kategori' => KategoriUsaha::orderBy('nama_kategori', 'ASC')->get(),
+            'kategori' => KategoriUsaha::get(),
         ];
 
         return view('super-admin/kelola-akun/edit', $data);

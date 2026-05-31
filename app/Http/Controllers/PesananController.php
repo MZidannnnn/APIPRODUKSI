@@ -49,6 +49,7 @@ class PesananController extends Controller
             'alamat_penerima' => 'required|string',
             'No_hp_penerima' => 'required|string|max:20',
             'total_harga' => 'required|numeric|min:0',
+            'jadwal_pemasangan' => 'nullable|date',
         ]);
 
         Pesanan::create($validated);
@@ -89,6 +90,7 @@ class PesananController extends Controller
             'alamat_penerima' => 'required|string',
             'No_hp_penerima' => 'required|string|max:20',
             'total_harga' => 'required|numeric|min:0',
+            'jadwal_pemasangan' => 'nullable|date',
         ]);
 
         $pesanan->update($validated);
@@ -147,6 +149,7 @@ class PesananController extends Controller
                 'alamat_penerima' => $validated['alamat_penerima'],
                 'No_hp_penerima' => $validated['No_hp_penerima'],
                 'total_harga' => $detail->harga_dasar,
+                'jadwal_pemasangan' => $validated['jadwal_pemasangan'] ?? null,
             ]);
 
             if ($isSablon) {
@@ -206,7 +209,7 @@ class PesananController extends Controller
 
         $userId = Auth::id();
 
-        return view('klien/detail-produk', compact('itemProduksi', 'userId'));
+        return view('klien/detail-produk', compact('itemProduksi', 'userId')); //yang benar klien/detail-produk
     }
 
     public function showTagihan(Pesanan $pesanan)

@@ -20,10 +20,12 @@ class Pesanan extends Model
         'alamat_penerima',
         'No_hp_penerima',
         'total_harga',
+        'jadwal_pemasangan',
     ];
 
     protected $casts = [
         'tanggal_pesan' => 'date',
+        'jadwal_pemasangan' => 'date',
         'total_harga' => 'decimal:2',
     ];
 

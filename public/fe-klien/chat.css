@@ -1,0 +1,211 @@
+body {
+    background-color: #ffffff !important;
+}
+
+/* Tombol Kembali */
+.btn-kembali {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #6b7280;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    transition: all 0.2s ease;
+}
+
+.btn-kembali i {
+    font-size: 12px;
+}
+
+.btn-kembali:hover {
+    color: #008a46;
+    text-decoration: none;
+    transform: translateX(-2px);
+}
+
+.chat-list-page {
+    max-width: 620px;
+    margin: 0 auto;
+    padding: 24px 18px 70px;
+}
+
+.chat-list-header {
+    margin-bottom: 20px;
+}
+
+.page-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 6px;
+}
+
+.page-subtitle {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0;
+}
+
+.room-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.room-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+    transition: 0.2s ease;
+}
+
+.room-item:hover {
+    transform: translateY(-2px);
+    border-color: #008a46;
+    box-shadow: 0 10px 24px rgba(0, 138, 70, 0.12);
+    text-decoration: none;
+    color: inherit;
+}
+
+.room-avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 12px;
+    background-color: #f3f4f6;
+    flex-shrink: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.room-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.room-avatar i {
+    color: #9ca3af;
+    font-size: 22px;
+}
+
+.room-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.room-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.room-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.room-meta i {
+    color: #008a46;
+    font-size: 11px;
+}
+
+.room-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+}
+
+.room-badge {
+    background-color: #e53935;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 999px;
+    line-height: 1;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(229, 57, 53, 0.35);
+}
+
+.room-item.has-unread {
+    border-color: #008a46;
+}
+
+.room-item.has-unread .room-title {
+    font-weight: 800;
+}
+
+.room-arrow {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.room-empty {
+    text-align: center;
+    padding: 60px 22px;
+    border: 1px dashed #d1d5db;
+    border-radius: 16px;
+    color: #6b7280;
+}
+
+.room-empty-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background-color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.room-empty-icon i {
+    font-size: 30px;
+    color: #9ca3af;
+}
+
+.room-empty h4 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #374151;
+    margin: 0 0 6px;
+}
+
+.room-empty p {
+    font-size: 13px;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .chat-list-page {
+        padding: 20px 16px 60px;
+    }
+
+    .room-avatar {
+        width: 52px;
+        height: 52px;
+    }
+
+    .room-title {
+        font-size: 15px;
+    }
+}

@@ -27,13 +27,13 @@ class ChatController extends Controller
             ->where('id_pengguna', $userId)
             ->firstOrFail();
 
-        return view('test.detail-chat-klien', [
+        return view('klien.chat-detail', [
             'percakapan' => $percakapan,
             'userId' => $userId,
         ]);
     }
 
-
+ 
     public function index()
     {
         $userId = Auth::id();
@@ -48,7 +48,7 @@ class ChatController extends Controller
             ->orderByDesc('terakhir_aktif')
             ->get();
 
-        return view('test.chat-klien', [
+        return view('klien/chat', [
             'percakapanList' => $percakapanList,
             'userId' => $userId,
         ]);
@@ -271,5 +271,21 @@ class ChatController extends Controller
         $percakapan->update(['terakhir_aktif' => now()]);
 
         return redirect()->route('chat.show', $percakapan->id_percakapan);
+    }
+
+    public function unreadList()
+    {
+        $userId = Auth::id();
+
+        $percakapanList = Percakapan::withCount([
+            'pesan as unread_count' => function ($query) use ($userId) {
+                $query->whereNull('dibaca_pada')
+                    ->where('id_pengirim', '!=', $userId);
+            }
+        ])
+        ->where('id_pengguna', $userId)
+        ->get(['id_percakapan']);
+
+        return response()->json($percakapanList);
     }
 }

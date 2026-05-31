@@ -199,7 +199,7 @@
                     </div>
                 @else
                     <input type="hidden" name="tipe_pembayaran" value="Full">
-                @endif
+                @endif 
 
                 <div class="button-action-wrapper mt-3">
                     <button type="submit" form="chatForm" class="btn-chat d-md-none">
@@ -387,10 +387,12 @@
 
         /*
         |--------------------------------------------------------------------------
-        | Validasi saat form di-submit
+        | Validasi saat form di-submit + lanjut ke Midtrans
         |--------------------------------------------------------------------------
         */
-        checkoutForm.addEventListener('submit', function (e) {
+        checkoutForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
             const requiredInputs = pesanForm.querySelectorAll('input[required]');
             let isComplete = true;
 
@@ -399,18 +401,78 @@
             });
 
             if (!pesanForm.classList.contains('show')) {
-                e.preventDefault();
                 bukaForm();
                 return;
             }
 
             if (!isComplete) {
-                e.preventDefault();
-                bukaForm(); 
+                bukaForm();
+
                 const firstEmpty = Array.from(requiredInputs).find(input => !input.value.trim());
                 if (firstEmpty) {
                     setTimeout(() => firstEmpty.focus(), 300);
                 }
+
+                return;
+            }
+
+            try {
+                // 1. Simpan pesanan dulu
+                const responsePesanan = await fetch(checkoutForm.action, {
+                    method: 'POST',
+                    body: new FormData(checkoutForm),
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const dataPesanan = await responsePesanan.json();
+
+                if (!responsePesanan.ok || !dataPesanan.id_pesanan) {
+                    alert(dataPesanan.message || 'Pesanan gagal dibuat.');
+                    return;
+                }
+
+                // 2. Minta snap token Midtrans
+                const responseBayar = await fetch("{{ route('pembayaran.midtrans') }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id_pesanan: dataPesanan.id_pesanan
+                    })
+                });
+
+                const dataBayar = await responseBayar.json();
+
+                if (!responseBayar.ok || !dataBayar.snap_token) {
+                    alert(dataBayar.message || 'Gagal membuat pembayaran Midtrans.');
+                    return;
+                }
+
+                // 3. Buka popup pembayaran Midtrans
+                window.snap.pay(dataBayar.snap_token, {
+                    onSuccess: function () {
+                        window.location.href = '/pembayaran/' + dataBayar.id_pembayaran + '/upload-bukti';
+                    },
+                    onPending: function () {
+                        window.location.href = '/pembayaran/' + dataBayar.id_pembayaran + '/upload-bukti';
+                    },
+                    onError: function () {
+                        alert('Pembayaran gagal.');
+                    },
+                    onClose: function () {
+                        alert('Kamu menutup popup pembayaran sebelum menyelesaikan pembayaran.');
+                    }
+                });
+
+            } catch (error) {
+                console.error(error);
+                alert('Terjadi kesalahan saat memproses pesanan.');
             }
         });
 

@@ -18,6 +18,7 @@ use App\Http\Controllers\PesananController;
 use App\Http\Controllers\SatuanHargaController;
 use App\Http\Controllers\StatusPesananController;
 use App\Http\Controllers\CariProdukController;
+use App\Http\Controllers\AdminProfileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -113,45 +114,33 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | PELANGGAN
+    | KLIEN
     |--------------------------------------------------------------------------
     */
 
     Route::middleware('checkRole:3')->group(function () {
 
-        Route::get('/pesanan/checkout', function () {
-            return view('pesanan.checkout');
-        })->name('pesanan.checkout');
-
-        Route::post('/pesanan/beli', [PesananController::class, 'beliSekarang'])
-            ->name('pesanan.beli');
+        Route::get('/pesanan/checkout', function () {return view('pesanan.checkout');})->name('pesanan.checkout');
+        Route::post('/pesanan/beli', [PesananController::class, 'beliSekarang'])->name('pesanan.beli');
 
         // transaksi midtrans
-        Route::post('/pembayaran/midtrans', [PembayaranController::class, 'createTransaction'])
-            ->name('pembayaran.midtrans');
+        Route::post('/pembayaran/midtrans', [PembayaranController::class, 'createTransaction'])->name('pembayaran.midtrans');
 
         // upload bukti
-        Route::get('/pembayaran/{pembayaran}/upload-bukti', [PembayaranController::class, 'showUploadForm'])
-            ->name('pembayaran.upload.form');
-
-        Route::post('/pembayaran/{pembayaran}/upload-bukti', [PembayaranController::class, 'uploadBukti'])
-            ->name('pembayaran.upload');
+        Route::get('/pembayaran/{pembayaran}/upload-bukti', [PembayaranController::class, 'showUploadForm'])->name('pembayaran.upload.form');
+        Route::post('/pembayaran/{pembayaran}/upload-bukti', [PembayaranController::class, 'uploadBukti'])->name('pembayaran.upload');
 
         // harga kostum
-        Route::get('/pesanan/{pesanan}/status-harga', [PersetujuanHargaController::class, 'showStatus'])
-            ->name('pesanan.statusHarga');
-
-        Route::post('/pesanan/{pesanan}/setuju-harga', [PersetujuanHargaController::class, 'setujuHarga'])
-            ->name('pesanan.setujuHarga');
-
-        Route::post('/pesanan/{pesanan}/tolak-harga', [PersetujuanHargaController::class, 'tolakHarga'])
-            ->name('pesanan.tolakHarga');
+        Route::get('/pesanan/{pesanan}/status-harga', [PersetujuanHargaController::class, 'showStatus'])->name('pesanan.statusHarga');
+        Route::post('/pesanan/{pesanan}/setuju-harga', [PersetujuanHargaController::class, 'setujuHarga'])->name('pesanan.setujuHarga');
+        Route::post('/pesanan/{pesanan}/tolak-harga', [PersetujuanHargaController::class, 'tolakHarga'])->name('pesanan.tolakHarga');
 
         // fitur chat klien
         Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
         Route::get('/chat/{id}/messages', [ChatController::class, 'messages'])->name('chat.messages');
         Route::post('/chat/{id}/messages', [ChatController::class, 'send'])->name('chat.send');
         Route::get('/chat/unread-count', [ChatController::class, 'unreadCount'])->name('chat.unread');
+        Route::get('/chat/unread-list', [ChatController::class, 'unreadList'])->name('chat.unread.list');
         Route::get('/chat/{id}', [ChatController::class, 'show'])->name('chat.show');
         Route::post('/chat/start/{itemProduksi}', [ChatController::class, 'start'])->name('chat.start');
 
@@ -252,6 +241,10 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/admin/chat/{percakapan}/messages', [ChatAdminController::class, 'send'])->name('admin.chat.send')
             ->middleware('can:accessAdmin,percakapan');
+
+        //Profil admin
+        Route::get('/admin/profile', [AdminProfileController::class, 'edit'])->name('admin.profile.edit');
+        Route::put('/admin/profile', [AdminProfileController::class, 'update'])->name('admin.profile.update');
 
        
     });

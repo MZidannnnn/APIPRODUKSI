@@ -25,9 +25,6 @@
                 </button>
             </form>
 
-            <div id="searchDropdown" class="search-dropdown"></div>
-        </form>
-
             <div class="auth-button">
 
                 @guest
@@ -38,6 +35,11 @@
                 @auth
                     <a href="{{ route('chat.index') }}" class="chat-icon">
                         <i class="fas fa-message"></i>
+
+                        <span id="chatHeaderBadge"
+                            class="chat-header-badge d-none">
+                            0
+                        </span>
                     </a>
 
                     <div class="profile-wrapper">

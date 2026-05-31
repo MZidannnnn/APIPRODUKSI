@@ -93,7 +93,7 @@
             </section>
 
             <section class="purchase-card">
-                <h3 class="section-title">Beli Sekarang</h3>
+                <h3 class="section-title">Bayar</h3>
 
                 <form id="form-pesanan" method="post" action="{{ route('pesanan.beli') }}" enctype="multipart/form-data">
                     @csrf

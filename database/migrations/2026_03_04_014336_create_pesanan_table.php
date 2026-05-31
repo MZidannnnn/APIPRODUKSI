@@ -22,6 +22,7 @@ return new class extends Migration
             $table->text('alamat_penerima');
             $table->string('No_hp_penerima', 20);
             $table->decimal('total_harga', 14, 2);
+            $table->date('jadwal_pemasangan')->nullable();
             $table->timestamps();
 
             $table->foreign('id_pengguna')

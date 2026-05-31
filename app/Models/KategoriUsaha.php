@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ItemProduksi;
 
 class KategoriUsaha extends Model
 {
@@ -27,4 +28,10 @@ class KategoriUsaha extends Model
     {
         $this->attributes['kode_unik'] = strtoupper($value);
     }
+
+    public function itemProduksi()
+    {
+        return $this->hasMany(ItemProduksi::class, 'id_kategori', 'id_kategori');
+    }
 }
+ 
