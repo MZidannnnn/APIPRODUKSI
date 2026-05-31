@@ -147,6 +147,11 @@ Route::middleware('auth')->group(function () {
         // fitur bayar kembali riwayatPesanan
         Route::post('/pembayaran/retry', [PembayaranController::class, 'retrySnap'])->name('pembayaran.retry');
         Route::get('/pesanan/riwayat', [PesananController::class, 'riwayatPesanan'])->name('klienpesanan.riwayat');
+
+        // fitur batalkan pesanan
+        Route::post('/pesanan/{pesanan}/batal', [PembayaranController::class, 'cancelPesanan'])
+            ->name('pesanan.batal');
+        // end fitur batalkan pesanan
     });
 
 

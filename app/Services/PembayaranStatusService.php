@@ -31,7 +31,7 @@ class PembayaranStatusService
                 'payload' => $payload,
             ]);
 
-            if ($statusBayar === 'Lunas') {
+            if ($statusBayar === 'Lunas' && $pembayaran->tipe_pembayaran !== 'Pelunasan') {
                 $this->syncPesananAfterPaid($pembayaran);
             }
 

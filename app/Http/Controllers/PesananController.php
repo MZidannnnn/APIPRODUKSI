@@ -209,7 +209,7 @@ class PesananController extends Controller
 
         $userId = Auth::id();
 
-        return view('klien/detail-produk', compact('itemProduksi', 'userId')); //yang benar klien/detail-produk
+        return view('test/detail-produk', compact('itemProduksi', 'userId')); //yang benar klien/detail-produk
     }
 
     public function showTagihan(Pesanan $pesanan)

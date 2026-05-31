@@ -72,7 +72,8 @@
                 );
 
                 $paidTotal = $order->pembayaran->sum('jumlah_bayar');
-                $sisaBayar = ($order->total_harga ?? 0) - $paidTotal;
+                // $sisaBayar = ($order->total_harga ?? 0) - $paidTotal;
+                $sisaBayar = $order->sisaBayar();
 
                 $latestType = $latest?->tipe_pembayaran;
                 $latestStatus = $latest?->status_bayar;
@@ -82,6 +83,8 @@
                 $canPayFull = $status === 'Menunggu Pembayaran' && $latestType === 'Full' && $latestStatus !== 'Lunas';
 
                 $canPayPelunasan = $status === 'Selesai' && !$pelunasanPaid && $sisaBayar > 0;
+
+                $canCancel = in_array($status, ['Menunggu Pembayaran', 'Menunggu Diproses'], true);
             @endphp
 
             <div class="order-card">
@@ -106,16 +109,25 @@
                 @endif
 
                 @if (!$isExpired)
-                    @if ($canPayDp)
-                        <button class="pay-btn" data-id="{{ $order->id_pesanan }}" data-tipe="DP">Bayar DP</button>
-                    @elseif ($canPayFull)
-                        <button class="pay-btn" data-id="{{ $order->id_pesanan }}" data-tipe="Full">Bayar Sekarang</button>
-                    @endif
+                    <div class="order-actions">
+                        @if ($canPayDp)
+                            <button class="pay-btn" data-id="{{ $order->id_pesanan }}" data-tipe="DP">Bayar DP</button>
+                        @elseif ($canPayFull)
+                            <button class="pay-btn" data-id="{{ $order->id_pesanan }}" data-tipe="Full">Bayar
+                                Sekarang</button>
+                        @endif
 
-                    @if ($canPayPelunasan)
-                        <button class="pay-btn" data-id="{{ $order->id_pesanan }}" data-tipe="Pelunasan">Bayar
-                            Pelunasan</button>
-                    @endif
+                        @if ($canPayPelunasan)
+                            <button class="pay-btn" data-id="{{ $order->id_pesanan }}" data-tipe="Pelunasan">Bayar
+                                Pelunasan</button>
+                        @endif
+
+                        @if ($canCancel)
+                            <button class="cancel-btn" data-endpoint="{{ route('pesanan.batal', $order->id_pesanan) }}">
+                                Batalkan Pesanan
+                            </button>
+                        @endif
+                    </div>
                 @endif
             </div>
         @endforeach
@@ -178,6 +190,31 @@
                 });
             });
         });
+        document.querySelectorAll('.cancel-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (!confirm('Yakin ingin membatalkan pesanan ini?')) return;
+
+                const res = await fetch(btn.dataset.endpoint, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')
+                            .content,
+                        "Accept": "application/json"
+                    }
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(data.message || 'Gagal membatalkan pesanan.');
+                    return;
+                }
+
+                alert(data.message || 'Pesanan berhasil dibatalkan.');
+                window.location.reload();
+            });
+        });
     </script>
     <style>
         :root {
@@ -192,17 +229,6 @@
             --rp-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
         }
 
-        .order-expired {
-            margin-top: 8px;
-            padding: 8px 12px;
-            border-radius: 10px;
-            background: #fff1e5;
-            color: #9a3412;
-            border: 1px solid #fed7aa;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
         .order-page {
             font-family: "Space Grotesk", "Nunito", sans-serif;
             color: var(--rp-ink);
@@ -213,8 +239,7 @@
             padding: 26px 28px;
             border-radius: 18px;
             border: 1px solid var(--rp-border);
-            background:
-                radial-gradient(120% 120% at 10% 0%, rgba(15, 138, 76, 0.12), transparent 50%),
+            background: radial-gradient(120% 120% at 10% 0%, rgba(15, 138, 76, 0.12), transparent 50%),
                 linear-gradient(135deg, #fff6e9 0%, #f2fbf6 100%);
             box-shadow: var(--rp-shadow);
             overflow: hidden;
@@ -257,6 +282,19 @@
             margin: 16px 0 18px;
         }
 
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: var(--rp-ink);
+            margin-right: 4px;
+        }
+
         .order-filters button {
             border: 1px solid var(--rp-border);
             background: #fff;
@@ -265,7 +303,7 @@
             border-radius: 999px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all .2s ease;
         }
 
         .order-filters button:hover {
@@ -281,10 +319,10 @@
 
         .order-card {
             position: relative;
-            display: grid;
-            grid-template-columns: 140px 1.4fr auto auto;
-            gap: 16px;
+            display: flex;
+            flex-wrap: wrap;
             align-items: center;
+            gap: 12px 16px;
             background: var(--rp-card);
             border: 1px solid var(--rp-border);
             border-radius: 14px;
@@ -304,6 +342,11 @@
             background: linear-gradient(180deg, var(--rp-accent), #18a15c);
         }
 
+        .order-meta {
+            flex: 0 0 140px;
+            min-width: 140px;
+        }
+
         .order-meta strong {
             display: block;
             font-size: 16px;
@@ -315,10 +358,13 @@
         }
 
         .order-product {
+            flex: 1 1 220px;
+            min-width: 180px;
             font-weight: 600;
         }
 
         .order-status {
+            flex: 0 0 auto;
             padding: 6px 12px;
             border-radius: 999px;
             background: #ecfdf3;
@@ -335,23 +381,54 @@
         }
 
         .order-total {
+            flex: 0 0 auto;
             font-weight: 700;
             color: var(--rp-accent);
+            white-space: nowrap;
+            margin-left: auto;
         }
 
-        .pay-btn {
+        .order-expired {
+            flex-basis: 100%;
+            margin-top: 4px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: #fff1e5;
+            color: #9a3412;
+            border: 1px solid #fed7aa;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .pay-btn,
+        .cancel-btn {
+            flex: 0 0 auto;
+            white-space: nowrap;
             border: 0;
-            background: var(--rp-accent);
-            color: #fff;
             padding: 10px 14px;
             border-radius: 10px;
             font-weight: 700;
             cursor: pointer;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+
+        .pay-btn {
+            background: var(--rp-accent);
+            color: #fff;
             box-shadow: 0 10px 24px rgba(15, 138, 76, 0.2);
         }
 
         .pay-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .cancel-btn {
+            background: #b91c1c;
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(185, 28, 28, 0.2);
+        }
+
+        .cancel-btn:hover {
             transform: translateY(-1px);
         }
 
@@ -369,17 +446,38 @@
 
         .order-hero,
         .order-card {
-            animation: fadeUp 0.45s ease both;
+            animation: fadeUp .45s ease both;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width:768px) {
             .order-card {
-                grid-template-columns: 1fr;
-                text-align: left;
+                align-items: flex-start;
+            }
+
+            .order-meta,
+            .order-product,
+            .order-status,
+            .order-total,
+            .pay-btn,
+            .cancel-btn {
+                flex: 1 1 100%;
             }
 
             .order-total {
+                margin-left: 0;
                 order: 3;
+            }
+
+            .order-status {
+                order: 2;
+            }
+
+            .order-product {
+                order: 1;
+            }
+
+            .order-meta {
+                order: 0;
             }
         }
     </style>

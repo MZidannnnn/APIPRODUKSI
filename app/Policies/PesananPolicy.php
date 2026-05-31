@@ -33,4 +33,10 @@ class PesananPolicy
     {
         return (int) $user->id_role === 2;
     }
+    
+    public function cancel(pengguna $user, Pesanan $pesanan): bool
+    {
+        return (int) $user->id_role === 3
+            && (int) $pesanan->id_pengguna === (int) $user->id_pengguna;
+    }
 }

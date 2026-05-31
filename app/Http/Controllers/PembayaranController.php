@@ -13,11 +13,15 @@ use App\Services\PembayaranStatusService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Midtrans\Config;
 use Midtrans\Snap;
+use Midtrans\Transaction;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+
 
 class PembayaranController extends Controller
 {
@@ -43,19 +47,58 @@ class PembayaranController extends Controller
         if ($request->tipe_pembayaran === 'Pelunasan') {
             abort_unless($status === 'Selesai', 422, 'Pesanan belum selesai.');
             abort_if($pesanan->sisaBayar() <= 0, 422, 'Tagihan sudah lunas.');
+
+            $existingPending = $pesanan->pembayaran()
+                ->where('tipe_pembayaran', 'Pelunasan')
+                ->where('status_bayar', 'Pending')
+                ->latest('id_pembayaran')
+                ->first();
+
+            if ($existingPending) {
+                $expiresAt = $existingPending->snap_expires_at
+                    ?? $existingPending->created_at?->copy()->addHours(24);
+
+                if ($expiresAt && $expiresAt->isFuture()) {
+                    return response()->json([
+                        'snap_token' => $existingPending->snap_token,
+                        'id_pembayaran' => $existingPending->id_pembayaran,
+                    ]);
+                }
+            }
         }
         try {
             $snap = $midtrans->createSnapToken($pesanan, $request->tipe_pembayaran);
 
-            $pembayaran = Pembayaran::create([
-                'id_pesanan' => $pesanan->id_pesanan,
-                'tipe_pembayaran' => $request->tipe_pembayaran,
-                'jumlah_bayar' => $snap['gross_amount'],
-                'order_id' => $snap['order_id'],
-                'snap_token' => $snap['snap_token'],
-                'snap_expires_at' => now()->addHours(24),
-                'status_bayar' => 'Pending',
-            ]);
+            $existingPending = null;
+
+            if ($request->tipe_pembayaran === 'Pelunasan') {
+                $existingPending = $pesanan->pembayaran()
+                    ->where('tipe_pembayaran', 'Pelunasan')
+                    ->where('status_bayar', 'Pending')
+                    ->latest('id_pembayaran')
+                    ->first();
+            }
+
+            if ($existingPending) {
+                $existingPending->update([
+                    'jumlah_bayar' => $snap['gross_amount'],
+                    'order_id' => $snap['order_id'],
+                    'snap_token' => $snap['snap_token'],
+                    'snap_expires_at' => now()->addHours(24),
+                ]);
+
+                $pembayaran = $existingPending;
+            } else {
+                $pembayaran = Pembayaran::create([
+                    'id_pesanan' => $pesanan->id_pesanan,
+                    'tipe_pembayaran' => $request->tipe_pembayaran,
+                    'jumlah_bayar' => $snap['gross_amount'],
+                    'order_id' => $snap['order_id'],
+                    'snap_token' => $snap['snap_token'],
+                    'snap_expires_at' => now()->addHours(24),
+                    'status_bayar' => 'Pending',
+                ]);
+            }
 
             return response()->json([
                 'snap_token' => $snap['snap_token'],
@@ -206,5 +249,58 @@ class PembayaranController extends Controller
         }
 
         return response()->json(['message' => 'Token pembayaran sudah kedaluwarsa.'], 422);
+    }
+
+    public function cancelPesanan(Request $request, Pesanan $pesanan)
+    {
+        Gate::authorize('cancel', $pesanan);
+        // $this->authorize('cancel', $pesanan);
+
+        try {
+            DB::transaction(function () use ($pesanan) {
+                $pesanan->loadMissing(['statusPesanan', 'latestPembayaran']);
+
+                $statusName = $pesanan->statusPesanan?->nama_status_pesanan;
+
+                abort_unless(
+                    in_array($statusName, ['Menunggu Pembayaran', 'Menunggu Diproses'], true),
+                    422,
+                    'Pesanan hanya bisa dibatalkan saat status Menunggu Pembayaran atau Menunggu Diproses.'
+                );
+
+                $latestPembayaran = $pesanan->latestPembayaran()->lockForUpdate()->first();
+
+                if ($latestPembayaran && $latestPembayaran->status_bayar === 'Pending' && $latestPembayaran->order_id) {
+                    try {
+                        Transaction::cancel($latestPembayaran->order_id);
+                    } catch (\Throwable $e) {
+                        report($e);
+                    }
+
+                    $latestPembayaran->update([
+                        'status_bayar' => 'Kedaluwarsa',
+                    ]);
+                }
+
+                $statusBatalId = StatusPesanan::where('nama_status_pesanan', 'Dibatalkan')
+                    ->value('id_status_pesanan');
+
+                abort_unless($statusBatalId, 500, 'Status Dibatalkan belum tersedia.');
+
+                $pesanan->update([
+                    'id_status_pesanan' => $statusBatalId,
+                ]);
+            });
+
+            return response()->json([
+                'message' => 'Pesanan berhasil dibatalkan.',
+            ]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'message' => $e->getMessage() ?: 'Gagal membatalkan pesanan.',
+            ], 422);
+        }
     }
 }
