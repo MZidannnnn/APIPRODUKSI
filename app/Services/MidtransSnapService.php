@@ -71,15 +71,19 @@ class MidtransSnapService
 
     private function resolveNominal(Pesanan $pesanan, string $tipePembayaran): int
     {
+        $total = (int) round($pesanan->totalRincian());
+        
         if ($tipePembayaran === 'DP') {
-            return (int) round($pesanan->total_harga / 2);
+            // return (int) round($pesanan->total_harga / 2);
+            return (int) round($total / 2);
         }
 
         if ($tipePembayaran === 'Pelunasan') {
-            return (int) $pesanan->sisaBayar();
+            // return (int) $pesanan->sisaBayar();
+            return (int) round(max($pesanan->sisaBayar(), 0));
         }
 
-        return (int) $pesanan->total_harga;
+        return $total;
     }
 
     private function buildOrderId(int $pesananId, string $tipePembayaran): string
