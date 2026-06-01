@@ -16,7 +16,7 @@ class RincianPesanan extends Model
         'kuantitas',
         'subtotal',
         'barang_disediakan_usah',
-        'file_desain',
+        // 'file_desain',
         'opsi',
     ];
 

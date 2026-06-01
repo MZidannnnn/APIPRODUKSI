@@ -113,33 +113,23 @@ class PesananController extends Controller
     // POST /pesanan/beli
     public function beliSekarang(Request $request)
     {
-        $base = $request->validate([
+        $validated = $request->validate([
             'id_detail_produk' => 'required|exists:detail_produk,id_detail_produk',
             'nama_penerima' => 'required|string|max:100',
             'alamat_penerima' => 'required|string',
             'No_hp_penerima' => 'required|string|max:20',
+            'kuantitas' => 'required|integer|min:1',
+            'jadwal_pemasangan' => 'nullable|date',
         ]);
 
-        $detail = DetailProduk::with('itemProduksi.kategoriUsaha')->findOrFail($base['id_detail_produk']);
-        $isSablon = strtolower($detail->itemProduksi->kategoriUsaha->nama_kategori ?? '') === 'sablon';
+        $detail = DetailProduk::with('itemProduksi.kategoriUsaha')->findOrFail($validated['id_detail_produk']);
 
-        $validated = $base;
+        $status = StatusPesanan::where('nama_status_pesanan', 'Menunggu Pembayaran')->first();
 
-        if ($isSablon) {
-            $extra = $request->validate([
-                'kuantitas' => 'required|integer|min:1',
-                // 'barang_disediakan_usah' => 'required|in:Ya,Tidak',
-                'file_desain' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-                // 'jasa_sablon' => 'nullable|boolean',
-            ]);
+        $kuantitas = (int) $validated['kuantitas'];
+        $subtotal = round((float) $detail->harga_dasar * $kuantitas, 2);
 
-            $validated = array_merge($base, $extra);
-        }
-
-        $statusName = 'Menunggu Pembayaran';
-        $status = StatusPesanan::where('nama_status_pesanan', $statusName)->first();
-
-        $pesanan = DB::transaction(function () use ($validated, $detail, $status, $isSablon, $request) {
+        $pesanan = DB::transaction(function () use ($validated, $detail, $status, $kuantitas, $subtotal) {
             $pesanan = Pesanan::create([
                 'id_pengguna' => Auth::id(),
                 'id_detail_produk' => $detail->id_detail_produk,
@@ -148,34 +138,23 @@ class PesananController extends Controller
                 'nama_penerima' => $validated['nama_penerima'],
                 'alamat_penerima' => $validated['alamat_penerima'],
                 'No_hp_penerima' => $validated['No_hp_penerima'],
-                'total_harga' => $detail->harga_dasar,
+                'total_harga' => $subtotal,
                 'jadwal_pemasangan' => $validated['jadwal_pemasangan'] ?? null,
             ]);
 
-            if ($isSablon) {
-                $fileDesainPath = null;
-                if ($request->hasFile('file_desain')) {
-                    $fileDesainPath = $request->file('file_desain')->store('desain', 'public');
-                }
-
-                RincianPesanan::create([
-                    'id_pesanan' => $pesanan->id_pesanan,
-                    'id_detail_produk' => $detail->id_detail_produk,
-                    'kuantitas' => $validated['kuantitas'],
-                    'subtotal' => $detail->harga_dasar,
-                    // 'barang_disediakan_usah' => $validated['barang_disediakan_usah'],
-                    'file_desain' => $fileDesainPath,
-                    // 'opsi' => [
-                    //     'jasa_sablon' => (bool) ($validated['jasa_sablon'] ?? false),
-                    // ],
-                ]);
+            RincianPesanan::create([
+                'id_pesanan' => $pesanan->id_pesanan,
+                'id_detail_produk' => $detail->id_detail_produk,
+                'kuantitas' => $kuantitas,
+                'subtotal' => $subtotal,
+            ]);
 
                 // PersetujuanHarga::create([
                 //     'id_pesanan' => $pesanan->id_pesanan,
                 //     'harga_awal' => $detail->harga_dasar,
                 //     'status_persetujuan' => 'Menunggu',
                 // ]);
-            }
+            
             return $pesanan;
         });
 
@@ -200,7 +179,7 @@ class PesananController extends Controller
 
     public function showListDetail($id)
     {
-        $itemProduksi = ItemProduksi::with([ 
+        $itemProduksi = ItemProduksi::with([
             'kategoriUsaha.jenisPembayaran',
             'satuanHarga',
             'detailProduk',

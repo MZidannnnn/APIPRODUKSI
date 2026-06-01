@@ -91,7 +91,8 @@ class Pesanan extends Model
             ->where('status_bayar', 'Lunas')
             ->sum('jumlah_bayar');
 
-        return $this->total_harga - $sudahBayar;
+        // return $this->total_harga - $sudahBayar;
+        return $this->totalRincian() - (float) $sudahBayar;
     }
 
     public function sudahLunas()
@@ -104,5 +105,17 @@ class Pesanan extends Model
     {
         return $this->hasOne(Pembayaran::class, 'id_pesanan', 'id_pesanan')
             ->latestOfMany('id_pembayaran');
+    }
+
+    // hitung total harga
+    public function totalRincian(): float
+    {
+        $total = $this->relationLoaded('rincianPesanan')
+            ? $this->rincianPesanan->sum('subtotal')
+            : $this->rincianPesanan()->sum('subtotal');
+
+        $total = (float) $total;
+
+        return $total > 0 ? $total : (float) $this->total_harga;
     }
 }

@@ -29,6 +29,7 @@ class PembayaranController extends Controller
     public function createTransaction(CreateTransactionRequest $request, MidtransSnapService $midtrans)
     {
         $pesanan = Pesanan::query()
+            ->with(['statusPesanan', 'rincianPesanan'])
             ->where('id_pesanan', $request->id_pesanan)
             ->where('id_pengguna', $request->user()->id_pengguna ?? Auth::id())
             ->firstOrFail();

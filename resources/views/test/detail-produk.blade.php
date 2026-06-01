@@ -56,7 +56,7 @@
                 <p class="item-desc">{{ $itemProduksi->deskripsi_item }}</p>
 
                 @php
-                    ($detailDefault = $itemProduksi->detailProduk->first())
+                ($detailDefault = $itemProduksi->detailProduk->first())
                 @endphp
                 @if ($detailDefault)
                     <div class="item-detail">
@@ -73,10 +73,11 @@
                             <span
                                 class="value price">Rp{{ number_format($detailDefault->harga_dasar, 0, ',', '.') }}</span>
                         </div>
-                        
+
                         {{-- Looping detailProduk untuk menampilkan semua variasi ukuran & harganya --}}
                         @foreach ($itemProduksi->detailProduk as $detail)
-                            <div class="pl-2" style="border-left: 2px solid #ef6c00; margin-bottom: 5px; padding-left: 8px;">
+                            <div class="pl-2"
+                                style="border-left: 2px solid #ef6c00; margin-bottom: 5px; padding-left: 8px;">
                                 <div>Ukuran: {{ $detail->ukuran ?? '-' }}</div>
                                 <div>Harga Dasar: Rp{{ number_format($detail->harga_dasar ?? 0, 0, ',', '.') }}</div>
                             </div>
@@ -120,9 +121,10 @@
 
                     <div class="field">
                         <label>Pilihan Ukuran</label>
-                        <select name="id_detail_produk" required>
+                        <select name="id_detail_produk" id="idDetailProduk" required>
                             @foreach ($itemProduksi->detailProduk as $detail)
-                                <option value="{{ $detail->id_detail_produk }}">
+                                <option value="{{ $detail->id_detail_produk }}"
+                                    data-harga="{{ $detail->harga_dasar }}">
                                     {{ $detail->ukuran ?? 'Standar' }} -
                                     Rp{{ number_format($detail->harga_dasar, 0, ',', '.') }}
                                 </option>
@@ -130,21 +132,19 @@
                         </select>
                     </div>
 
-                    @php
-                        $sablon = strtolower($itemProduksi->kategoriUsaha->nama_kategori ?? '') === 'sablon';
-                    @endphp
+                    <div class="field">
+                        <label>Kuantitas</label>
+                        <div class="qty-control">
+                            <button type="button" id="minusQty" class="qty-btn">-</button>
+                            <input type="number" name="kuantitas" id="qtyInput" min="1" value="1" required>
+                            <button type="button" id="plusQty" class="qty-btn">+</button>
+                        </div>
+                    </div>
 
-                    
-                    @if ($sablon)
-                        <div class="field">
-                            <label>Kuantitas</label>
-                            <input type="number" name="kuantitas" min="1" value="1" required>
-                        </div>
-                        <div class="field">
-                            <label>File desain (opsional)</label>
-                            <input type="file" name="file_desain">
-                        </div>
-                    @endif
+                    <div class="price-preview">
+                        <span>Total Harga</span>
+                        <strong id="subtotalText">Rp 0</strong>
+                    </div>
 
                     <div class="field">
                         <label>Nama Penerima</label>
@@ -216,6 +216,14 @@
         const submitBtn = form.querySelector('[data-submit]');
         const errorBox = document.getElementById('payment-error');
 
+        // preview harga
+        const idDetailProduk = document.getElementById('idDetailProduk');
+        const qtyInput = document.getElementById('qtyInput');
+        const minusQty = document.getElementById('minusQty');
+        const plusQty = document.getElementById('plusQty');
+        const subtotalText = document.getElementById('subtotalText');
+        // preview harga
+
         const setLoading = (isLoading) => {
             form.classList.toggle('is-loading', isLoading);
             submitBtn.disabled = isLoading;
@@ -231,6 +239,52 @@
             errorBox.dataset.type = type;
             errorBox.hidden = !message;
         };
+
+        function formatRupiah(value) {
+            return 'Rp ' + new Intl.NumberFormat('id-ID').format(value || 0);
+        }
+
+        function getHargaAktif() {
+            const option = idDetailProduk?.selectedOptions?.[0];
+            return Number(option?.dataset.harga || 0);
+        }
+
+        function updateSubtotal() {
+            const qty = Math.max(1, parseInt(qtyInput.value || '1', 10));
+            qtyInput.value = qty;
+
+            const harga = getHargaAktif();
+            const subtotal = harga * qty;
+
+            if (subtotalText) {
+                subtotalText.textContent = formatRupiah(subtotal);
+            }
+
+            return subtotal;
+        }
+
+        if (idDetailProduk) {
+            idDetailProduk.addEventListener('change', updateSubtotal);
+        }
+
+        if (minusQty && plusQty && qtyInput) {
+            minusQty.addEventListener('click', () => {
+                const qty = Math.max(1, parseInt(qtyInput.value || '1', 10) - 1);
+                qtyInput.value = qty;
+                updateSubtotal();
+            });
+
+            plusQty.addEventListener('click', () => {
+                const qty = Math.max(1, parseInt(qtyInput.value || '1', 10) + 1);
+                qtyInput.value = qty;
+                updateSubtotal();
+            });
+
+            qtyInput.addEventListener('input', updateSubtotal);
+            qtyInput.addEventListener('blur', updateSubtotal);
+        }
+
+        updateSubtotal();
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -278,7 +332,8 @@
 
                 window.snap.pay(bayar.snap_token, {
                     onSuccess: function() {
-                        window.location.href = '/pembayaran/' + bayar.id_pembayaran + '/upload-bukti';
+                        window.location.href = '/pembayaran/' + bayar.id_pembayaran +
+                            '/upload-bukti';
                     },
                     onPending: function() {
                         // window.location.href = `/pembayaran/${bayar.id_pembayaran}/upload-bukti`;
@@ -479,7 +534,7 @@
         input:focus,
         select:focus,
         textarea:focus {
-            border-color: var(--primary); 
+            border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
         }
 
@@ -585,21 +640,101 @@
             }
         }
 
+        .qty-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .qty-btn {
+            width: 42px;
+            height: 42px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #fff;
+            color: var(--ink);
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex: 0 0 auto;
+        }
+
+        .qty-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(15, 118, 110, 0.06);
+            transform: translateY(-1px);
+        }
+
+        .qty-btn:active {
+            transform: translateY(0);
+        }
+
+        #qtyInput {
+            flex: 1 1 auto;
+            min-width: 0;
+            text-align: center;
+            font-weight: 700;
+            font-size: 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #qtyInput:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+        }
+
+        .price-preview {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+            margin: 4px 0 14px;
+            border: 1px solid #dfe7e2;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f7fff8 0%, #f2fbf8 100%);
+        }
+
+        .price-preview span {
+            font-size: 13px;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .price-preview strong {
+            font-size: 18px;
+            color: var(--primary);
+            font-weight: 800;
+            letter-spacing: 0.2px;
+        }
+
         @media (max-width: 640px) {
-            .detail-page {
-                padding: 18px 12px 28px;
+            .qty-control {
+                gap: 6px;
             }
 
-            .item-title {
-                font-size: 22px;
+            .qty-btn {
+                width: 38px;
+                height: 38px;
             }
 
-            .main-swiper img {
-                height: 240px;
+            #qtyInput {
+                font-size: 15px;
             }
 
-            .btn {
-                width: 100%;
+            .price-preview {
+                padding: 10px 12px;
+            }
+
+            .price-preview strong {
+                font-size: 16px;
             }
         }
     </style>
