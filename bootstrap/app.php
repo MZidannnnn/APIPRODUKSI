@@ -14,7 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('payments:expire-pending')
-            ->everyMinute()
+            ->everyFiveMinutes()
             ->withoutOverlapping();
     })
     ->withMiddleware(function (Middleware $middleware): void {
