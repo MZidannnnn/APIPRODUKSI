@@ -4,7 +4,7 @@ namespace App\Providers;
 
 use App\Models\ItemProduksi;
 use App\Models\Pembayaran;
-use App\Models\pengguna;
+use App\Models\Pengguna;
 use App\Models\Pesanan;
 use App\Observers\PesananObserver;
 use Illuminate\Support\Facades\Gate;
@@ -32,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
-        Gate::before(function (pengguna $user, string $ability, array $arguments = []): ?bool {
+        Gate::before(function (Pengguna $user, string $ability, array $arguments = []): ?bool {
             if ((int) $user->id_role !== 1) {
                 return null;
             }

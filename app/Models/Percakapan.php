@@ -33,7 +33,7 @@ class Percakapan extends Model
 
     public function pengguna()
     {
-        return $this->belongsTo(pengguna::class, 'id_pengguna', 'id_pengguna');
+        return $this->belongsTo(Pengguna::class, 'id_pengguna', 'id_pengguna');
     }
 
     public function pesanan()

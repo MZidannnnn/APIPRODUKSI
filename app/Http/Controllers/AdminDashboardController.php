@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\pengguna;
+use App\Models\Pengguna;
 use App\Models\ItemProduksi;
 use App\Models\KategoriUsaha;
 use App\Models\Pesanan;
@@ -17,8 +17,8 @@ class AdminDashboardController extends Controller
     public function dashboardSuperAdmin() 
     {
         // Jumlah akun berdasarkan role
-        $jumlahAdmin = pengguna::where('id_role', 2)->count();
-        $jumlahKlien = pengguna::where('id_role', 3)->count();
+        $jumlahAdmin = Pengguna::where('id_role', 2)->count();
+        $jumlahKlien = Pengguna::where('id_role', 3)->count();
 
         // Jumlah produk aktif
         $jumlahProduk = ItemProduksi::where('status_aktif', 'Aktif')->count();

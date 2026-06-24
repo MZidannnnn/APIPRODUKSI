@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\pengguna;
+use App\Models\Pengguna;
 
 class PembayaranPolicy
 {
@@ -14,7 +14,7 @@ class PembayaranPolicy
         //
     }
 
-    public function viewAdminHistory(pengguna $user): bool
+    public function viewAdminHistory(Pengguna $user): bool
     {
         return (int) $user->id_role === 2;
     }

@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\ItemProduksi;
-use App\Models\pengguna;
+use App\Models\Pengguna;
 
 class ItemProduksiPolicy
 {
@@ -14,26 +14,26 @@ class ItemProduksiPolicy
     {
         //
     }
-    public function viewAny(pengguna $user): bool
+    public function viewAny(Pengguna $user): bool
     {
         return (int) $user->id_role === 2;
     }
-    public function view(pengguna $user, ItemProduksi $itemProduksi): bool
-    {
-        return (int) $user->id_role === 2;
-    }
-
-    public function create(pengguna $user): bool
+    public function view(Pengguna $user, ItemProduksi $itemProduksi): bool
     {
         return (int) $user->id_role === 2;
     }
 
-    public function update(pengguna $user, ItemProduksi $itemProduksi): bool
+    public function create(Pengguna $user): bool
     {
         return (int) $user->id_role === 2;
     }
 
-    public function delete(pengguna $user, ItemProduksi $itemProduksi): bool
+    public function update(Pengguna $user, ItemProduksi $itemProduksi): bool
+    {
+        return (int) $user->id_role === 2;
+    }
+
+    public function delete(Pengguna $user, ItemProduksi $itemProduksi): bool
     {
         return (int) $user->id_role === 2;
     }

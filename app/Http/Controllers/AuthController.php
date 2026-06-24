@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\pengguna;
+use App\Models\Pengguna;
 use App\Models\ItemProduksi;
 use App\Models\KategoriUsaha;
 use Illuminate\Auth\Events\Registered;
@@ -61,7 +61,7 @@ class AuthController extends Controller
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
 
-        $pengguna = pengguna::create([
+        $pengguna = Pengguna::create([
             'id_role' => 3,
             'id_kategori' => null,
             'nama_pengguna' => $validated['nama_pengguna'],
@@ -97,7 +97,7 @@ class AuthController extends Controller
         ]);
 
         // Cek username terlebih dahulu
-        $user = pengguna::where('nama_pengguna', $request->nama_pengguna)->first();
+        $user = Pengguna::where('nama_pengguna', $request->nama_pengguna)->first();
 
         if (!$user) {
             return back()
@@ -153,7 +153,7 @@ class AuthController extends Controller
             'password.min' => 'Password minimal 8 karakter.',
         ]);
 
-        $user = pengguna::where('email', $request->email)->first();
+        $user = Pengguna::where('email', $request->email)->first();
 
         if (!$user) {
             return back()
@@ -237,7 +237,7 @@ class AuthController extends Controller
         ]);
 
         // Cek apakah email terdaftar
-        $user = pengguna::where('email', $request->email)->first();
+        $user = Pengguna::where('email', $request->email)->first();
 
         if (!$user) {
             return back()

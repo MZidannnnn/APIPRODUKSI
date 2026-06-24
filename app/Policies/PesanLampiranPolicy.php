@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\pengguna;
+use App\Models\Pengguna;
 use App\Models\PesanLampiran;
 
 class PesanLampiranPolicy
@@ -15,7 +15,7 @@ class PesanLampiranPolicy
         //
     }
     
-    public function view(pengguna $user, PesanLampiran $lampiran): bool
+    public function view(Pengguna $user, PesanLampiran $lampiran): bool
     {
         $percakapan = $lampiran->pesan?->percakapan;
 

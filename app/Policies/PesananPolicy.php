@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\pengguna;
+use App\Models\Pengguna;
 use App\Models\Pesanan;
 
 class PesananPolicy
@@ -15,7 +15,7 @@ class PesananPolicy
         //
     }
 
-    public function updateStatus(pengguna $user, Pesanan $pesanan): bool
+    public function updateStatus(Pengguna $user, Pesanan $pesanan): bool
     {
         if ((int) $user->id_role !== 2) {
             return false;
@@ -29,12 +29,12 @@ class PesananPolicy
             && (int) $kategoriId === (int) $user->id_kategori;
     }
 
-    public function viewAny(pengguna $user): bool
+    public function viewAny(Pengguna $user): bool
     {
         return (int) $user->id_role === 2;
     }
     
-    public function cancel(pengguna $user, Pesanan $pesanan): bool
+    public function cancel(Pengguna $user, Pesanan $pesanan): bool
     {
         return (int) $user->id_role === 3
             && (int) $pesanan->id_pengguna === (int) $user->id_pengguna;

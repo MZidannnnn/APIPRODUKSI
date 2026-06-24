@@ -27,7 +27,7 @@ class Pesan extends Model
 
     public function pengirim()
     {
-        return $this->belongsTo(pengguna::class, 'id_pengirim', 'id_pengguna');
+        return $this->belongsTo(Pengguna::class, 'id_pengirim', 'id_pengguna');
     }
 
     public function lampiran()
