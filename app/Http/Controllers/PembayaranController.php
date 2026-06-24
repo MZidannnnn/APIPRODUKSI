@@ -22,10 +22,8 @@ use Midtrans\Snap;
 use Midtrans\Transaction;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-
 class PembayaranController extends Controller
 {
-
     public function createTransaction(CreateTransactionRequest $request, MidtransSnapService $midtrans)
     {
         $pesanan = Pesanan::query()
@@ -37,16 +35,23 @@ class PembayaranController extends Controller
         $status = $pesanan->statusPesanan->nama_status_pesanan ?? null;
 
         if ($request->tipe_pembayaran === 'DP') {
-            abort_unless($status === 'Menunggu Pembayaran', 422, 'Status pesanan tidak valid.');
+            abort_unless($status === 'Belum Bayar', 422, 'Status pesanan tidak valid.');
+
             $dpPaid = $pesanan->pembayaran()
                 ->where('tipe_pembayaran', 'DP')
                 ->where('status_bayar', 'Lunas')
                 ->exists();
+
             abort_if($dpPaid, 422, 'DP sudah dibayar.');
         }
 
         if ($request->tipe_pembayaran === 'Pelunasan') {
-            abort_unless($status === 'Selesai', 422, 'Pesanan belum selesai.');
+            abort_unless(
+                $status === 'Pesanan selesai, silahkan lunasi pembayaran',
+                422,
+                'Pesanan belum bisa dilunasi.'
+            );
+
             abort_if($pesanan->sisaBayar() <= 0, 422, 'Tagihan sudah lunas.');
 
             $existingPending = $pesanan->pembayaran()
@@ -67,6 +72,7 @@ class PembayaranController extends Controller
                 }
             }
         }
+
         try {
             $snap = $midtrans->createSnapToken($pesanan, $request->tipe_pembayaran);
 
@@ -128,21 +134,22 @@ class PembayaranController extends Controller
             'Anda tidak berhak mengakses transaksi ini.'
         );
 
-        return view('test.upload_bukti_pembayaran_klien', compact('pembayaran'));
+        return view('klien.bukti-bayar', compact('pembayaran'));
     }
 
-    // proses upload
     public function uploadBukti(UploadBuktiPembayaranRequest $request, Pembayaran $pembayaran)
     {
         $file = $request->file('bukti_bayar');
 
         $baseName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $safeBase = Str::slug($baseName);
+
         if ($safeBase === '') {
             $safeBase = 'bukti-bayar';
         }
 
         $ext = strtolower($file->guessExtension() ?: $file->extension());
+
         if (!in_array($ext, ['jpg', 'jpeg', 'png', 'pdf'], true)) {
             return back()->withErrors(['bukti_bayar' => 'Ekstensi file tidak valid.'])->withInput();
         }
@@ -173,40 +180,10 @@ class PembayaranController extends Controller
             ->with('success', 'Bukti bayar berhasil diunggah.');
     }
 
-    public function TampilRiwayatTransaksi()
-    {
-        // $admin = Auth::user()->id_kategori;
-        $user = Auth::user();
-        $isSuperAdmin = (int) $user->id_role === 1;
-
-        $riwayatTransaksi = Pembayaran::query()
-            ->with([
-                'pesanan:id_pesanan,id_detail_produk,nama_penerima',
-                'pesanan.detailProduk:id_detail_produk,id_item_produksi',
-                'pesanan.detailProduk.itemProduksi:id_item_produksi,id_kategori',
-            ])
-            ->when(! $isSuperAdmin, function ($query) use ($user) {
-                $query->whereHas('pesanan.detailProduk.itemProduksi', function ($q) use ($user) {
-                    $q->where('id_kategori', (int) $user->id_kategori);
-                });
-            })
-            ->latest('id_pembayaran')
-            ->get();
-
-        $data = [
-            'title' => 'Riwayat Transaksi Klien',
-            'menuRiwayatTransaksi' => 'active',
-            'riwayatTransaksi' => $riwayatTransaksi,
-        ];
-
-        return view('admin/riwayat-transaksi/index', $data);
-    }
-
     public function retrySnap(Request $request)
     {
         $data = $request->validate([
             'id_pesanan' => ['required', 'integer', 'exists:pesanan,id_pesanan'],
-            // 'tipe_pembayaran' => ['nullable', Rule::in(['DP', 'Full', 'Pelunasan'])],
         ]);
 
         $pesanan = Pesanan::query()
@@ -215,7 +192,7 @@ class PembayaranController extends Controller
             ->where('id_pengguna', $request->user()->id_pengguna ?? Auth::id())
             ->firstOrFail();
 
-        if (($pesanan->statusPesanan->nama_status_pesanan ?? '') !== 'Menunggu Pembayaran') {
+        if (($pesanan->statusPesanan->nama_status_pesanan ?? '') !== 'Belum Bayar') {
             return response()->json(['message' => 'Status pesanan tidak valid.'], 422);
         }
 
@@ -228,6 +205,7 @@ class PembayaranController extends Controller
         if ($last->status_bayar === 'Lunas') {
             return response()->json(['message' => 'Pesanan sudah lunas.'], 422);
         }
+
         $expiresAt = $last->snap_expires_at
             ?? $last->created_at?->copy()->addHours(24);
 
@@ -242,11 +220,16 @@ class PembayaranController extends Controller
             ]);
         }
 
-        $last->update(['status_bayar' => 'Kedaluwarsa']);
+        $last->update([
+            'status_bayar' => 'Kedaluwarsa',
+        ]);
 
-        $statusBatal = StatusPesanan::where('nama_status_pesanan', 'Dibatalkan')->first();
-        if ($statusBatal) {
-            $pesanan->update(['id_status_pesanan' => $statusBatal->id_status_pesanan]);
+        $statusKadaluarsa = StatusPesanan::where('nama_status_pesanan', 'Pesanan Kadaluarsa')->first();
+
+        if ($statusKadaluarsa) {
+            $pesanan->update([
+                'id_status_pesanan' => $statusKadaluarsa->id_status_pesanan,
+            ]);
         }
 
         return response()->json(['message' => 'Token pembayaran sudah kedaluwarsa.'], 422);
@@ -255,7 +238,6 @@ class PembayaranController extends Controller
     public function cancelPesanan(Request $request, Pesanan $pesanan)
     {
         Gate::authorize('cancel', $pesanan);
-        // $this->authorize('cancel', $pesanan);
 
         try {
             DB::transaction(function () use ($pesanan) {
@@ -264,9 +246,9 @@ class PembayaranController extends Controller
                 $statusName = $pesanan->statusPesanan?->nama_status_pesanan;
 
                 abort_unless(
-                    in_array($statusName, ['Menunggu Pembayaran', 'Menunggu Diproses'], true),
+                    in_array($statusName, ['Belum Bayar'], true),
                     422,
-                    'Pesanan hanya bisa dibatalkan saat status Menunggu Pembayaran atau Menunggu Diproses.'
+                    'Pesanan hanya bisa dibatalkan saat status Belum Bayar.'
                 );
 
                 $latestPembayaran = $pesanan->latestPembayaran()->lockForUpdate()->first();
@@ -283,10 +265,10 @@ class PembayaranController extends Controller
                     ]);
                 }
 
-                $statusBatalId = StatusPesanan::where('nama_status_pesanan', 'Dibatalkan')
+                $statusBatalId = StatusPesanan::where('nama_status_pesanan', 'Pesanan Dibatalkan')
                     ->value('id_status_pesanan');
 
-                abort_unless($statusBatalId, 500, 'Status Dibatalkan belum tersedia.');
+                abort_unless($statusBatalId, 500, 'Status Pesanan Dibatalkan belum tersedia.');
 
                 $pesanan->update([
                     'id_status_pesanan' => $statusBatalId,
@@ -303,5 +285,135 @@ class PembayaranController extends Controller
                 'message' => $e->getMessage() ?: 'Gagal membatalkan pesanan.',
             ], 422);
         }
+    }
+
+    public function TampilRiwayatTransaksi(Request $request)
+    {
+        $user = Auth::user();
+        $isSuperAdmin = (int) $user->id_role === 1;
+
+        $bulan = $request->bulan ?? now()->month;
+        $tahun = $request->tahun ?? now()->year;
+
+        $riwayatTransaksi = Pesanan::query()
+            ->with([
+                'pengguna',
+                'statusPesanan',
+                'detailProduk.itemProduksi.kategoriUsaha',
+                'rincianPesanan.detailProduk.itemProduksi.satuanHarga',
+                'pembayaran' => fn ($q) => $q->latest('created_at'),
+            ])
+            ->whereHas('statusPesanan', function ($q) {
+                $q->whereIn('nama_status_pesanan', [
+                    'Pesanan Selesai',
+                    'Pesanan Dibatalkan',
+                    'Pesanan Kadaluarsa'
+                ]);
+            })
+            ->whereMonth('updated_at', $bulan)
+            ->whereYear('updated_at', $tahun)
+            ->when(! $isSuperAdmin, function ($query) use ($user) {
+                $query->whereHas('detailProduk.itemProduksi', function ($q) use ($user) {
+                    $q->where('id_kategori', $user->id_kategori);
+                });
+            })
+            ->latest('updated_at')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.riwayat-transaksi.index', [
+            'title' => 'Riwayat Transaksi',
+            'menuRiwayatTransaksi' => 'active',
+            'riwayatTransaksi' => $riwayatTransaksi,
+            'bulan' => $bulan,
+            'tahun' => $tahun,
+        ]);
+    }
+
+    public function detailRiwayatTransaksi(Pesanan $pesanan)
+    {
+        $user = Auth::user();
+        $isSuperAdmin = (int) $user->id_role === 1;
+
+        $pesanan->load([
+            'pengguna',
+            'statusPesanan',
+            'detailProduk.itemProduksi.kategoriUsaha',
+            'detailProduk.itemProduksi.fotoProduk',
+            'rincianPesanan.detailProduk.itemProduksi.satuanHarga',
+            'rincianPesanan.detailProduk.itemProduksi.fotoProduk',
+            'pembayaran' => fn ($q) => $q->latest('created_at'),
+        ]);
+
+        if (! $isSuperAdmin) {
+            abort_unless(
+                (int) $pesanan->detailProduk?->itemProduksi?->id_kategori === (int) $user->id_kategori,
+                403,
+                'Anda tidak berhak mengakses transaksi ini.'
+            );
+        }
+
+        return view('admin.riwayat-transaksi.detail', [
+            'title' => 'Detail Nota Transaksi',
+            'menuRiwayatTransaksi' => 'active',
+            'pesanan' => $pesanan,
+        ]);
+    }
+
+    public function syncSuccess(Pembayaran $pembayaran)
+    {
+        $pembayaran->load('pesanan.statusPesanan');
+
+        abort_unless(
+            (int) $pembayaran->pesanan?->id_pengguna === (int) Auth::id(),
+            403
+        );
+
+        DB::transaction(function () use ($pembayaran) {
+            $pembayaran->update([
+                'status_bayar' => 'Lunas',
+            ]);
+
+            $statusName = $pembayaran->tipe_pembayaran === 'Pelunasan'
+                ? 'Pesanan Selesai'
+                : 'Pesanan Diproses';
+
+            $statusId = StatusPesanan::where('nama_status_pesanan', $statusName)
+                ->value('id_status_pesanan');
+
+            if ($statusId) {
+                $pembayaran->pesanan->update([
+                    'id_status_pesanan' => $statusId,
+                ]);
+            }
+        });
+
+        return response()->json([
+            'message' => 'Status pembayaran berhasil disinkronkan.',
+        ]);
+    }
+
+    //bukti bayar
+    public function lihatBuktiPesanan(Pesanan $pesanan)
+    {
+        $pesanan->load([
+            'pengguna',
+            'pembayaran' => fn ($q) => $q->latest('created_at'),
+        ]);
+
+        return view('admin.riwayat-transaksi.bukti-bayar', compact('pesanan'));
+    }
+
+    public function tampilFileBukti(Pembayaran $pembayaran)
+    {
+        abort_unless($pembayaran->bukti_bayar, 404);
+
+        abort_unless(
+            Storage::disk('local')->exists($pembayaran->bukti_bayar),
+            404,
+            'File bukti bayar tidak ditemukan.'
+        );
+
+        return Storage::disk('local')->response($pembayaran->bukti_bayar);
     }
 }

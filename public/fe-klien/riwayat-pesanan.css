@@ -1,0 +1,635 @@
+/* =========================================================
+   RESET & GLOBAL STYLE
+========================================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #ffffff;
+    color: #111;
+}
+
+
+/* =========================================================
+   HEADER RIWAYAT PESANAN
+========================================================= */
+
+.riwayat-header {
+    position: relative;
+    padding: 22px 20px;
+    border-bottom: none;
+    overflow: visible;
+    z-index: 100;
+}
+
+.riwayat-header::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 152px;
+    height: 3px;
+    background: #777;
+    z-index: 1;
+}
+
+
+/* =========================================================
+   BACKGROUND ORNAMEN HEADER
+========================================================= */
+
+.bg-riwayat {
+    position: absolute;
+    width: 170px;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.bg-left {
+    left: 0;
+    top: 58px;
+}
+
+.bg-right {
+    right: 0;
+    top: 0;
+}
+
+
+/* =========================================================
+   ISI HEADER
+========================================================= */
+
+.riwayat-header-content {
+    max-width: 1000px;
+    margin: auto;
+    min-height: 108px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+
+    position: relative;
+    z-index: 10000;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.user-info > i {
+    font-size: 88px;
+    color: #3b3b3b;
+}
+
+.user-text h1 {
+    font-size: 38px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 10px;
+}
+
+
+/* =========================================================
+   TOMBOL HEADER
+========================================================= */
+
+.btn-edit-profile {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 6px 18px;
+
+    background: #fff;
+    border: 1px solid #777;
+    border-radius: 25px;
+
+    color: #111;
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    box-shadow: 0 2px 5px rgba(0,0,0,.18);
+}
+
+.btn-logout {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+
+    background: #008a46;
+    color: #fff;
+
+    text-decoration: none;
+
+    padding: 12px 22px;
+    border-radius: 30px;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    box-shadow: 0 3px 8px rgba(0,0,0,.18);
+}
+
+.btn-logout:hover {
+    background: #006f38;
+}
+
+
+/* =========================================================
+   CONTAINER UTAMA
+========================================================= */
+
+.riwayat-container {
+    width: 100%;
+    max-width: 1000px;
+    margin: 45px auto 40px;
+    padding: 0 20px;
+}
+
+.btn-kembali-beranda {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    background: #008a46;
+    color: #fff;
+
+    text-decoration: none;
+
+    padding: 9px 18px;
+    border-radius: 24px;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    margin-bottom: 24px;
+}
+
+.btn-kembali-beranda:hover {
+    background: #006f38;
+}
+
+.page-heading {
+    margin-bottom: 20px;
+}
+
+.page-title {
+    font-size: 30px;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+.page-subtitle {
+    font-size: 14px;
+    color: #777;
+}
+
+
+/* =========================================================
+   TAB STATUS PESANAN
+========================================================= */
+
+.status-tabs {
+    width: 100%;
+    background: #e0e0e0;
+    border-radius: 24px;
+
+    display: flex;
+    align-items: center;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    margin-bottom: 26px;
+
+    scrollbar-width: none;
+}
+
+.status-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.status-tabs button {
+    border: none;
+    background: transparent;
+
+    flex: 0 0 auto;
+    min-width: 160px;
+
+    padding: 15px 10px;
+
+    font-size: 15px;
+    font-weight: 800;
+
+    cursor: pointer;
+    color: #222;
+
+    white-space: nowrap;
+}
+
+.status-tabs button.active {
+    background: #008a46;
+    color: #fff;
+    border-radius: 24px;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid #c8c8c8;
+    margin-bottom: 26px;
+}
+
+.status-title {
+    text-align: center;
+    margin-bottom: 24px;
+    font-size: 21px;
+    font-weight: 800;
+}
+
+/* =========================================================
+   LIST & CARD PESANAN
+========================================================= */
+
+.order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.order-card {
+    background: #fff;
+
+    border: 1px solid #ddd;
+    border-radius: 12px;
+
+    padding: 20px;
+
+    display: flex;
+    justify-content: space-between;
+    gap: 22px;
+
+    box-shadow: 0 3px 9px rgba(0,0,0,0.12);
+}
+
+.order-left {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.order-left img {
+    width: 140px !important;
+    height: 140px !important;
+    min-width: 140px;
+    max-width: 140px;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+    flex-shrink: 0;
+}
+
+.order-img {
+    .order-img {
+    width: 10px;
+    height: 20px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: #eee;
+    flex-shrink: 0;
+}
+}
+
+.order-info {
+    flex: 1;
+}
+
+.order-info h4 {
+    font-size: 26px;
+    margin-bottom: 14px;
+    font-weight: 800;
+}
+
+.order-meta {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+
+    color: #777;
+    font-size: 13px;
+
+    margin-bottom: 10px;
+}
+
+.order-meta span,
+.order-info p {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.order-info p {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 10px;
+}
+
+
+/* =========================================================
+   BADGE STATUS PESANAN
+========================================================= */
+
+.badge-status {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 6px 13px;
+    border-radius: 20px;
+
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.badge-warning {
+    background: #fff3cd;
+    color: #8a5a00;
+}
+
+.badge-process {
+    background: #e7f1ff;
+    color: #0b5ed7;
+}
+
+.badge-unpaid {
+    background: #fff0e6;
+    color: #c25a00;
+}
+
+.badge-success {
+    background: #e8f7ef;
+    color: #008a46;
+}
+
+.badge-danger {
+    background: #ffecec;
+    color: #c62828;
+}
+
+.badge-default {
+    background: #eee;
+    color: #555;
+}
+
+.expired-text {
+    margin-top: 8px;
+    color: #c62828 !important;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   BAGIAN KANAN CARD PESANAN
+========================================================= */
+
+.order-right {
+    min-width: 230px;
+
+    text-align: right;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.order-right small {
+    font-size: 12px;
+    font-weight: 700;
+    color: #555;
+}
+
+.order-right h3 {
+    font-size: 28px;
+    color: #008a46;
+    margin: 5px 0 12px;
+    font-weight: 800;
+}
+
+.sisa-bayar {
+    margin-bottom: 12px;
+    color: #c25a00 !important;
+}
+
+
+/* =========================================================
+   TOMBOL AKSI PESANAN
+========================================================= */
+
+.order-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.order-actions button {
+    border-radius: 22px;
+    padding: 10px 18px;
+
+    font-size: 13px;
+    font-weight: 800;
+
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.btn-outline-danger {
+    background: #fff;
+    color: #c62828;
+    border: 1px solid #c62828;
+}
+
+.btn-outline-danger:hover {
+    background: #c62828;
+    color: #fff;
+}
+
+.btn-success {
+    background: #008a46;
+    color: #fff;
+    border: 1px solid #008a46;
+}
+
+.btn-success:hover {
+    background: #006f38;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.empty-order {
+    text-align: center;
+    padding: 45px 20px;
+
+    border: 1px dashed #cfcfcf;
+    border-radius: 14px;
+
+    color: #777;
+}
+
+.empty-order i {
+    font-size: 45px;
+    margin-bottom: 12px;
+    color: #008a46;
+}
+
+.empty-order h4 {
+    font-size: 22px;
+    color: #222;
+    margin-bottom: 6px;
+}
+
+
+/* =========================================================
+   PAGINATION
+========================================================= */
+
+.pagination-wrapper {
+    margin-top: 25px;
+}
+
+
+/* =========================================================
+   RESPONSIVE TABLET
+========================================================= */
+
+@media (max-width: 768px) {
+    .riwayat-header {
+        min-height: 230px;
+        padding: 20px;
+    }
+
+    .riwayat-header::after {
+        top: 230px;
+    }
+
+    .riwayat-header-content {
+        min-height: 190px;
+        flex-direction: column;
+        justify-content: center;
+        gap: 16px;
+    }
+
+    .bg-riwayat {
+        width: 125px;
+        opacity: 0.85;
+    }
+
+    .bg-left {
+        left: -20px;
+        top: 80px;
+    }
+
+    .bg-right {
+        right: -20px;
+        top: 0;
+    }
+
+    .user-info {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+
+    .user-info > i {
+        font-size: 68px;
+    }
+
+    .user-text h1 {
+        font-size: 28px;
+    }
+
+    .status-tabs {
+        display: flex;
+        overflow-x: auto;
+    }
+
+    .status-tabs button {
+        min-width: 145px;
+    }
+
+    .order-card {
+        flex-direction: column;
+    }
+
+    .order-right {
+        width: 100%;
+        min-width: 0;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .order-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE HP KECIL
+========================================================= */
+
+@media (max-width: 480px) {
+    .riwayat-container {
+        padding: 0 15px;
+    }
+
+    .order-left {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .order-info h4 {
+        font-size: 22px;
+    }
+
+    .order-meta {
+        justify-content: center;
+        gap: 18px;
+    }
+
+    .order-info p {
+        justify-content: center;
+    }
+
+    .order-img {
+        width: 130px;
+        height: 130px;
+    }
+
+    .order-actions {
+        flex-direction: column;
+    }
+
+    .order-actions button {
+        width: 100%;
+    }
+
+    .btn-logout {
+        padding: 9px 16px;
+    }
+}

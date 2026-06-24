@@ -1,6 +1,8 @@
+ 
+<body>
 @include('klien.layouts.header')
 
-<body>
+@include('klien.components.toast')
 
     <!-- Header -->
     <header class="header">
@@ -42,7 +44,12 @@
                         </span>
                     </a>
 
-                    <div class="profile-wrapper">
+                    <a href="{{ route('klien.pesanan.riwayat') }}" class="profile-button">
+                        <i class="fas fa-user-circle"></i>
+                        <span>{{ Auth::user()->nama_pengguna }}</span>
+                    </a>
+
+                    <!--<div class="profile-wrapper">
                         <button type="button" class="profile-button" id="profileButton">
                             <i class="fas fa-user-circle"></i>
                             <span>{{ Auth::user()->nama_pengguna }}</span>
@@ -97,7 +104,7 @@
                             </div>
 
                         </div>
-                    </div>
+                    </div> -->
                 @endauth
 
             </div>

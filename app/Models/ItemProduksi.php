@@ -14,7 +14,7 @@ class ItemProduksi extends Model
     protected $fillable = [
         'id_kategori',
         'nama_item',
-        'deskripsi_item', 
+        'deskripsi_item',
         'id_satuan',
         'status_aktif', 
     ];

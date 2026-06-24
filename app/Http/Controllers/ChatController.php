@@ -48,7 +48,7 @@ class ChatController extends Controller
             ->orderByDesc('terakhir_aktif')
             ->get();
 
-        return view('klien/chat', [
+        return view('klien.chat', [
             'percakapanList' => $percakapanList,
             'userId' => $userId,
         ]);

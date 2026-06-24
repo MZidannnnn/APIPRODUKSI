@@ -9,15 +9,39 @@
 
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        .input-error {
+            border: 1px solid #dc3545 !important;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 13px;
+            margin-top: -8px;
+            margin-bottom: 10px;
+            text-align: left;
+            width: 100%;
+        }
+
+        .alert-success {
+            background: #e6f7ec;
+            color: #087f3f;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+    </style>
 </head>
 <body>
 
     <!-- Background -->
-        <img src="{{ asset('assets/images/bg-top-left.png') }}" class="auth-bg bg-left-top">
-     <img src="{{ asset('assets/images/bg-top-right.png') }}" class="auth-bg bg-right-top">
-     <img src="{{ asset('assets/images/bg-bottom-left.png') }}" class="auth-bg bg-left-bottom">
-     <img src="{{ asset('assets/images/bg-bottom-right.png') }}" class="auth-bg bg-right-bottom">
-
+    <img src="{{ asset('assets/images/bg-top-left.png') }}" class="auth-bg bg-left-top">
+    <img src="{{ asset('assets/images/bg-top-right.png') }}" class="auth-bg bg-right-top">
+    <img src="{{ asset('assets/images/bg-bottom-left.png') }}" class="auth-bg bg-left-bottom">
+    <img src="{{ asset('assets/images/bg-bottom-right.png') }}" class="auth-bg bg-right-bottom">
 
     <!-- Content -->
     <main class="auth-wrapper">
@@ -32,9 +56,8 @@
             <!-- Title -->
             <h1>Lupa Password</h1>
 
-            <!-- Success Message -->
             @if (session('status'))
-                <div class="auth-success">
+                <div class="alert-success">
                     {{ session('status') }}
                 </div>
             @endif
@@ -51,11 +74,10 @@
                     name="email"
                     placeholder="Email terdaftar"
                     value="{{ old('email') }}"
-                    required>
+                    class="@error('email') input-error @enderror">
 
-                <!-- Error -->
                 @error('email')
-                    <div class="auth-error">
+                    <div class="error-message">
                         {{ $message }}
                     </div>
                 @enderror

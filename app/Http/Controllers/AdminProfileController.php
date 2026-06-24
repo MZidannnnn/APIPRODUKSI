@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
 
 class AdminProfileController extends Controller
-{
+{ 
     public function edit()
     {
         $user = Auth::user()->load('kategori');

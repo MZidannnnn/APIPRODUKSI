@@ -125,7 +125,7 @@
             </li>
 
             <li class="nav-item {{ $menuRiwayatTransaksi ?? '' }}">
-                <a class="nav-link" href="{{ route('admin.transaksi') }}">
+                <a class="nav-link" href="{{ route('admin.riwayat-transaksi.index') }}">
                     <i class="fas fa-fw fa-receipt"></i>
                     <span>Riwayat Transaksi</span></a>
             </li>

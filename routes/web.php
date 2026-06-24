@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\AdminPesananStatusController;
+use App\Http\Controllers\AdminPesananStatusController; 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatAdminController;
 use App\Http\Controllers\ChatAttachmentController;
@@ -19,6 +19,7 @@ use App\Http\Controllers\SatuanHargaController;
 use App\Http\Controllers\StatusPesananController;
 use App\Http\Controllers\CariProdukController;
 use App\Http\Controllers\AdminProfileController;
+use App\Http\Controllers\KlienProfileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -131,9 +132,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/pembayaran/{pembayaran}/upload-bukti', [PembayaranController::class, 'uploadBukti'])->name('pembayaran.upload');
 
         // harga kostum
-        Route::get('/pesanan/{pesanan}/status-harga', [PersetujuanHargaController::class, 'showStatus'])->name('pesanan.statusHarga');
-        Route::post('/pesanan/{pesanan}/setuju-harga', [PersetujuanHargaController::class, 'setujuHarga'])->name('pesanan.setujuHarga');
-        Route::post('/pesanan/{pesanan}/tolak-harga', [PersetujuanHargaController::class, 'tolakHarga'])->name('pesanan.tolakHarga');
+        //Route::get('/pesanan/{pesanan}/status-harga', [PersetujuanHargaController::class, 'showStatus'])->name('pesanan.statusHarga');
+        //Route::post('/pesanan/{pesanan}/setuju-harga', [PersetujuanHargaController::class, 'setujuHarga'])->name('pesanan.setujuHarga');
+        //Route::post('/pesanan/{pesanan}/tolak-harga', [PersetujuanHargaController::class, 'tolakHarga'])->name('pesanan.tolakHarga');
 
         // fitur chat klien
         Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
@@ -146,12 +147,17 @@ Route::middleware('auth')->group(function () {
 
         // fitur bayar kembali riwayatPesanan
         Route::post('/pembayaran/retry', [PembayaranController::class, 'retrySnap'])->name('pembayaran.retry');
-        Route::get('/pesanan/riwayat', [PesananController::class, 'riwayatPesanan'])->name('klienpesanan.riwayat');
+        Route::get('/pesanan/riwayat', [PesananController::class, 'riwayatPesanan'])->name('klien.pesanan.riwayat');
+        Route::post('/pembayaran/{pembayaran}/sync-success', [PembayaranController::class, 'syncSuccess'])->name('pembayaran.sync-success');
 
         // fitur batalkan pesanan
         Route::post('/pesanan/{pesanan}/batal', [PembayaranController::class, 'cancelPesanan'])
             ->name('pesanan.batal');
         // end fitur batalkan pesanan
+
+        // Profil klien
+        Route::get('/profile', [KlienProfileController::class, 'index'])->name('klien.profile');
+        Route::put('/profile', [KlienProfileController::class, 'update'])->name('klien.profile.update');
     });
 
 
@@ -227,6 +233,8 @@ Route::middleware('auth')->group(function () {
         // dashboard admin
         Route::get('/admin/dashboard', [AdminDashboardController::class, 'dashboardAdmin'])->name('dashboardAdmin');
 
+        
+
         // Route::get('/admin/pesanan/{pesanan}/penawaran', [PersetujuanHargaController::class, 'showAdmin'])
         //     ->name('admin.pesanan.penawaran');
 
@@ -251,6 +259,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/admin/profile', [AdminProfileController::class, 'edit'])->name('admin.profile.edit');
         Route::put('/admin/profile', [AdminProfileController::class, 'update'])->name('admin.profile.update');
 
+        //Lihat Bukti Bayar Klien
+        Route::get('/admin/riwayat-transaksi/{pesanan}/bukti-bayar', [PembayaranController::class, 'lihatBuktiPesanan'])
+            ->name('admin.riwayat-transaksi.bukti-bayar');
+
+        Route::get('/admin/bukti-bayar/{pembayaran}/file', [PembayaranController::class, 'tampilFileBukti'])
+            ->name('admin.bukti-bayar.file');
+
        
     });
 
@@ -261,14 +276,17 @@ Route::middleware('auth')->group(function () {
     // CRUD item produksi
         Route::resource('/admin/item-produksi', ItemProduksiController::class) ->names('admin.itemProduksi');
 
-         // route riwayat transaksi admin
-        Route::get('/admin/riwayat-transaksi', [PembayaranController::class, 'TampilRiwayatTransaksi'])->name('admin.transaksi');
+        // Riwayat transaksi admin
+        Route::get('/admin/riwayat-transaksi', [PembayaranController::class, 'TampilRiwayatTransaksi'])->name('admin.riwayat-transaksi.index');
+        Route::get('/admin/riwayat-transaksi/{pesanan}', [PembayaranController::class, 'detailRiwayatTransaksi'])->name('admin.riwayat-transaksi.detail');
         // end route riwayat transaksi admin
 
         // route update status pesanan admin
         Route::get('/admin/edit-status-pesanan/{pesanan}', [AdminPesananStatusController::class, 'editStatusPesanan'])->name('admin.editStatusPesanan');
         Route::patch('/admin/update-status-pesanan/{pesanan}', [AdminPesananStatusController::class, 'updateStatusPesanan'])->name('admin.updateStatusPesanan');
         Route::get('/admin/pesanan', [AdminPesananStatusController::class, 'tampilAdminPesanan'])->name('admin.tampilPesanan');
+        Route::get('/admin/progres-pesanan/{id}/edit', [AdminPesananStatusController::class, 'edit'])->name('admin.progres-pesanan.edit');
+        Route::put('/admin/progres-pesanan/{id}', [AdminPesananStatusController::class, 'update'])->name('admin.progres-pesanan.update');
         // end route update status pesanan admin
     });
 });
@@ -281,8 +299,12 @@ Route::middleware('auth')->group(function () {
 //     return view('auth.login');
 // });
 
-Route::get('/hasil/pencarian', function () {
-    return view('klien.hasil-pencarian');
+Route::get('/riwayat-pesanan', function () {
+    return view('klien.riwayat-pesanan');
+});
+
+Route::get('/profile/test', function () {
+    return view('klien.profile');
 });
 
 // route::get('/dashboard', function () {

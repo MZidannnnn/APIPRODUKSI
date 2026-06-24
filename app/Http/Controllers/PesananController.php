@@ -124,7 +124,7 @@ class PesananController extends Controller
 
         $detail = DetailProduk::with('itemProduksi.kategoriUsaha')->findOrFail($validated['id_detail_produk']);
 
-        $status = StatusPesanan::where('nama_status_pesanan', 'Menunggu Pembayaran')->first();
+        $status = StatusPesanan::where('nama_status_pesanan', 'Belum Bayar')->first();
 
         $kuantitas = (int) $validated['kuantitas'];
         $subtotal = round((float) $detail->harga_dasar * $kuantitas, 2);
@@ -149,12 +149,12 @@ class PesananController extends Controller
                 'subtotal' => $subtotal,
             ]);
 
-                // PersetujuanHarga::create([
-                //     'id_pesanan' => $pesanan->id_pesanan,
-                //     'harga_awal' => $detail->harga_dasar,
-                //     'status_persetujuan' => 'Menunggu',
-                // ]);
-            
+            // PersetujuanHarga::create([
+            //     'id_pesanan' => $pesanan->id_pesanan,
+            //     'harga_awal' => $detail->harga_dasar,
+            //     'status_persetujuan' => 'Menunggu',
+            // ]);
+
             return $pesanan;
         });
 
@@ -188,7 +188,8 @@ class PesananController extends Controller
 
         $userId = Auth::id();
 
-        return view('test/detail-produk', compact('itemProduksi', 'userId')); //yang benar klien/detail-produk
+        return view('klien.detail-produk', compact('itemProduksi', 'userId'));
+        //return view('test/detail-produk', compact('itemProduksi', 'userId'));
     }
 
     public function showTagihan(Pesanan $pesanan)
@@ -201,22 +202,42 @@ class PesananController extends Controller
     {
         $filters = $request->validate([
             'status' => ['nullable', Rule::in([
-                'Menunggu Pembayaran',
-                'Menunggu Diproses',
-                'Diproses',
-                'Selesai',
-                'Kedaluwarsa',
+                'Belum Bayar',
+                'Pesanan Diproses',
+                'Pesanan selesai, silahkan lunasi pembayaran',
+                'Pesanan Selesai',
+                'Pesanan Dibatalkan',
+                'Pesanan Kadaluarsa',
+                'Dibatalkan',
             ])],
             'tipe' => ['nullable', Rule::in(['Full', 'DP'])],
         ]);
 
         $userId = Auth::id();
 
+        $statusKadaluarsa = StatusPesanan::where('nama_status_pesanan', 'Pesanan Kadaluarsa')->first();
+
+        if ($statusKadaluarsa) {
+            Pesanan::where('id_pengguna', $userId)
+                ->whereHas('statusPesanan', function ($q) {
+                    $q->where('nama_status_pesanan', 'Belum Bayar');
+                })
+                ->where('created_at', '<=', now()->subHours(24))
+                ->whereDoesntHave('pembayaran', function ($q) {
+                    $q->where('status_bayar', 'Lunas');
+                })
+                ->update([
+                    'id_status_pesanan' => $statusKadaluarsa->id_status_pesanan,
+                ]);
+        }
+
         $query = Pesanan::query()
             ->where('id_pengguna', $userId)
             ->with([
-                'detailProduk.itemProduksi',
+                'detailProduk.itemProduksi.fotoProduk',
+                'detailProduk.itemProduksi.satuanHarga',
                 'statusPesanan',
+                'rincianPesanan',
                 'latestPembayaran' => function ($q) {
                     $q->select([
                         'pembayaran.id_pembayaran',
@@ -241,24 +262,27 @@ class PesananController extends Controller
             ->latest('tanggal_pesan');
 
         if (!empty($filters['tipe'])) {
-            $query->whereHas('pembayaran', fn($p) => $p->where('tipe_pembayaran', $filters['tipe']));
+            $query->whereHas('pembayaran', function ($p) use ($filters) {
+                $p->where('tipe_pembayaran', $filters['tipe']);
+            });
         }
 
-        if (($filters['status'] ?? null) === 'Kedaluwarsa') {
-            $query->where(function ($q) {
-                $q->whereHas('statusPesanan', fn($s) => $s->where('nama_status_pesanan', 'Dibatalkan'))
-                    ->orWhere(function ($q2) {
-                        $q2->whereHas('statusPesanan', fn($s) => $s->where('nama_status_pesanan', 'Menunggu Pembayaran'))
-                            ->whereHas('pembayaran', fn($p) => $p->where('status_bayar', 'Pending')
-                                ->where('created_at', '<', now()->subHours(24)));
-                    });
+        if (($filters['status'] ?? null) === 'Dibatalkan') {
+            $query->whereHas('statusPesanan', function ($s) {
+                $s->whereIn('nama_status_pesanan', [
+                    'Pesanan Dibatalkan',
+                    'Pesanan Kadaluarsa',
+                ]);
             });
         } elseif (!empty($filters['status'])) {
-            $query->whereHas('statusPesanan', fn($s) => $s->where('nama_status_pesanan', $filters['status']));
+            $query->whereHas('statusPesanan', function ($s) use ($filters) {
+                $s->where('nama_status_pesanan', $filters['status']);
+            });
         }
 
         $pesanan = $query->paginate(10)->withQueryString();
 
-        return view('test.klien-riwayat-pesanan', compact('pesanan', 'filters'));
+        return view('klien.riwayat-pesanan', compact('pesanan', 'filters'));
+        //return view('test.klien-riwayat-pesanan', compact('pesanan', 'filters'));
     }
 }

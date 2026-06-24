@@ -35,9 +35,9 @@
             <h6 class="m-0 font-weight-bold text-white">
                 <i class="fas fa-list mr-2" style="color: #ef6c00;"></i> Daftar Antrean Produksi
             </h6>
-            <span class="badge text-white small" style="background-color: #ef6c00; padding: 5px 10px;">
+            <!--<span class="badge text-white small" style="background-color: #ef6c00; padding: 5px 10px;">
                 <i class="fas fa-sync fa-spin mr-1"></i> Live Mode
-            </span>
+            </span> -->
         </div>
 
         <div class="card-body">
@@ -45,13 +45,14 @@
                 <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
                     <thead class="bg-light text-gray-800 border-bottom">
                         <tr class="text-center">
-                            <th width="8%">ID Pesanan</th>
+                            <th>Kode Transaksi</th>
                             <th>Penerima</th>
                             <th>Nama Produk</th>
                             <th>Kategori</th>
                             <th width="15%">Status</th>
                             <th>Tanggal Masuk</th>
                             <th>Total Harga</th>
+                            <th width="12%">Bukti Bayar</th>
                             <th width="10%">
                                 <i class="fas fa-cog"></i>Aksi
                             </th>
@@ -63,7 +64,11 @@
                         @if ($pesanan->count() > 0)
                             @foreach ($pesanan as $item)
                                 <tr class="text-center align-middle">
-                                    <td class="font-weight-bold text-gray-800">#{{ $item->id_pesanan }}</td>
+                                    <td class="font-weight-bold text-gray-800">
+                                        <span class="badge badge-dark px-2 py-1">
+                                            {{ $item->kode_resi_pesanan ?? '#' . $item->id_pesanan }}
+                                        </span>
+                                    </td>
                                     <td>{{ $item->nama_penerima }}</td>
                                     <td>{{ $item->detailProduk?->itemProduksi?->nama_item ?? '-' }}</td>
                                     <td>
@@ -73,7 +78,6 @@
                                     </td>
                                     <td>
                                         <span class="badge badge-warning text-dark font-weight-bold px-2 py-1 w-100">
-                                            <i class="fas fa-spinner fa-pulse mr-1"></i> 
                                             {{ $item->statusPesanan?->nama_status_pesanan ?? '-' }}
                                         </span>
                                     </td>
@@ -85,7 +89,32 @@
                                         Rp {{ number_format($item->total_harga ?? 0, 0, ',', '.') }}
                                     </td>
                                     <td>
-                                        <a href="{{ url('admin/pesanan/'.$item->id_pesanan) }}" class="btn btn-sm text-white shadow-sm" style="background-color: #ef6c00;" title="Detail Pesanan">
+                                        @php
+                                            $adaBukti = $item->pembayaran->whereNotNull('bukti_bayar')->count();
+                                        @endphp
+
+                                        @if($adaBukti > 0)
+
+                                            <a href="{{ route('admin.riwayat-transaksi.bukti-bayar', $item->id_pesanan) }}"
+                                            class="btn btn-info btn-sm shadow-sm">
+                                                <i class="fas fa-image mr-1"></i>
+                                                Lihat
+                                            </a>
+
+                                        @else
+
+                                            <span class="badge badge-secondary">
+                                                <i class="fas fa-times-circle mr-1"></i>
+                                                Belum Ada
+                                            </span>
+
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <a href="{{ route('admin.progres-pesanan.edit', $item->id_pesanan) }}"
+                                        class="btn btn-sm text-white shadow-sm"
+                                        style="background-color: #ef6c00;"
+                                        title="Detail Pesanan">
                                             <i class="fas fa-eye mr-1"></i> Periksa
                                         </a>
                                     </td>

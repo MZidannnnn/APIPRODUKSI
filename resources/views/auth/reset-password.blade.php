@@ -9,15 +9,49 @@
 
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        .input-error {
+            border: 1px solid #dc3545 !important;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 13px;
+            margin-top: -8px;
+            margin-bottom: 10px;
+            text-align: left;
+            width: 100%;
+        }
+
+        .alert-success {
+            background: #e6f7ec;
+            color: #087f3f;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .alert-error {
+            background: #ffe5e5;
+            color: #b00020;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+    </style>
 </head>
 <body>
 
     <!-- Background -->
-     <img src="{{ asset('assets/images/bg-top-left.png') }}" class="auth-bg bg-left-top">
-     <img src="{{ asset('assets/images/bg-top-right.png') }}" class="auth-bg bg-right-top">
-     <img src="{{ asset('assets/images/bg-bottom-left.png') }}" class="auth-bg bg-left-bottom">
-     <img src="{{ asset('assets/images/bg-bottom-right.png') }}" class="auth-bg bg-right-bottom">
-
+    <img src="{{ asset('assets/images/bg-top-left.png') }}" class="auth-bg bg-left-top">
+    <img src="{{ asset('assets/images/bg-top-right.png') }}" class="auth-bg bg-right-top">
+    <img src="{{ asset('assets/images/bg-bottom-left.png') }}" class="auth-bg bg-left-bottom">
+    <img src="{{ asset('assets/images/bg-bottom-right.png') }}" class="auth-bg bg-right-bottom">
 
     <!-- Content -->
     <main class="auth-wrapper">
@@ -31,6 +65,18 @@
 
             <!-- Title -->
             <h1>Reset Password</h1>
+
+            @if (session('status'))
+                <div class="alert-success">
+                    {{ session('status') }}
+                </div>
+            @endif
+
+            @error('token')
+                <div class="alert-error">
+                    {{ $message }}
+                </div>
+            @enderror
 
             <!-- Form -->
             <form action="{{ route('password.update') }}"
@@ -47,9 +93,15 @@
                 <!-- Email -->
                 <input type="email"
                     name="email"
-                    value="{{ $email ?? old('email') }}"
+                    value="{{ old('email', $email ?? '') }}"
                     placeholder="Email"
-                    required>
+                    class="@error('email') input-error @enderror">
+
+                @error('email')
+                    <div class="error-message">
+                        {{ $message }}
+                    </div>
+                @enderror
 
                 <!-- Password -->
                 <div class="password-wrapper">
@@ -57,12 +109,17 @@
                     <input type="password"
                         name="password"
                         placeholder="Password Baru"
-                        class="password-input"
-                        required>
+                        class="password-input @error('password') input-error @enderror">
 
                     <i class="fa-solid fa-eye toggle-password"></i>
 
                 </div>
+
+                @error('password')
+                    <div class="error-message">
+                        {{ $message }}
+                    </div>
+                @enderror
 
                 <!-- Konfirmasi Password -->
                 <div class="password-wrapper">
@@ -70,26 +127,11 @@
                     <input type="password"
                         name="password_confirmation"
                         placeholder="Ulangi Password"
-                        class="password-input"
-                        required>
+                        class="password-input @error('password') input-error @enderror">
 
                     <i class="fa-solid fa-eye toggle-password"></i>
 
                 </div>
-
-                <!-- Error Email -->
-                @error('email')
-                    <div class="auth-error">
-                        {{ $message }}
-                    </div>
-                @enderror
-
-                <!-- Error Password -->
-                @error('password')
-                    <div class="auth-error">
-                        {{ $message }}
-                    </div>
-                @enderror
 
                 <!-- Button -->
                 <button type="submit">

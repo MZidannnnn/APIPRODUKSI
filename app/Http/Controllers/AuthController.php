@@ -12,70 +12,58 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
-
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    /**
-     * Tampilkan form register
-     */
     public function showRegister()
     {
         return view('auth.register');
     }
 
-    /**
-     * Tampilkan form register
-     */
     public function showDashboard(Request $request)
     {
-    $kategoriUsaha = KategoriUsaha::all();
-    $selectedKategoriId = $request->query('kategori');
+        $kategoriUsaha = KategoriUsaha::all();
+        $selectedKategoriId = $request->query('kategori');
 
-    $itemProduksi = ItemProduksi::with(['kategoriUsaha', 'satuanHarga', 'detailProduk', 'fotoProduk'])
-    ->when($selectedKategoriId, function ($query) use ($selectedKategoriId) {
-        $query->where('id_kategori', $selectedKategoriId);
-    })
-    ->get();
+        $itemProduksi = ItemProduksi::with(['kategoriUsaha', 'satuanHarga', 'detailProduk', 'fotoProduk'])
+            ->when($selectedKategoriId, function ($query) use ($selectedKategoriId) {
+                $query->where('id_kategori', $selectedKategoriId);
+            })
+            ->get();
 
-    return view('klien.dashboard', compact(
-        'kategoriUsaha',
-        'itemProduksi',
-        'selectedKategoriId'
-    ));
+        return view('klien.dashboard', compact(
+            'kategoriUsaha',
+            'itemProduksi',
+            'selectedKategoriId'
+        ));
     }
 
-    /*public function detailProduk($id)
-    {
-        $item = ItemProduksi::with([
-            'kategoriUsaha',
-            'detailProduk.satuanHarga',
-            'fotoProduk'
-        ])->findOrFail($id);
-
-        return view('klien/detail-produk', compact('item'));
-    } */ //Route nya udah ada di PesananController
-
-    /**
-     * Handle registrasi klien
-     */
     public function register(Request $request)
     {
-        // Validasi
         $validated = $request->validate([
-            'nama_pengguna' => ['required', 'string', 'max:100'],
-            'email' => ['required', 'string', 'email', 'max:150', 'unique:pengguna'],
+            'nama_pengguna' => ['required', 'string', 'max:100', 'unique:pengguna,nama_pengguna'],
+            'email' => ['required', 'string', 'email', 'max:150', 'unique:pengguna,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ], [
+            'nama_pengguna.required' => 'Username wajib diisi.',
+            'nama_pengguna.string' => 'Username harus berupa teks.',
+            'nama_pengguna.max' => 'Username maksimal 100 karakter.',
+            'nama_pengguna.unique' => 'Username sudah digunakan.',
 
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.max' => 'Email maksimal 150 karakter.',
+            'email.unique' => 'Email sudah digunakan.',
+
+            'password.required' => 'Password wajib diisi.',
+            'password.min' => 'Password minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
 
-        // Role untuk klien = 1 (dari tabel role)
-        $role_klien = 3; // Sesuaikan dengan id_role klien di tabel role
-
-        // Buat akun baru (id_kategori dikosongkan)
         $pengguna = pengguna::create([
-            'id_role' => $role_klien,
-            'id_kategori' => null, // Kosong untuk klien
+            'id_role' => 3,
+            'id_kategori' => null,
             'nama_pengguna' => $validated['nama_pengguna'],
             'email' => $validated['email'],
             'password' => $validated['password'],
@@ -88,39 +76,53 @@ class AuthController extends Controller
         return redirect()->route('dashboard')->with('success', 'Registrasi berhasil!');
     }
 
-    /**
-     * Tampilkan form login Klien
-     */
     public function showLoginKlien()
     {
         return view('auth.login');
     }
 
-    /**
-     * Tampilkan form login Admin dan Super Admin
-     */
     public function showLoginAdmin()
     {
         return view('auth.loginadmin');
     }
 
-    /**
-     * Handle login Klien
-     */
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'nama_pengguna' => ['required'],
-            'password' => ['required'],
+            'nama_pengguna' => ['required', 'string'],
+            'password' => ['required', 'string'],
+        ], [
+            'nama_pengguna.required' => 'Username wajib diisi.',
+            'password.required' => 'Password wajib diisi.',
         ]);
 
-        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
-            return back()->withErrors([
-                'nama_pengguna' => 'Username atau password salah.',
-            ])->onlyInput('nama_pengguna');
+        // Cek username terlebih dahulu
+        $user = pengguna::where('nama_pengguna', $request->nama_pengguna)->first();
+
+        if (!$user) {
+            return back()
+                ->withErrors([
+                    'nama_pengguna' => 'Username tidak ditemukan.',
+                ])
+                ->onlyInput('nama_pengguna');
         }
 
+        // Cek password
+        if (!Hash::check($request->password, $user->password)) {
+            return back()
+                ->withErrors([
+                    'password' => 'Password yang Anda masukkan salah.',
+                ])
+                ->onlyInput('nama_pengguna');
+        }
+
+        // Login
+        Auth::login($user, $request->boolean('remember'));
+
         $request->session()->regenerate();
+
+        $request->session()->regenerate();
+
         $user = Auth::user();
 
         if ((int) $user->id_role === 3) {
@@ -128,165 +130,181 @@ class AuthController extends Controller
         }
 
         Auth::logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return back()->withErrors([
-            'nama_pengguna' => 'Role tidak diizinkan.',
-        ])->onlyInput('nama_pengguna');
+        return back()
+            ->withErrors([
+                'nama_pengguna' => 'Akun ini tidak diizinkan login melalui halaman klien.',
+            ])
+            ->onlyInput('nama_pengguna');
     }
 
-
-    /**
-     * Handle login Admin dan Super Admin
-     */
-        public function loginAdmin(Request $request)
+    public function loginAdmin(Request $request)
     {
-        // VALIDASI
         $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|min:8'
+            'email' => ['required', 'email'],
+            'password' => ['required', 'min:8'],
         ], [
-            'email.required' => 'Email wajib diisi',
-            'email.email' => 'Format email tidak valid',
-            'password.required' => 'Password wajib diisi',
-            'password.min' => 'Password minimal 8 karakter',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'password.required' => 'Password wajib diisi.',
+            'password.min' => 'Password minimal 8 karakter.',
         ]);
 
-        // CEK USER BERDASARKAN EMAIL
         $user = pengguna::where('email', $request->email)->first();
 
-        // JIKA USER TIDAK ADA
         if (!$user) {
-            return back()->with('error', 'Email atau Password salah!');
+            return back()
+                ->withErrors([
+                    'email' => 'Email atau password salah.',
+                ])
+                ->onlyInput('email');
         }
 
-        // COBA LOGIN
         if (Auth::attempt([
             'email' => $request->email,
-            'password' => $request->password
+            'password' => $request->password,
         ])) {
-
-            // Regenerate session agar lebih aman
             $request->session()->regenerate();
 
-            // Ambil data user yang sedang login
             $user = Auth::user();
 
-            // Arahkan Super Admin ke dashboard Super Admin
             if ((int) $user->id_role === 1) {
                 return redirect()->route('dashboardSuperAdmin')
                     ->with('success', 'Anda berhasil login sebagai Super Admin');
             }
 
-            // Arahkan Admin ke dashboard Admin 
             if ((int) $user->id_role === 2) {
                 return redirect()->route('dashboardAdmin')
                     ->with('success', 'Anda berhasil login sebagai Admin');
             }
 
-            // Jika bukan Super Admin atau Admin, logout otomatis
             Auth::logout();
 
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return back()->with('error', 'Akses hanya untuk Admin dan Super Admin');
+            return back()
+                ->withErrors([
+                    'email' => 'Akses hanya untuk Admin dan Super Admin.',
+                ])
+                ->onlyInput('email');
         }
 
-        return back()->with('error', 'Email atau Password salah!');
+        return back()
+            ->withErrors([
+                'email' => 'Email atau password salah.',
+            ])
+            ->onlyInput('email');
     }
 
-    /**
- * Handle logout
- */
-public function logout(Request $request)
-{
-    // Simpan role user sebelum logout
-    $role = Auth::user()->id_role;
+    public function logout(Request $request)
+    {
+        $role = Auth::user()->id_role;
 
-    // Logout
-    Auth::logout();
+        Auth::logout();
 
-    // Hapus session
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-    // Redirect berdasarkan role
-    if (in_array($role, [1, 2])) {
-        return redirect('/admin/privasi')
-            ->with('success', 'Berhasil logout');
+        if (in_array($role, [1, 2])) {
+            return redirect('/admin/privasi')->with('success', 'Berhasil logout');
+        }
+
+        if ($role == 3) {
+            return redirect('/')->with('success', 'Berhasil logout');
+        }
+
+        return redirect('/');
     }
 
-    if ($role == 3) {
-        return redirect('/')
-            ->with('success', 'Berhasil logout');
-    }
-
-    // Default fallback
-    return redirect('/');
-}
-
-    /**
-     * Handle Forget Password
-     */
     public function showForgotPasswordForm()
-{
-    return view('auth.forgot-password');
-}
+    {
+        return view('auth.forgot-password');
+    }
 
-public function sendResetLinkEmail(Request $request)
-{
-    Log::info('Proses lupa password dimulai', ['email' => $request->email]);
+    public function sendResetLinkEmail(Request $request)
+    {
+        Log::info('Proses lupa password dimulai', ['email' => $request->email]);
 
-    $request->validate([
-        'email' => ['required', 'email'],
-    ]);
+        $request->validate([
+            'email' => ['required', 'email'],
+        ], [
+            'email.required' => 'Email wajib diisi.',
+            'email.email'    => 'Format email tidak valid.',
+        ]);
 
-    $status = Password::sendResetLink(
-        $request->only('email')
-    );
+        // Cek apakah email terdaftar
+        $user = pengguna::where('email', $request->email)->first();
 
-    Log::info('Status kirim reset link', ['status' => $status]);
-
-    return $status === Password::RESET_LINK_SENT
-        ? back()->with('status', __($status))
-        : back()->withErrors(['email' => __($status)]);
-}
-
-public function resetPassword(Request $request)
-{
-    Log::info('Proses reset password dimulai', ['email' => $request->email]);
-
-    $request->validate([
-        'token' => ['required'],
-        'email' => ['required', 'email'],
-        'password' => ['required', 'min:8', 'confirmed'],
-    ]);
-
-    $status = Password::reset(
-        $request->only('email', 'password', 'password_confirmation', 'token'),
-        function ($user, $password) {
-            $user->password = $password;
-            $user->setRememberToken(Str::random(60));
-            $user->save();
-
-            event(new PasswordReset($user));
+        if (!$user) {
+            return back()
+                ->withErrors([
+                    'email' => 'Email tidak terdaftar.',
+                ])
+                ->withInput();
         }
-    );
 
-    Log::info('Status reset password', ['status' => $status]);
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
 
-    return $status === Password::PASSWORD_RESET
-        ? redirect()->route('login')->with('status', __($status))
-        : back()->withErrors(['email' => [__($status)]]);
-}
+        Log::info('Status kirim reset link', ['status' => $status]);
 
-public function showResetForm(Request $request, string $token)
-{
-    return view('auth.reset-password', [
-        'token' => $token,
-        'email' => $request->query('email'),
-    ]);
-}
+        return $status === Password::RESET_LINK_SENT
+            ? back()->with('status', 'Link reset password berhasil dikirim ke email Anda.')
+            : back()->withErrors([
+                'email' => 'Gagal mengirim link reset password.',
+            ]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        Log::info('Proses reset password dimulai', ['email' => $request->email]);
+
+        $request->validate([
+            'token' => ['required'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'min:8', 'confirmed'],
+        ], [
+            'token.required' => 'Token reset password tidak ditemukan.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'password.required' => 'Password baru wajib diisi.',
+            'password.min' => 'Password baru minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->password = $password;
+                $user->setRememberToken(Str::random(60));
+                $user->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        Log::info('Status reset password', ['status' => $status]);
+
+        return $status === Password::PASSWORD_RESET
+        ? redirect()->route('login')->with(
+            'status',
+            'Password berhasil diubah. Silakan login menggunakan password baru Anda.'
+        )
+        : back()->withErrors([
+            'email' => 'Gagal mereset password. Silakan coba lagi.'
+        ]);
+    }
+
+    public function showResetForm(Request $request, string $token)
+    {
+        return view('auth.reset-password', [
+            'token' => $token,
+            'email' => $request->query('email'),
+        ]);
+    }
 }

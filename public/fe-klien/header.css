@@ -179,28 +179,37 @@ body {
 }
 
 /* PROFILE */
-.profile-wrapper {
+/* .profile-wrapper {
     position: relative;
     z-index: 10001;
-}
+} */
 
 .profile-button {
     display: flex;
     align-items: center;
     gap: 8px;
+    background: #008a46;
+    color: white;
     border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: 16px;
-    color: #222;
+    border-radius: 30px;
+    padding: 8px 15px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.profile-button:hover {
+    color: white;
+    text-decoration: none;
+    background: #006b36;
 }
 
 .profile-button i {
     font-size: 30px;
 }
 
-/* DROPDOWN */
-.profile-dropdown {
+/* DROPDOWN PROFILE */
+/* .profile-dropdown {
     position: absolute;
     top: 55px;
     right: 0;
@@ -301,7 +310,7 @@ body {
     padding: 10px 25px;
     border-radius: 6px;
     display: inline-block;
-}
+} */
 
 .search-box {
     position: relative;

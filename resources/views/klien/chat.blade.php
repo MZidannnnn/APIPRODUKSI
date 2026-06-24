@@ -24,7 +24,7 @@
                 $foto = $produk?->fotoProduk?->first();
             @endphp
 
-            <a class="room-item {{ $p->unread_count > 0 ? 'has-unread' : '' }}" href="{{ route('chat.show', $p->id_item_produksi) }}" data-id="{{ $p->id_percakapan }}">
+            <a class="room-item {{ $p->unread_count > 0 ? 'has-unread' : '' }}" href="{{ route('chat.show', $p->id_percakapan) }}" data-id="{{ $p->id_percakapan }}">
 
                 <div class="room-avatar">
                     @if ($foto)
@@ -33,7 +33,7 @@
                         <i class="fas fa-image"></i>
                     @endif
                 </div>
-
+ 
                 <div class="room-main">
                     <div class="room-title">{{ $produk->nama_item ?? '-' }}</div>
                     <div class="room-meta">

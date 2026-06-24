@@ -79,7 +79,7 @@
 
     </div>
 
-    <div class="row">
+    <!-- <div class="row">
 
         <div class="col-xl-8 col-lg-7">
             <div class="card shadow mb-4">
@@ -109,7 +109,7 @@
             </div>
         </div>
 
-    </div>
+    </div> -->
 
     <div class="row">
 

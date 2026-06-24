@@ -5,8 +5,8 @@
 @endpush
 
 @push('head')
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
 @endpush
 
 @section('content')
@@ -18,16 +18,18 @@
             'dashboard' => route('dashboard'),
             default => route('dashboard'),
         };
+
+        $detailPertama = $itemProduksi->detailProduk->first();
+        $hargaMin = $itemProduksi->detailProduk->min('harga_dasar');
+        $hargaMax = $itemProduksi->detailProduk->max('harga_dasar');
+        $satuan = $itemProduksi->satuanHarga->nama_satuan ?? null;
+
+        $bolehDp = strtolower($itemProduksi->kategoriUsaha->jenisPembayaran->nama_jenis_pembayaran ?? '') === 'dp';
     @endphp
+
     <a href="{{ $backUrl }}" class="btn-kembali">
         <i class="fas fa-chevron-left"></i> Kembali
     </a>
-
-    @php
-        $hargaMin = $itemProduksi->detailProduk->min('harga_dasar');
-        $hargaMax = $itemProduksi->detailProduk->max('harga_dasar');
-        $satuan   = $itemProduksi->satuanHarga->nama_satuan ?? $item->detailProduk->first()?->satuanHarga?->nama_satuan;
-    @endphp
 
     <section class="detail-produk-grid">
 
@@ -62,13 +64,14 @@
                 <p id="deskripsiProduk">
                     {{ $itemProduksi->deskripsi_item ?? 'Deskripsi produk belum tersedia.' }}
                 </p>
+
                 <button type="button" class="btn-toggle-deskripsi" id="toggleDeskripsi">
                     Lihat Selengkapnya
                 </button>
             </div>
         </div>
 
-        <form id="checkoutForm" action="{{ route('pesanan.beli') }}" method="POST" class="order-card" enctype="multipart/form-data">
+        <form id="checkoutForm" action="{{ route('pesanan.beli') }}" method="POST" class="order-card">
             @csrf
 
             <div class="harga-row">
@@ -76,41 +79,44 @@
                     @if ($hargaMin == $hargaMax)
                         Rp {{ number_format($hargaMin, 0, ',', '.') }}
                     @else
-                        Rp {{ number_format($hargaMin, 0, ',', '.') }} - {{ number_format($hargaMax, 0, ',', '.') }}
+                        Rp {{ number_format($hargaMin, 0, ',', '.') }} - Rp {{ number_format($hargaMax, 0, ',', '.') }}
                     @endif
                 </h2>
+
                 @if ($satuan)
                     <span class="satuan-text">/ {{ $satuan }}</span>
                 @endif
             </div>
 
-            <br>
-            
             <div class="form-group mt-3">
                 <label>Ukuran</label>
+
                 <div class="size-options">
-                    @foreach ($itemProduksi->detailProduk as $index => $detail)
+                    @forelse ($itemProduksi->detailProduk as $index => $detail)
                         <button type="button"
-                            class="size-btn {{ $index == 0 ? 'active' : '' }}"
-                            data-id-detail="{{ $detail->id_detail_produk }}"
+                            class="size-btn {{ $index === 0 ? 'active' : '' }}"
+                            data-id-detail-produk="{{ $detail->id_detail_produk }}"
                             data-harga="{{ $detail->harga_dasar }}">
                             {{ $detail->ukuran ?? '-' }}
                         </button>
-                    @endforeach
+                    @empty
+                        <p class="text-muted mb-0">Ukuran belum tersedia.</p>
+                    @endforelse
                 </div>
             </div>
 
-            <input type="hidden" name="id_detail_produk" id="idDetailProduk" value="{{ $itemProduksi->detailProduk->first()->id_detail_produk ?? '' }}">
-            <input type="hidden" name="subtotal" id="subtotalInput">
+            <input type="hidden" name="id_detail_produk" id="idDetailProduk" value="{{ $detailPertama->id_detail_produk ?? '' }}">
+            <input type="hidden" name="subtotal" id="subtotalInput" value="0">
 
             <hr class="divider">
 
             <div class="qty-subtotal-row">
                 <div class="qty-box-wrapper">
                     <label>Kuantitas</label>
+
                     <div class="qty-box">
                         <button type="button" id="minusQty">-</button>
-                        <input type="number" name="kuantitas" id="qtyInput" value="1" min="1"> 
+                        <input type="number" name="kuantitas" id="qtyInput" value="1" min="1">
                         <button type="button" id="plusQty">+</button>
                     </div>
                 </div>
@@ -124,9 +130,16 @@
 
             <div id="actionBeforeForm">
                 <div class="button-action-wrapper">
-                    <button type="submit" form="chatForm" class="btn-chat">
-                        <i class="fas fa-comments"></i> Tanya Admin
-                    </button>
+                    @auth
+                        <button type="submit" form="chatForm" class="btn-chat">
+                            <i class="fas fa-comments"></i> Tanya Admin
+                        </button>
+                    @else
+                        <a href="{{ route('login') }}" class="btn-chat">
+                            <i class="fas fa-comments"></i> Tanya Admin
+                        </a>
+                    @endauth
+
                     <button
                         type="button"
                         class="btn-beli {{ $itemProduksi->status_aktif !== 'Aktif' ? 'btn-nonaktif' : '' }}"
@@ -143,7 +156,7 @@
 
             <div class="pesan-form" id="pesanForm">
                 <div class="drag-handle d-md-none"></div>
-                
+
                 <h5 class="form-title d-md-none">Pesan Sekarang</h5>
 
                 <div class="form-group">
@@ -172,16 +185,12 @@
                         <small class="helper-date">Pilih tanggal pemasangan</small>
                         <input type="date" name="jadwal_pemasangan" class="input-pesan date-input" required>
                     </div>
-                    
+
                     <div class="subtotal-box bottom-subtotal">
                         <small>Subtotal</small>
                         <strong id="subtotalTextBottom">Rp 0</strong>
                     </div>
                 </div>
-
-                @php
-                    $bolehDp = strtolower($itemProduksi->kategoriUsaha->jenisPembayaran->nama_jenis_pembayaran ?? '') === 'dp';
-                @endphp
 
                 @if ($bolehDp)
                     <div class="form-group">
@@ -199,17 +208,24 @@
                     </div>
                 @else
                     <input type="hidden" name="tipe_pembayaran" value="Full">
-                @endif 
+                @endif
 
                 <div class="button-action-wrapper mt-3">
-                    <button type="submit" form="chatForm" class="btn-chat d-md-none">
-                        <i class="fas fa-comments"></i> Tanya Admin
-                    </button>
+                    @auth
+                        <button type="submit" form="chatForm" class="btn-chat d-md-none">
+                            <i class="fas fa-comments"></i> Tanya Admin
+                        </button>
+                    @else
+                        <a href="{{ route('login') }}" class="btn-chat d-md-none">
+                            <i class="fas fa-comments"></i> Tanya Admin
+                        </a>
+                    @endauth
+
                     <button
                         type="submit"
                         class="btn-beli"
                         id="btnSubmitBeli"
-                        {{ $itemProduksi->status_aktif !== 'Aktif' ? 'disabled' : '' }}>
+                        {{ $itemProduksi->status_aktif !== 'Aktif' || !$detailPertama ? 'disabled' : '' }}>
                         Bayar
                     </button>
                 </div>
@@ -217,10 +233,10 @@
         </form>
 
         @auth
-        <form id="chatForm" action="{{ route('chat.start', $itemProduksi->id_item_produksi) }}" method="POST">
-            @csrf
-        </form>
-    @endauth
+            <form id="chatForm" action="{{ route('chat.start', $itemProduksi->id_item_produksi) }}" method="POST">
+                @csrf
+            </form>
+        @endauth
 
     </section>
 </div>
@@ -230,194 +246,224 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        /*
-        |--------------------------------------------------------------------------
-        | Slider Galeri Foto
-        |--------------------------------------------------------------------------
-        */
-        const galleryTrack = document.getElementById('galleryTrack');
-        const prevButton = document.querySelector('.prev-btn');
-        const nextButton = document.querySelector('.next-btn');
+document.addEventListener('DOMContentLoaded', function () {
+    const galleryTrack = document.getElementById('galleryTrack');
+    const prevButton = document.querySelector('.prev-btn');
+    const nextButton = document.querySelector('.next-btn');
 
-        if (galleryTrack && prevButton && nextButton) {
-            nextButton.addEventListener('click', () => {
-                galleryTrack.scrollBy({ left: galleryTrack.clientWidth, behavior: 'smooth' });
-            });
-            prevButton.addEventListener('click', () => {
-                galleryTrack.scrollBy({ left: -galleryTrack.clientWidth, behavior: 'smooth' });
-            });
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | State & Elemen Harga / Kuantitas
-        |--------------------------------------------------------------------------
-        */
-        const sizeButtons = document.querySelectorAll('.size-btn');
-        const displayHarga = document.getElementById('displayHarga');
-        const idDetailProduk = document.getElementById('idDetailProduk');
-        
-        const minusQty = document.getElementById('minusQty');
-        const plusQty = document.getElementById('plusQty');
-        const qtyInput = document.getElementById('qtyInput');
-        
-        const subtotalTextTop = document.getElementById('subtotalTextTop');
-        const subtotalTextBottom = document.getElementById('subtotalTextBottom');
-        const subtotalInput = document.getElementById('subtotalInput');
-
-        let hargaAktif = Number(document.querySelector('.size-btn.active')?.dataset.harga || 0);
-
-        function formatRupiah(angka) {
-            return 'Rp ' + new Intl.NumberFormat('id-ID').format(angka);
-        }
-
-        function hitungSubtotal(fallbackQty = null) {
-            if (!qtyInput || !subtotalInput) return;
-            
-            const qty = fallbackQty !== null ? fallbackQty : Number(qtyInput.value || 1);
-            const subtotal = hargaAktif * qty;
-            const formatted = formatRupiah(subtotal);
-
-            if (subtotalTextTop) subtotalTextTop.textContent = formatted;
-            if (subtotalTextBottom) subtotalTextBottom.textContent = formatted;
-            subtotalInput.value = subtotal;
-        }
-
-        sizeButtons.forEach(btn => {
-            btn.addEventListener('click', function () {
-                sizeButtons.forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                hargaAktif = Number(this.dataset.harga || 0);
-                
-                if (idDetailProduk) idDetailProduk.value = this.dataset.idDetail || '';
-                if (displayHarga) displayHarga.textContent = formatRupiah(hargaAktif);
-                
-                hitungSubtotal();
+    if (galleryTrack && prevButton && nextButton) {
+        nextButton.addEventListener('click', function () {
+            galleryTrack.scrollBy({
+                left: galleryTrack.clientWidth,
+                behavior: 'smooth'
             });
         });
 
-        if (minusQty && plusQty && qtyInput) {
-            minusQty.addEventListener('click', () => {
-                let qty = Number(qtyInput.value || 1);
-                if (qty > 1) {
-                    qtyInput.value = qty - 1;
-                    hitungSubtotal();
-                }
+        prevButton.addEventListener('click', function () {
+            galleryTrack.scrollBy({
+                left: -galleryTrack.clientWidth,
+                behavior: 'smooth'
             });
-            
-            plusQty.addEventListener('click', () => {
-                let qty = Number(qtyInput.value || 1);
-                qtyInput.value = qty + 1;
+        });
+    }
+
+    const sizeButtons = document.querySelectorAll('.size-btn');
+    const displayHarga = document.getElementById('displayHarga');
+    const idDetailProduk = document.getElementById('idDetailProduk');
+
+    const minusQty = document.getElementById('minusQty');
+    const plusQty = document.getElementById('plusQty');
+    const qtyInput = document.getElementById('qtyInput');
+
+    const subtotalTextTop = document.getElementById('subtotalTextTop');
+    const subtotalTextBottom = document.getElementById('subtotalTextBottom');
+    const subtotalInput = document.getElementById('subtotalInput');
+
+    let hargaAktif = Number(document.querySelector('.size-btn.active')?.dataset.harga || 0);
+
+    function formatRupiah(angka) {
+        return 'Rp ' + new Intl.NumberFormat('id-ID').format(angka);
+    }
+
+    function hitungSubtotal(fallbackQty = null) {
+        if (!qtyInput || !subtotalInput) return;
+
+        const qty = fallbackQty !== null ? fallbackQty : Number(qtyInput.value || 1);
+        const subtotal = hargaAktif * qty;
+        const formattedSubtotal = formatRupiah(subtotal);
+
+        if (subtotalTextTop) subtotalTextTop.textContent = formattedSubtotal;
+        if (subtotalTextBottom) subtotalTextBottom.textContent = formattedSubtotal;
+
+        subtotalInput.value = subtotal;
+    }
+
+    sizeButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            sizeButtons.forEach(function (item) {
+                item.classList.remove('active');
+            });
+
+            this.classList.add('active');
+
+            hargaAktif = Number(this.dataset.harga || 0);
+
+            if (idDetailProduk) {
+                idDetailProduk.value = this.dataset.idDetailProduk || '';
+            }
+
+            if (displayHarga) {
+                displayHarga.textContent = formatRupiah(hargaAktif);
+            }
+
+            hitungSubtotal();
+        });
+    });
+
+    if (minusQty && plusQty && qtyInput) {
+        minusQty.addEventListener('click', function () {
+            let qty = Number(qtyInput.value || 1);
+
+            if (qty > 1) {
+                qtyInput.value = qty - 1;
                 hitungSubtotal();
-            });
+            }
+        });
 
-            qtyInput.addEventListener('input', function() {
-                let val = parseInt(this.value);
-                if (isNaN(val) || val < 1) {
-                    hitungSubtotal(1);
-                } else {
-                    hitungSubtotal();
-                }
-            });
+        plusQty.addEventListener('click', function () {
+            let qty = Number(qtyInput.value || 1);
 
-            qtyInput.addEventListener('blur', function() {
-                let val = parseInt(this.value);
-                if (isNaN(val) || val < 1) {
-                    this.value = 1;
-                    hitungSubtotal();
-                }
-            });
-        }
+            qtyInput.value = qty + 1;
+            hitungSubtotal();
+        });
 
-        // Inisialisasi awal
-        if (displayHarga && hargaAktif > 0) displayHarga.textContent = formatRupiah(hargaAktif);
-        hitungSubtotal();
+        qtyInput.addEventListener('input', function () {
+            let qty = parseInt(this.value);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Logika Form Dinamis (Desktop Dropdown & Mobile Bottom Sheet)
-        |--------------------------------------------------------------------------
-        */
-        const pesanForm = document.getElementById('pesanForm');
-        const togglePesan = document.getElementById('togglePesan');
-        const btnBeliAwal = document.getElementById('btnBeliAwal');
-        const actionBeforeForm = document.getElementById('actionBeforeForm');
-        const mobileBackdrop = document.getElementById('mobileBackdrop');
-        const checkoutForm = document.getElementById('checkoutForm');
+            if (isNaN(qty) || qty < 1) {
+                hitungSubtotal(1);
+                return;
+            }
 
-        function bukaForm() {
-            pesanForm.classList.add('show');
-            
-            if (window.innerWidth > 768) {
-                if (togglePesan) togglePesan.style.display = 'none';
-                if (actionBeforeForm) actionBeforeForm.style.display = 'none';
-            } 
-            else {
-                document.body.classList.add('mobile-sheet-open');
-                if (mobileBackdrop) mobileBackdrop.classList.add('show');
+            hitungSubtotal();
+        });
+
+        qtyInput.addEventListener('blur', function () {
+            let qty = parseInt(this.value);
+
+            if (isNaN(qty) || qty < 1) {
+                this.value = 1;
+                hitungSubtotal();
+            }
+        });
+    }
+
+    if (displayHarga && hargaAktif > 0) {
+        displayHarga.textContent = formatRupiah(hargaAktif);
+    }
+
+    hitungSubtotal();
+
+    const pesanForm = document.getElementById('pesanForm');
+    const togglePesan = document.getElementById('togglePesan');
+    const btnBeliAwal = document.getElementById('btnBeliAwal');
+    const actionBeforeForm = document.getElementById('actionBeforeForm');
+    const mobileBackdrop = document.getElementById('mobileBackdrop');
+    const checkoutForm = document.getElementById('checkoutForm');
+
+    function bukaForm() {
+        if (!pesanForm) return;
+
+        pesanForm.classList.add('show');
+
+        if (window.innerWidth > 768) {
+            if (togglePesan) togglePesan.style.display = 'none';
+            if (actionBeforeForm) actionBeforeForm.style.display = 'none';
+        } else {
+            document.body.classList.add('mobile-sheet-open');
+
+            if (mobileBackdrop) {
+                mobileBackdrop.classList.add('show');
             }
         }
+    }
 
-        function tutupFormMobile() {
-            if (window.innerWidth <= 768) {
-                pesanForm.classList.remove('show');
-                document.body.classList.remove('mobile-sheet-open');
-                if (mobileBackdrop) mobileBackdrop.classList.remove('show');
+    function tutupFormMobile() {
+        if (window.innerWidth <= 768 && pesanForm) {
+            pesanForm.classList.remove('show');
+            document.body.classList.remove('mobile-sheet-open');
+
+            if (mobileBackdrop) {
+                mobileBackdrop.classList.remove('show');
             }
         }
+    }
 
-        if (btnBeliAwal) btnBeliAwal.addEventListener('click', bukaForm);
-        if (togglePesan) togglePesan.addEventListener('click', bukaForm);
+    if (btnBeliAwal) {
+        btnBeliAwal.addEventListener('click', bukaForm);
+    }
 
-        if (mobileBackdrop) {
-            mobileBackdrop.addEventListener('click', tutupFormMobile);
-        }
+    if (togglePesan) {
+        togglePesan.addEventListener('click', bukaForm);
+    }
 
-        let startY;
-        pesanForm.addEventListener('touchstart', (e) => startY = e.touches[0].clientY, {passive: true});
-        pesanForm.addEventListener('touchmove', (e) => {
+    if (mobileBackdrop) {
+        mobileBackdrop.addEventListener('click', tutupFormMobile);
+    }
+
+    let startY = null;
+
+    if (pesanForm) {
+        pesanForm.addEventListener('touchstart', function (event) {
+            startY = event.touches[0].clientY;
+        }, { passive: true });
+
+        pesanForm.addEventListener('touchmove', function (event) {
             if (window.innerWidth <= 768 && startY) {
-                const currentY = e.touches[0].clientY;
-                if (currentY - startY > 50) { 
+                const currentY = event.touches[0].clientY;
+
+                if (currentY - startY > 50) {
                     tutupFormMobile();
                 }
             }
-        }, {passive: true});
+        }, { passive: true });
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Validasi saat form di-submit + lanjut ke Midtrans
-        |--------------------------------------------------------------------------
-        */
-        checkoutForm.addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            const requiredInputs = pesanForm.querySelectorAll('input[required]');
-            let isComplete = true;
-
-            requiredInputs.forEach(input => {
-                if (!input.value.trim()) isComplete = false;
-            });
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
 
             if (!pesanForm.classList.contains('show')) {
                 bukaForm();
                 return;
             }
 
+            const requiredInputs = pesanForm.querySelectorAll('input[required], textarea[required], select[required]');
+            let isComplete = true;
+
+            requiredInputs.forEach(function (input) {
+                if (!input.value.trim()) {
+                    isComplete = false;
+                }
+            });
+
             if (!isComplete) {
                 bukaForm();
 
-                const firstEmpty = Array.from(requiredInputs).find(input => !input.value.trim());
+                const firstEmpty = Array.from(requiredInputs).find(function (input) {
+                    return !input.value.trim();
+                });
+
                 if (firstEmpty) {
-                    setTimeout(() => firstEmpty.focus(), 300);
+                    setTimeout(function () {
+                        firstEmpty.focus();
+                    }, 300);
                 }
 
                 return;
             }
 
             try {
-                // 1. Simpan pesanan dulu
                 const responsePesanan = await fetch(checkoutForm.action, {
                     method: 'POST',
                     body: new FormData(checkoutForm),
@@ -434,7 +480,9 @@
                     return;
                 }
 
-                // 2. Minta snap token Midtrans
+                const tipePembayaranInput = checkoutForm.querySelector('input[name="tipe_pembayaran"]:checked')
+                    || checkoutForm.querySelector('input[name="tipe_pembayaran"]');
+
                 const responseBayar = await fetch("{{ route('pembayaran.midtrans') }}", {
                     method: 'POST',
                     headers: {
@@ -443,7 +491,8 @@
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
-                        id_pesanan: dataPesanan.id_pesanan
+                        id_pesanan: dataPesanan.id_pesanan,
+                        tipe_pembayaran: tipePembayaranInput ? tipePembayaranInput.value : 'Full'
                     })
                 });
 
@@ -454,42 +503,30 @@
                     return;
                 }
 
-                // 3. Buka popup pembayaran Midtrans
-                window.snap.pay(dataBayar.snap_token, {
-                    onSuccess: function () {
-                        window.location.href = '/pembayaran/' + dataBayar.id_pembayaran + '/upload-bukti';
-                    },
-                    onPending: function () {
-                        window.location.href = '/pembayaran/' + dataBayar.id_pembayaran + '/upload-bukti';
-                    },
-                    onError: function () {
-                        alert('Pembayaran gagal.');
-                    },
-                    onClose: function () {
-                        alert('Kamu menutup popup pembayaran sebelum menyelesaikan pembayaran.');
-                    }
-                });
+                sessionStorage.setItem('snap_token', dataBayar.snap_token);
+                sessionStorage.setItem('id_pembayaran', dataBayar.id_pembayaran);
+
+                window.location.href = "{{ route('klien.pesanan.riwayat') }}?bayar=1";
 
             } catch (error) {
                 console.error(error);
                 alert('Terjadi kesalahan saat memproses pesanan.');
             }
         });
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Expander Deskripsi Produk
-        |--------------------------------------------------------------------------
-        */
-        const deskripsiProduk = document.getElementById('deskripsiProduk');
-        const toggleDeskripsi = document.getElementById('toggleDeskripsi');
+    const deskripsiProduk = document.getElementById('deskripsiProduk');
+    const toggleDeskripsi = document.getElementById('toggleDeskripsi');
 
-        if (deskripsiProduk && toggleDeskripsi) {
-            toggleDeskripsi.addEventListener('click', function () {
-                deskripsiProduk.classList.toggle('expanded');
-                this.textContent = deskripsiProduk.classList.contains('expanded') ? 'Tutup' : 'Lihat Selengkapnya';
-            });
-        }
-    });
+    if (deskripsiProduk && toggleDeskripsi) {
+        toggleDeskripsi.addEventListener('click', function () {
+            deskripsiProduk.classList.toggle('expanded');
+
+            this.textContent = deskripsiProduk.classList.contains('expanded')
+                ? 'Tutup'
+                : 'Lihat Selengkapnya';
+        });
+    }
+});
 </script>
 @endpush

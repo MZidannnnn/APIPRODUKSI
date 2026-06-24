@@ -17,6 +17,16 @@ class PembayaranStatusService
                 ->lockForUpdate()
                 ->firstOrFail();
 
+            /*
+            |--------------------------------------------------------------------------
+            | STATUS BAYAR
+            |--------------------------------------------------------------------------
+            | Ini status untuk tabel pembayaran, BUKAN status pesanan.
+            |
+            | Pending     = transaksi dibuat, tapi belum dibayar
+            | Lunas       = pembayaran berhasil
+            | Kedaluwarsa = pembayaran gagal / expired / dibatalkan dari Midtrans
+            */
             $statusBayar = match ($payload['transaction_status']) {
                 'settlement', 'capture' => 'Lunas',
                 'expire', 'cancel', 'deny' => 'Kedaluwarsa',
@@ -31,8 +41,25 @@ class PembayaranStatusService
                 'payload' => $payload,
             ]);
 
-            if ($statusBayar === 'Lunas' && $pembayaran->tipe_pembayaran !== 'Pelunasan') {
+            /*
+            |--------------------------------------------------------------------------
+            | SINKRON STATUS PESANAN
+            |--------------------------------------------------------------------------
+            | Kalau pembayaran berhasil, status pesanan ikut berubah.
+            */
+            if ($statusBayar === 'Lunas') {
                 $this->syncPesananAfterPaid($pembayaran);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | SINKRON PESANAN KADALUARSA
+            |--------------------------------------------------------------------------
+            | Kalau pembayaran expired dan pesanan belum pernah dibayar,
+            | maka status pesanan berubah menjadi Pesanan Kadaluarsa.
+            */
+            if ($statusBayar === 'Kedaluwarsa') {
+                $this->syncPesananAfterExpired($pembayaran);
             }
 
             return $pembayaran;
@@ -57,9 +84,39 @@ class PembayaranStatusService
                         return;
                     }
 
+                    /*
+                    |--------------------------------------------------------------------------
+                    | UPDATE STATUS BAYAR JADI KEDALUWARSA
+                    |--------------------------------------------------------------------------
+                    | Ini hanya mengubah tabel pembayaran.
+                    */
                     Pembayaran::whereIn('id_pembayaran', $ids)->update([
                         'status_bayar' => 'Kedaluwarsa',
                     ]);
+
+                    $statusKadaluarsaId = StatusPesanan::where('nama_status_pesanan', 'Pesanan Kadaluarsa')
+                        ->value('id_status_pesanan');
+
+                    if ($statusKadaluarsaId) {
+                        /*
+                        |--------------------------------------------------------------------------
+                        | UPDATE STATUS PESANAN JADI PESANAN KADALUARSA
+                        |--------------------------------------------------------------------------
+                        | Ini mengubah tabel pesanan.
+                        */
+                        Pesanan::whereHas('pembayaran', function ($q) use ($ids) {
+                                $q->whereIn('id_pembayaran', $ids);
+                            })
+                            ->whereHas('statusPesanan', function ($q) {
+                                $q->where('nama_status_pesanan', 'Belum Bayar');
+                            })
+                            ->whereDoesntHave('pembayaran', function ($q) {
+                                $q->where('status_bayar', 'Lunas');
+                            })
+                            ->update([
+                                'id_status_pesanan' => $statusKadaluarsaId,
+                            ]);
+                    }
 
                     $expiredCount += count($ids);
                 });
@@ -79,11 +136,84 @@ class PembayaranStatusService
             return;
         }
 
-        $statusId = StatusPesanan::where('nama_status_pesanan', 'Menunggu Diproses')
+        /*
+        |--------------------------------------------------------------------------
+        | JIKA PEMBAYARAN PELUNASAN BERHASIL
+        |--------------------------------------------------------------------------
+        | Status pesanan berubah menjadi Pesanan Selesai.
+        */
+        if ($pembayaran->tipe_pembayaran === 'Pelunasan') {
+            $statusId = StatusPesanan::where('nama_status_pesanan', 'Pesanan Selesai')
+                ->value('id_status_pesanan');
+
+            if ($statusId) {
+                $pesanan->update([
+                    'id_status_pesanan' => $statusId,
+                ]);
+            }
+
+            return;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | JIKA PEMBAYARAN DP / FULL BERHASIL
+        |--------------------------------------------------------------------------
+        | Status pesanan berubah dari Belum Bayar menjadi Pesanan Diproses.
+        */
+        $statusId = StatusPesanan::where('nama_status_pesanan', 'Pesanan Diproses')
             ->value('id_status_pesanan');
 
         if ($statusId) {
-            $pesanan->update(['id_status_pesanan' => $statusId]);
+            $pesanan->update([
+                'id_status_pesanan' => $statusId,
+            ]);
+        }
+    }
+
+    private function syncPesananAfterExpired(Pembayaran $pembayaran): void
+    {
+        $pesanan = Pesanan::query()
+            ->with('statusPesanan')
+            ->where('id_pesanan', $pembayaran->id_pesanan)
+            ->lockForUpdate()
+            ->first();
+
+        if (! $pesanan) {
+            return;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | HANYA PESANAN BELUM BAYAR YANG BOLEH JADI KADALUARSA
+        |--------------------------------------------------------------------------
+        | Kalau sudah diproses / selesai, jangan diubah.
+        */
+        if (($pesanan->statusPesanan->nama_status_pesanan ?? null) !== 'Belum Bayar') {
+            return;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | CEK APAKAH ADA PEMBAYARAN YANG SUDAH LUNAS
+        |--------------------------------------------------------------------------
+        | Kalau sudah pernah lunas, jangan ubah jadi kadaluarsa.
+        */
+        $hasPaid = $pesanan->pembayaran()
+            ->where('status_bayar', 'Lunas')
+            ->exists();
+
+        if ($hasPaid) {
+            return;
+        }
+
+        $statusId = StatusPesanan::where('nama_status_pesanan', 'Pesanan Kadaluarsa')
+            ->value('id_status_pesanan');
+
+        if ($statusId) {
+            $pesanan->update([
+                'id_status_pesanan' => $statusId,
+            ]);
         }
     }
 }
