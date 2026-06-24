@@ -77,7 +77,8 @@ class ChatController extends Controller
             $firstUnreadId = Pesan::where('id_percakapan', $percakapan->id_percakapan)
                 ->whereNull('dibaca_pada')
                 ->where('id_pengirim', '!=', $userId)
-                ->min('id_pesan');
+                ->orderBy('id_pesan')
+                ->value('id_pesan');
         }
 
         $messages = $query->get();
