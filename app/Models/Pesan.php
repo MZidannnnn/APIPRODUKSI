@@ -17,7 +17,10 @@ class Pesan extends Model
     ];
 
     protected $casts = [
-        'dibaca_pada' => 'datetime',
+        'id_pesan'       => 'integer',
+        'id_percakapan'  => 'integer',
+        'id_pengirim'    => 'integer',
+        'dibaca_pada'    => 'datetime',
     ];
 
     public function percakapan()

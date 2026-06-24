@@ -279,7 +279,7 @@
             }
 
             const bubble = document.createElement('div');
-            bubble.className = msg.sender_id === userId ? 'chat-bubble me' : 'chat-bubble';
+            bubble.className = Number(msg.sender_id) === Number(userId) ? 'chat-bubble me' : 'chat-bubble';
 
             if (msg.text) {
                 const textEl = document.createElement('div');

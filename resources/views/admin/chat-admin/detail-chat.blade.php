@@ -313,7 +313,7 @@
             dividerRendered = true;
         }
 
-        const isMine = message.sender_id === userId;
+        const isMine = Number(message.sender_id) === Number(userId);
 
         const row = document.createElement('div');
         row.className = `d-flex mb-3 ${isMine ? 'justify-content-end' : 'justify-content-start'}`;

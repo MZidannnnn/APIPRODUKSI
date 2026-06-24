@@ -91,12 +91,12 @@ class ChatController extends Controller
 
         return response()->json([
             'messages' => $messages->map(fn($m) => [
-                'id' => $m->id_pesan,
-                'sender_id' => $m->id_pengirim,
-                'text' => $m->isi_pesan,
-                'created_at' => $m->created_at->format('Y-m-d H:i'),
+                'id'                  => $m->id_pesan,
+                'sender_id'           => (int) $m->id_pengirim,
+                'text'                => $m->isi_pesan,
+                'created_at'          => $m->created_at->format('Y-m-d H:i'),
                 'show_divider_before' => $firstUnreadId && $m->id_pesan === $firstUnreadId,
-                'attachments' => $m->lampiran->map(fn($a) => $this->formatAttachment($a))->values(),
+                'attachments'         => $m->lampiran->map(fn($a) => $this->formatAttachment($a))->values(),
             ]),
             'last_id' => $lastId,
         ]);
