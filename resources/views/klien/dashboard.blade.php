@@ -111,7 +111,7 @@
                     @if ($foto)
                         <img src="{{ asset($foto->nama_foto) }}"
                             alt="{{ $item->nama_item }}">
-                    @else
+                    @else 
                         <img src="{{ asset('assets/images/no-image.png') }}"
                             alt="No Image">
                     @endif

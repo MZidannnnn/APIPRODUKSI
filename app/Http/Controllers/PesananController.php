@@ -176,7 +176,7 @@ class PesananController extends Controller
         $itemProduksi = ItemProduksi::with('kategoriUsaha', 'detailProduk.satuanHarga')->where('status_aktif', 'Aktif')->get();
         return view('test.list_item', compact('itemProduksi'));
     }
-
+ 
     public function showListDetail($id)
     {
         $itemProduksi = ItemProduksi::with([

@@ -130,23 +130,29 @@
 
             <div id="actionBeforeForm">
                 <div class="button-action-wrapper">
+
                     @auth
                         <button type="submit" form="chatForm" class="btn-chat">
                             <i class="fas fa-comments"></i> Tanya Admin
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn-beli {{ $itemProduksi->status_aktif !== 'Aktif' ? 'btn-nonaktif' : '' }}"
+                            id="btnBeliAwal"
+                            {{ $itemProduksi->status_aktif !== 'Aktif' ? 'disabled' : '' }}>
+                            {{ $itemProduksi->status_aktif === 'Aktif' ? 'Beli Sekarang' : 'Produk Tidak Aktif' }}
                         </button>
                     @else
                         <a href="{{ route('login') }}" class="btn-chat">
                             <i class="fas fa-comments"></i> Tanya Admin
                         </a>
+
+                        <a href="{{ route('login') }}" class="btn-beli">
+                            Beli Sekarang
+                        </a>
                     @endauth
 
-                    <button
-                        type="button"
-                        class="btn-beli {{ $itemProduksi->status_aktif !== 'Aktif' ? 'btn-nonaktif' : '' }}"
-                        id="btnBeliAwal"
-                        {{ $itemProduksi->status_aktif !== 'Aktif' ? 'disabled' : '' }}>
-                        {{ $itemProduksi->status_aktif === 'Aktif' ? 'Beli Sekarang' : 'Produk Tidak Aktif' }}
-                    </button>
                 </div>
             </div>
 
