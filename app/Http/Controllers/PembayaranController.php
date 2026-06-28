@@ -307,7 +307,6 @@ class PembayaranController extends Controller
                 $q->whereIn('nama_status_pesanan', [
                     'Pesanan Selesai',
                     'Pesanan Dibatalkan',
-                    'Pesanan Kadaluarsa'
                 ]);
             })
             ->whereMonth('updated_at', $bulan)

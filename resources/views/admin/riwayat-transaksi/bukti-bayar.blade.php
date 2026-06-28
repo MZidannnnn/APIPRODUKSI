@@ -32,7 +32,7 @@
 
                         <div class="col-md-6 mb-4">
                             <div class="card border-left-info shadow-sm h-100">
-                                <div class="card-body">
+                                <div class="card-body"> 
                                     <h6 class="font-weight-bold text-primary">
                                         {{ $bayar->tipe_pembayaran ?? 'Pembayaran' }}
                                     </h6>
@@ -48,9 +48,9 @@
                                     </p>
 
                                     @if (in_array($ext, ['jpg', 'jpeg', 'png']))
-                                        <img src="{{ route('admin.bukti-bayar.file', $bayar->id_pembayaran) }}"
-                                             class="img-fluid img-thumbnail mb-3"
-                                             style="max-height: 420px; object-fit: contain;">
+                                        <img src="{{ asset('storage/' . $bayar->bukti_bayar) }}"
+                                            class="img-fluid img-thumbnail mb-3"
+                                            style="max-height: 420px; object-fit: contain;">
                                     @elseif ($ext === 'pdf')
                                         <div class="alert alert-secondary">
                                             <i class="fas fa-file-pdf mr-1"></i>
@@ -58,10 +58,10 @@
                                         </div>
                                     @endif
 
-                                    <a href="{{ route('admin.bukti-bayar.file', $bayar->id_pembayaran) }}"
-                                       target="_blank"
-                                       class="btn btn-sm text-white"
-                                       style="background-color: #ef6c00;">
+                                    <a href="{{ asset('storage/' . $bayar->bukti_bayar) }}"
+                                    target="_blank"
+                                    class="btn btn-sm text-white"
+                                    style="background-color: #ef6c00;">
                                         <i class="fas fa-external-link-alt mr-1"></i>
                                         Buka File
                                     </a>

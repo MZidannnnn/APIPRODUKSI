@@ -265,11 +265,9 @@ Route::middleware('auth')->group(function () {
         Route::put('/admin/profile', [AdminProfileController::class, 'update'])->name('admin.profile.update');
 
         //Lihat Bukti Bayar Klien
-        Route::get('/admin/riwayat-transaksi/{pesanan}/bukti-bayar', [PembayaranController::class, 'lihatBuktiPesanan'])
-            ->name('admin.riwayat-transaksi.bukti-bayar');
+        Route::get('/admin/riwayat-transaksi/{pesanan}/bukti-bayar', [PembayaranController::class, 'lihatBuktiPesanan'])->name('admin.riwayat-transaksi.bukti-bayar');
 
-        Route::get('/admin/bukti-bayar/{pembayaran}/file', [PembayaranController::class, 'tampilFileBukti'])
-            ->name('admin.bukti-bayar.file');
+        Route::get('/admin/bukti-bayar/{pembayaran}/file', [PembayaranController::class, 'tampilFileBukti'])->name('admin.bukti-bayar.file');
 
        
     });
