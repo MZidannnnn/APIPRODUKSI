@@ -58,6 +58,8 @@
                                         </div>
                                     @endif
 
+                                    <br>
+                                    
                                     <a href="{{ asset('storage/' . $bayar->bukti_bayar) }}"
                                     target="_blank"
                                     class="btn btn-sm text-white"
