@@ -46,7 +46,7 @@ class KlienProfileController extends Controller
                     ->withInput();
             }
 
-            $user->password = Hash::make($request->password);
+            $user->password = $request->password;
         }
 
         // Update data profil
