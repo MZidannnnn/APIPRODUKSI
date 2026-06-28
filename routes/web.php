@@ -4,7 +4,7 @@ use App\Http\Controllers\AdminPesananStatusController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatAdminController;
 use App\Http\Controllers\ChatAttachmentController;
-use App\Http\Controllers\ChatController;
+use App\Http\Controllers\ChatKlienController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\KlienDashboardController;
 use App\Http\Controllers\ItemProduksiController;
@@ -123,6 +123,14 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/pesanan/checkout', function () {return view('pesanan.checkout');})->name('pesanan.checkout');
         Route::post('/pesanan/beli', [PesananController::class, 'beliSekarang'])->name('pesanan.beli');
+        
+        // Detail Pesanan
+        Route::get('/pesanan/{pesanan}/detail', [PesananController::class, 'detailRiwayat'])->name('klien.pesanan.detail');
+        
+        // fitur batalkan pesanan
+        Route::post('/pesanan/{pesanan}/batal', [PembayaranController::class, 'cancelPesanan'])
+            ->name('pesanan.batal');
+        // end fitur batalkan pesanan
 
         // transaksi midtrans
         Route::post('/pembayaran/midtrans', [PembayaranController::class, 'createTransaction'])->name('pembayaran.midtrans');
@@ -137,23 +145,20 @@ Route::middleware('auth')->group(function () {
         //Route::post('/pesanan/{pesanan}/tolak-harga', [PersetujuanHargaController::class, 'tolakHarga'])->name('pesanan.tolakHarga');
 
         // fitur chat klien
-        Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
-        Route::get('/chat/{id}/messages', [ChatController::class, 'messages'])->name('chat.messages');
-        Route::post('/chat/{id}/messages', [ChatController::class, 'send'])->name('chat.send');
-        Route::get('/chat/unread-count', [ChatController::class, 'unreadCount'])->name('chat.unread');
-        Route::get('/chat/unread-list', [ChatController::class, 'unreadList'])->name('chat.unread.list');
-        Route::get('/chat/{id}', [ChatController::class, 'show'])->name('chat.show');
-        Route::post('/chat/start/{itemProduksi}', [ChatController::class, 'start'])->name('chat.start');
+        Route::get('/chat', [ChatKlienController::class, 'index'])->name('chat.index');
+        Route::get('/chat/{id}/messages', [ChatKlienController::class, 'messages'])->name('chat.messages');
+        Route::post('/chat/{id}/messages', [ChatKlienController::class, 'send'])->name('chat.send');
+        Route::get('/chat/unread-count', [ChatKlienController::class, 'unreadCount'])->name('chat.unread');
+        Route::get('/chat/unread-list', [ChatKlienController::class, 'unreadList'])->name('chat.unread.list');
+        Route::get('/chat/{id}', [ChatKlienController::class, 'show'])->name('chat.show');
+        Route::post('/chat/start/{itemProduksi}', [ChatKlienController::class, 'start'])->name('chat.start');
 
         // fitur bayar kembali riwayatPesanan
         Route::post('/pembayaran/retry', [PembayaranController::class, 'retrySnap'])->name('pembayaran.retry');
         Route::get('/pesanan/riwayat', [PesananController::class, 'riwayatPesanan'])->name('klien.pesanan.riwayat');
         Route::post('/pembayaran/{pembayaran}/sync-success', [PembayaranController::class, 'syncSuccess'])->name('pembayaran.sync-success');
 
-        // fitur batalkan pesanan
-        Route::post('/pesanan/{pesanan}/batal', [PembayaranController::class, 'cancelPesanan'])
-            ->name('pesanan.batal');
-        // end fitur batalkan pesanan
+        
 
         // Profil klien
         Route::get('/profile', [KlienProfileController::class, 'index'])->name('klien.profile');

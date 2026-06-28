@@ -275,17 +275,19 @@ body {
 
 .order-card {
     background: #fff;
-
     border: 1px solid #ddd;
     border-radius: 12px;
-
     padding: 20px;
-
     display: flex;
     justify-content: space-between;
     gap: 22px;
-
     box-shadow: 0 3px 9px rgba(0,0,0,0.12);
+}
+
+.order-link{
+    text-decoration:none;
+    color:inherit;
+    display:block;
 }
 
 .order-left {

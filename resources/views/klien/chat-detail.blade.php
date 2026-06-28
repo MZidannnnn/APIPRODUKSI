@@ -159,7 +159,20 @@
             imageModal.classList.remove('is-open');
             imageModal.setAttribute('aria-hidden', 'true');
             imagePreview.src = '';
+            
+            imagePreview.style.transform = 'scale(1)';
         }
+
+        document.querySelectorAll('[data-close]').forEach(el => {
+            el.addEventListener('click', closeImageModal);
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && imageModal.classList.contains('is-open')) {
+                closeImageModal();
+            }
+        });
+
         //end js untuk zoom gambar pada ruang chat
 
         function formatSize(bytes) {

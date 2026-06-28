@@ -16,7 +16,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
-class ChatController extends Controller
+class ChatKlienController extends Controller
 {
     public function show($id)
     {

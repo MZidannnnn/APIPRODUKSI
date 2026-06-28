@@ -1,0 +1,299 @@
+/* ==========================================================================
+   RESET & GLOBAL STYLE
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background-color: #f4f7f6;
+    color: #333333;
+    padding: 20px 12px;
+}
+
+/* ==========================================================================
+   CONTAINER WRAPPER & TOMBOL KEMBALI
+   ========================================================================== */
+.detail-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+    padding-bottom: 40px;
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    background: #008a46;
+    color: #fff;
+
+    text-decoration: none;
+
+    padding: 9px 18px;
+    border-radius: 24px;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    margin-bottom: 24px;
+}
+
+.btn-back:hover {
+    background: #006f38;
+}
+
+/* ==========================================================================
+   HEADER SECTION
+   ========================================================================== */
+.detail-header {
+    margin-bottom: 20px;
+}
+
+.detail-header h1 {
+    font-size: 24px;
+    color: #111111;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.detail-header p {
+    font-size: 14px;
+    color: #666666;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+}
+
+/* ==========================================================================
+   MAIN CARD CONTENT
+   ========================================================================== */
+.detail-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+/* ==========================================================================
+   PRODUK SECTION (FOTO & INFO SINGKAT)
+   ========================================================================== */
+.produk-section {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px dashed #e0e0e0;
+}
+
+.produk-section img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #eaeaea;
+    background-color: #fafafa;
+}
+
+.produk-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+}
+
+.produk-info h2 {
+    font-size: 18px;
+    color: #111111;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.produk-info p {
+    font-size: 14px;
+    color: #666666;
+}
+
+/* Badge Status Pesanan */
+.badge-status {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 20px;
+    background-color: #fff3cd; /* Default Kuning (Proses/Pending) */
+    color: #856404;
+    margin-top: 6px;
+    text-transform: capitalize;
+}
+
+/* Opsional: Jika status mengandung kata "Selesai", warnanya otomatis menyesuaikan via JS atau style dinamis */
+/* .badge-status.selesai { background-color: #d4edda; color: #155724; } */
+
+/* ==========================================================================
+   INFO GRID DATA TRANSAKSI
+   ========================================================================== */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.info-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Handling grid khusus untuk alamat atau box kosong wrapper jadwal baliho */
+.info-box.full {
+    grid-column: span 2;
+}
+
+.info-box label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #888888;
+    font-weight: 600;
+}
+
+.info-box p {
+    font-size: 15px;
+    color: #222222;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+/* ==========================================================================
+   PAYMENT SECTION (RIWAYAT PEMBAYARAN)
+   ========================================================================== */
+.payment-section {
+    border-top: 1px solid #f0f0f0;
+    padding-top: 20px;
+}
+
+.payment-section h3 {
+    font-size: 16px;
+    color: #111111;
+    font-weight: 600;
+    margin-bottom: 14px;
+}
+
+/* Item Pembayaran */
+.payment-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fafafa;
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+}
+
+.payment-item:last-child {
+    margin-bottom: 0;
+}
+
+.payment-item strong {
+    font-size: 14px;
+    color: #222222;
+    display: block;
+}
+
+.payment-item p {
+    font-size: 12px;
+    color: #777777;
+    margin-top: 2px;
+}
+
+.payment-item div:last-child {
+    text-align: right;
+}
+
+.payment-item span {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 4px;
+    background-color: #e2e3e5;
+    color: #383d41;
+}
+
+/* Kondisional warna status bayar lunas */
+.payment-item span:contains("Lunas"), 
+.payment-item span:contains("lunas"),
+.payment-item span:contains("SUCCESS"),
+.payment-item span:contains("success") {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.payment-section > p {
+    font-size: 14px;
+    color: #999999;
+    font-style: italic;
+    text-align: center;
+    padding: 10px 0;
+}
+
+/* ==========================================================================
+   RESPONSIVE LAYOUT (UNTUK HP LAYAR KECIL)
+   ========================================================================== */
+@media (max-width: 576px) {
+    body {
+        padding: 15px 8px;
+    }
+
+    .detail-header h1 {
+        font-size: 20px;
+    }
+
+    .detail-card {
+        padding: 16px;
+        gap: 20px;
+    }
+
+    .produk-section {
+        gap: 12px;
+    }
+
+    .produk-section img {
+        width: 70px;
+        height: 70px;
+    }
+
+    .produk-info h2 {
+        font-size: 16px;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr; /* Ubah grid menjadi satu kolom ke bawah di HP */
+        gap: 12px;
+    }
+
+    .info-box.full {
+        grid-column: span 1;
+    }
+
+    .payment-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .payment-item div:last-child {
+        text-align: left;
+        border-top: 1px solid #eeeeee;
+        width: 100%;
+        padding-top: 8px;
+    }
+}

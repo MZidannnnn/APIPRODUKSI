@@ -64,7 +64,7 @@
                 {{ basename($pembayaran->bukti_bayar) }}
                 <br>
                 <a href="{{ asset('storage/' . $pembayaran->bukti_bayar) }}" target="_blank">
-                    Lihat Bukti
+                    Lihat Bukti 
                 </a>
             </div>
         @endif

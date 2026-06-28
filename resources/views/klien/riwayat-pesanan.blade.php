@@ -177,6 +177,7 @@
                 $rincian = $order->rincianPesanan->first();
             @endphp
 
+            <a href="{{ route('klien.pesanan.detail', $order->id_pesanan) }}" class="order-link">
             <div class="order-card">
                 <!-- BAGIAN KIRI CARD -->
                 <div class="order-left">
@@ -267,6 +268,9 @@
                     </div>
                 </div>
             </div>
+            </a>
+
+            
         @empty
             <div class="empty-order">
                 <i class="fas fa-box-open"></i>

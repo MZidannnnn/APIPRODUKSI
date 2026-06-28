@@ -285,4 +285,21 @@ class PesananController extends Controller
         return view('klien.riwayat-pesanan', compact('pesanan', 'filters'));
         //return view('test.klien-riwayat-pesanan', compact('pesanan', 'filters'));
     }
+    
+    public function detailRiwayat(Pesanan $pesanan)
+    {
+        abort_unless(
+            (int) $pesanan->id_pengguna === (int) auth()->id(),
+            403
+        );
+
+        $pesanan->load([
+            'statusPesanan',
+            'detailProduk.itemProduksi.fotoProduk',
+            'rincianPesanan.detailProduk.itemProduksi',
+            'pembayaran' => fn ($q) => $q->latest('created_at'),
+        ]);
+
+        return view('klien.detail-pesanan', compact('pesanan'));
+    }
 }

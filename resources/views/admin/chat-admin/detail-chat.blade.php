@@ -83,8 +83,23 @@
                 </button>
             </div>
 
-            <div class="modal-body text-center bg-light">
-                <img id="imagePreview" src="" alt="Preview lampiran" class="img-fluid rounded">
+            <div id="imageContainer" class="modal-body p-0 bg-dark position-relative" style="height: 80vh; overflow: hidden; cursor: grab;">
+
+                <img id="imagePreview"
+                    src=""
+                    alt="Preview lampiran"
+                    style="
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        max-width: 100%;
+                        max-height: 100%;
+                        object-fit: contain;
+                        transform: translate(-50%, -50%) scale(1);
+                        transition: .15s ease;
+                        user-select: none;
+                        cursor: grab;
+                    ">
             </div>
 
             <div class="modal-footer">
@@ -137,6 +152,13 @@
     const sendUrl = "{{ route('admin.chat.send', $percakapan->id_percakapan) }}";
     const userId = {{ (int) $userId }};
 
+    const imageContainer = document.getElementById('imageContainer');
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let translateX = -50;
+    let translateY = -50;
+
     let zoom = 1;
     let lastId = 0;
     let isLoading = false;
@@ -177,13 +199,18 @@
     }
 
     function applyZoom() {
-        imagePreview.style.transform = `scale(${zoom})`;
+        imagePreview.style.transform =
+            `translate(${translateX}%, ${translateY}%) scale(${zoom})`;
     }
 
     function openImageModal(attachment) {
         zoom = 1;
+        translateX = -50;
+        translateY = -50;
+
         imagePreview.src = attachment.preview_url;
         imageDownload.href = attachment.download_url || '#';
+
         applyZoom();
 
         $('#imageModal').modal('show');
@@ -378,12 +405,12 @@
     }
 
     zoomInBtn.addEventListener('click', () => {
-        zoom = Math.min(4, zoom + 0.2);
+        zoom = Math.min(3, zoom + 0.25);
         applyZoom();
     });
 
     zoomOutBtn.addEventListener('click', () => {
-        zoom = Math.max(1, zoom - 0.2);
+        zoom = Math.max(0.5, zoom - 0.25);
         applyZoom();
     });
 
@@ -391,6 +418,64 @@
         zoom = 1;
         applyZoom();
     });
+
+    imagePreview.addEventListener('mousedown', function (e) {
+    if (zoom <= 1) return;
+
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+
+    imagePreview.style.cursor = 'grabbing';
+    });
+
+    window.addEventListener('mousemove', function (e) {
+        if (!isDragging) return;
+
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        translateX += dx / 5;
+        translateY += dy / 5;
+
+        startX = e.clientX;
+        startY = e.clientY;
+
+        applyZoom();
+    });
+
+    window.addEventListener('mouseup', function () {
+        isDragging = false;
+        imagePreview.style.cursor = 'grab';
+    });
+
+    // Drag and drop events for the dropzone HP
+    imagePreview.addEventListener('touchstart', function (e) {
+    if (zoom <= 1) return;
+
+        isDragging = true;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+    });
+
+    window.addEventListener('touchmove', function (e) {
+        if (!isDragging) return;
+
+        const dx = e.touches[0].clientX - startX;
+        const dy = e.touches[0].clientY - startY;
+
+        translateX += dx / 5;
+        translateY += dy / 5;
+
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+
+        applyZoom();
+    });
+
+window.addEventListener('touchend', function () {
+    isDragging = false;
+});
 
     dropzone.addEventListener('dragover', (event) => {
         event.preventDefault();

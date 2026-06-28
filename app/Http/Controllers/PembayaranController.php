@@ -165,10 +165,10 @@ class PembayaranController extends Controller
             . $ext;
 
         $directory = 'bukti-bayar/' . Auth::id() . '/' . now()->format('Y/m');
-        $newPath = Storage::disk('local')->putFileAs($directory, $file, $fileName);
+        $newPath = Storage::disk('public')->putFileAs($directory, $file, $fileName);
 
         if ($pembayaran->bukti_bayar) {
-            Storage::disk('local')->delete($pembayaran->bukti_bayar);
+            Storage::disk('public')->delete($pembayaran->bukti_bayar);
         }
 
         $pembayaran->update([
@@ -393,7 +393,7 @@ class PembayaranController extends Controller
         ]);
     }
 
-    //bukti bayar
+    //bukti bayar admin
     public function lihatBuktiPesanan(Pesanan $pesanan)
     {
         $pesanan->load([

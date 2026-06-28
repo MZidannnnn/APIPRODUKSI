@@ -18,8 +18,8 @@
 
 <div class="profile-container">
     
-    <a href="{{ route('dashboard') }}" class="btn-kembali">
-        <i class="fas fa-arrow-left"></i> Kembali ke Dashboard
+    <a href="{{ route('klien.pesanan.riwayat') }}" class="btn-kembali">
+        <i class="fas fa-arrow-left"></i> Kembali
     </a>
 
     <div class="row">
@@ -66,6 +66,15 @@
                         <h6 class="text-muted font-weight-bold mb-3">Informasi Dasar</h6>
                         
                         <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" name="email" class="form-control" value="{{ Auth::user()->email ?? '' }}" required>
+
+                            @error('email')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
                             <label>Nama Lengkap</label>
                             <input type="text" name="nama_pengguna" class="form-control" value="{{ Auth::user()->nama_pengguna ?? '' }}" required>
                         </div>
@@ -75,7 +84,7 @@
 
                         <div class="form-group">
                             <label>Password Lama <small class="text-muted">(Wajib jika ingin mengubah password)</small></label>
-                            <div class="input-group">
+                            <div class="input-group"> 
                                 <div class="input-group-prepend">
                                     <span class="input-group-text bg-light border-right-0">
                                         <i class="fas fa-lock"></i>
