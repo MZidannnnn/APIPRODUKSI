@@ -264,10 +264,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/admin/profile', [AdminProfileController::class, 'edit'])->name('admin.profile.edit');
         Route::put('/admin/profile', [AdminProfileController::class, 'update'])->name('admin.profile.update');
 
-        //Lihat Bukti Bayar Klien
-        Route::get('/admin/riwayat-transaksi/{pesanan}/bukti-bayar', [PembayaranController::class, 'lihatBuktiPesanan'])->name('admin.riwayat-transaksi.bukti-bayar');
-
-        Route::get('/admin/bukti-bayar/{pembayaran}/file', [PembayaranController::class, 'tampilFileBukti'])->name('admin.bukti-bayar.file');
+        
 
        
     });
@@ -291,6 +288,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/admin/progres-pesanan/{id}/edit', [AdminPesananStatusController::class, 'edit'])->name('admin.progres-pesanan.edit');
         Route::put('/admin/progres-pesanan/{id}', [AdminPesananStatusController::class, 'update'])->name('admin.progres-pesanan.update');
         // end route update status pesanan admin
+
+        //Lihat Bukti Bayar Klien
+        Route::get('/admin/riwayat-transaksi/{pesanan}/bukti-bayar', [PembayaranController::class, 'lihatBuktiPesanan'])->name('admin.riwayat-transaksi.bukti-bayar');
+
+        Route::get('/admin/bukti-bayar/{pembayaran}/file', [PembayaranController::class, 'tampilFileBukti'])->name('admin.bukti-bayar.file');
     });
 });
 

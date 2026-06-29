@@ -295,27 +295,30 @@ class PembayaranController extends Controller
         $bulan = $request->bulan ?? now()->month;
         $tahun = $request->tahun ?? now()->year;
 
-        $riwayatTransaksi = Pesanan::query()
-            ->with([
-                'pengguna',
-                'statusPesanan',
-                'detailProduk.itemProduksi.kategoriUsaha',
-                'rincianPesanan.detailProduk.itemProduksi.satuanHarga',
-                'pembayaran' => fn ($q) => $q->latest('created_at'),
-            ])
-            ->whereHas('statusPesanan', function ($q) {
-                $q->whereIn('nama_status_pesanan', [
-                    'Pesanan Selesai',
-                    'Pesanan Dibatalkan',
-                ]);
-            })
-            ->whereMonth('updated_at', $bulan)
-            ->whereYear('updated_at', $tahun)
-            ->when(! $isSuperAdmin, function ($query) use ($user) {
-                $query->whereHas('detailProduk.itemProduksi', function ($q) use ($user) {
-                    $q->where('id_kategori', $user->id_kategori);
-                });
-            })
+        $query = Pesanan::with([
+            'pengguna',
+            'statusPesanan',
+            'detailProduk.itemProduksi.kategoriUsaha',
+            'rincianPesanan.detailProduk.itemProduksi.satuanHarga',
+            'pembayaran' => fn ($q) => $q->latest('created_at'),
+        ])
+        ->whereHas('statusPesanan', function ($q) {
+            $q->whereIn('nama_status_pesanan', [
+                'Pesanan Selesai',
+                'Pesanan Dibatalkan',
+            ]);
+        })
+        ->whereMonth('updated_at', $bulan)
+        ->whereYear('updated_at', $tahun);
+
+        // Filter kategori hanya untuk admin biasa
+        if (! $isSuperAdmin) {
+            $query->whereHas('detailProduk.itemProduksi', function ($q) use ($user) {
+                $q->where('id_kategori', $user->id_kategori);
+            });
+        }
+
+        $riwayatTransaksi = $query
             ->latest('updated_at')
             ->paginate(10)
             ->withQueryString();
@@ -344,9 +347,10 @@ class PembayaranController extends Controller
             'pembayaran' => fn ($q) => $q->latest('created_at'),
         ]);
 
+        // Admin biasa hanya boleh akses sesuai kategori
         if (! $isSuperAdmin) {
             abort_unless(
-                (int) $pesanan->detailProduk?->itemProduksi?->id_kategori === (int) $user->id_kategori,
+                (int) optional($pesanan->detailProduk?->itemProduksi)->id_kategori === (int) $user->id_kategori,
                 403,
                 'Anda tidak berhak mengakses transaksi ini.'
             );
@@ -395,24 +399,24 @@ class PembayaranController extends Controller
     //bukti bayar admin
     public function lihatBuktiPesanan(Pesanan $pesanan)
     {
+        $user = Auth::user();
+        $isSuperAdmin = (int) $user->id_role === 1;
+
         $pesanan->load([
             'pengguna',
+            'detailProduk.itemProduksi',
             'pembayaran' => fn ($q) => $q->latest('created_at'),
         ]);
 
+        // Admin biasa hanya boleh lihat bukti bayar sesuai kategori
+        if (! $isSuperAdmin) {
+            abort_unless(
+                (int) optional($pesanan->detailProduk?->itemProduksi)->id_kategori === (int) $user->id_kategori,
+                403,
+                'Anda tidak berhak mengakses bukti pembayaran ini.'
+            );
+        }
+
         return view('admin.riwayat-transaksi.bukti-bayar', compact('pesanan'));
-    }
-
-    public function tampilFileBukti(Pembayaran $pembayaran)
-    {
-        abort_unless($pembayaran->bukti_bayar, 404);
-
-        abort_unless(
-            Storage::disk('local')->exists($pembayaran->bukti_bayar),
-            404,
-            'File bukti bayar tidak ditemukan.'
-        );
-
-        return Storage::disk('local')->response($pembayaran->bukti_bayar);
     }
 }

@@ -141,7 +141,7 @@
                             class="btn-beli {{ $itemProduksi->status_aktif !== 'Aktif' ? 'btn-nonaktif' : '' }}"
                             id="btnBeliAwal"
                             {{ $itemProduksi->status_aktif !== 'Aktif' ? 'disabled' : '' }}>
-                            {{ $itemProduksi->status_aktif === 'Aktif' ? 'Beli Sekarang' : 'Produk Tidak Aktif' }}
+                            {{ $itemProduksi->status_aktif === 'Aktif' ? 'Pesan Sekarang' : 'Produk Tidak Aktif' }}
                         </button>
                     @else
                         <a href="{{ route('login') }}" class="btn-chat">
@@ -149,7 +149,7 @@
                         </a>
 
                         <a href="{{ route('login') }}" class="btn-beli">
-                            Beli Sekarang
+                            Pesan Sekarang
                         </a>
                     @endauth
 

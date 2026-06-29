@@ -42,68 +42,75 @@ class AdminPesananStatusController extends Controller
     {
         Gate::authorize('viewAny', Pesanan::class);
 
-        // $admin = Auth::user();
         $user = Auth::user();
         $isSuperAdmin = (int) $user->id_role === 1;
 
-        $pesanan = Pesanan::query()
-        ->select([
-            'id_pesanan',
-            'kode_resi_pesanan',
-            'id_pengguna',
-            'id_detail_produk',
-            'id_status_pesanan',
-            'tanggal_pesan',
-            'nama_penerima',
-            'No_hp_penerima',
-            'total_harga',
-        ])
-        ->with([
-            'pengguna:id_pengguna,nama_pengguna',
-            'statusPesanan:id_status_pesanan,nama_status_pesanan',
-            'detailProduk:id_detail_produk,id_item_produksi,ukuran,harga_dasar',
-            'detailProduk.itemProduksi:id_item_produksi,id_kategori,nama_item',
-            'detailProduk.itemProduksi.kategoriUsaha:id_kategori,nama_kategori',
-            'pembayaran:id_pembayaran,id_pesanan,bukti_bayar,status_bayar',
-        ])
-        ->whereHas('statusPesanan', function ($q) {
-            $q->whereNotIn('nama_status_pesanan', [
-                'Pesanan Selesai',
-                'Pesanan Dibatalkan'
-            ]);
-        })
-        ->when(! $isSuperAdmin, function ($query) use ($user) {
+        $query = Pesanan::query()
+            ->select([
+                'id_pesanan',
+                'kode_resi_pesanan',
+                'id_pengguna',
+                'id_detail_produk',
+                'id_status_pesanan',
+                'tanggal_pesan',
+                'nama_penerima',
+                'No_hp_penerima',
+                'total_harga',
+            ])
+            ->with([
+                'pengguna:id_pengguna,nama_pengguna',
+                'statusPesanan:id_status_pesanan,nama_status_pesanan',
+                'detailProduk:id_detail_produk,id_item_produksi,ukuran,harga_dasar',
+                'detailProduk.itemProduksi:id_item_produksi,id_kategori,nama_item',
+                'detailProduk.itemProduksi.kategoriUsaha:id_kategori,nama_kategori',
+                'pembayaran:id_pembayaran,id_pesanan,bukti_bayar,status_bayar',
+            ])
+            ->whereHas('statusPesanan', function ($q) {
+                $q->whereNotIn('nama_status_pesanan', [
+                    'Pesanan Selesai',
+                    'Pesanan Dibatalkan'
+                ]);
+            });
+
+        // Admin biasa hanya lihat kategori sendiri
+        if (! $isSuperAdmin) {
             $query->whereHas('detailProduk.itemProduksi', function ($q) use ($user) {
                 $q->where('id_kategori', (int) $user->id_kategori);
             });
-        })
-        ->orderByDesc('tanggal_pesan')
-        ->get();
+        }
 
-        $data = [
+        $pesanan = $query
+            ->orderByDesc('tanggal_pesan')
+            ->get();
+
+        return view('admin.progres-pesanan.index', [
             'title' => 'Progres Pesanan Klien',
             'menuProgresPesanan' => 'active',
             'pesanan' => $pesanan,
-        ];
-
-        return view('admin/progres-pesanan/index', $data);
+        ]);
     }
 
     public function edit($id)
     {
-        $admin = Auth::user();
+        $user = Auth::user();
+        $isSuperAdmin = (int) $user->id_role === 1;
 
-        $pesanan = Pesanan::with([
+        $query = Pesanan::with([
             'pengguna',
             'statusPesanan',
             'detailProduk.itemProduksi.kategoriUsaha',
             'rincianPesanan.detailProduk.itemProduksi.satuanHarga',
             'pembayaran' => fn ($q) => $q->latest('created_at'),
-        ])
-        ->whereHas('detailProduk.itemProduksi', function ($q) use ($admin) {
-            $q->where('id_kategori', $admin->id_kategori);
-        })
-        ->findOrFail($id);
+        ]);
+
+        // Filter hanya untuk admin biasa
+        if (! $isSuperAdmin) {
+            $query->whereHas('detailProduk.itemProduksi', function ($q) use ($user) {
+                $q->where('id_kategori', (int) $user->id_kategori);
+            });
+        }
+
+        $pesanan = $query->findOrFail($id);
 
         $statusPesanan = StatusPesanan::all();
 
@@ -123,11 +130,19 @@ class AdminPesananStatusController extends Controller
             'id_status_pesanan.exists' => 'Status pesanan tidak valid.',
         ]);
 
-        $admin = Auth::user();
+        $user = Auth::user();
+        $isSuperAdmin = (int) $user->id_role === 1;
 
-        $pesanan = Pesanan::whereHas('detailProduk.itemProduksi', function ($q) use ($admin) {
-            $q->where('id_kategori', $admin->id_kategori);
-        })->findOrFail($id);
+        $query = Pesanan::query();
+
+        // Filter hanya untuk admin biasa
+        if (! $isSuperAdmin) {
+            $query->whereHas('detailProduk.itemProduksi', function ($q) use ($user) {
+                $q->where('id_kategori', (int) $user->id_kategori);
+            });
+        }
+
+        $pesanan = $query->findOrFail($id);
 
         $pesanan->update([
             'id_status_pesanan' => $request->id_status_pesanan,
