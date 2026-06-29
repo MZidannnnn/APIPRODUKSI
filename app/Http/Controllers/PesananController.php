@@ -178,7 +178,7 @@ class PesananController extends Controller
     }
  
     public function showListDetail($id)
-    {
+    { 
         $itemProduksi = ItemProduksi::with([
             'kategoriUsaha.jenisPembayaran',
             'satuanHarga',

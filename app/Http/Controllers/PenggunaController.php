@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use App\Models\KategoriUsaha;   
 use App\Models\Pengguna;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
@@ -153,13 +154,41 @@ class PenggunaController extends Controller
         $user = Pengguna::findOrFail($id);
         $role = $user->id_role;
 
-        $user->delete();
+        DB::beginTransaction();
 
-        return redirect()
-            ->route('viewKelolaAkun', $role)
-            ->with('success', 'Data akun berhasil dihapus');
+        try {
+            // Kalau nanti user punya relasi lain (misalnya foto profil / data detail),
+            // bisa dihapus dulu di sini sebelum user utama dihapus
+
+            $user->delete();
+
+            DB::commit();
+
+            return redirect()
+                ->route('viewKelolaAkun', $role)
+                ->with('success', 'Data akun berhasil dihapus');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()
+                ->route('viewKelolaAkun', $role)
+                ->with('error', 'Gagal menghapus data akun: ' . $e->getMessage());
+        }
     }
 }
+
+// public function destroy($id)
+//     {
+//         $user = Pengguna::findOrFail($id);
+//         $role = $user->id_role;
+ 
+//         $user->delete();
+
+//         return redirect()
+//             ->route('viewKelolaAkun', $role)
+//             ->with('success', 'Data akun berhasil dihapus');
+//     }
 
 /*public function index()
     {

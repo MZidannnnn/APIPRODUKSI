@@ -43,13 +43,9 @@
                                     <form action="{{ route('satuanHarga.destroy', $item->id_satuan) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-
-                                        <button type="button" class="btn btn-sm btn-danger" data-toggle="modal"
-                                            data-target="#hapusModal{{ $item->id_satuan}}">
+                                        <button type="button" class="btn btn-danger btn-sm btn-hapus">
                                             <i class="fas fa-trash"></i>
                                         </button>
-
-                                        @include('super-admin.data-master.satuan-harga.modal')
                                     </form>
                                 </td>
                             </tr>

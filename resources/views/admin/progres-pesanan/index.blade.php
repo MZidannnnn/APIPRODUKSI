@@ -76,8 +76,8 @@
                                             {{ $item->detailProduk?->itemProduksi?->kategoriUsaha?->nama_kategori ?? '-' }}
                                         </span>
                                     </td>
-                                    <td>
-                                        <span class="badge badge-warning text-dark font-weight-bold px-2 py-1 w-100">
+                                     <td>
+                                        <span class="badge badge-warning text-dark font-weight-bold px-2 py-1">
                                             {{ $item->statusPesanan?->nama_status_pesanan ?? '-' }}
                                         </span>
                                     </td>

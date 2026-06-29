@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\SatuanHarga;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SatuanHargaController extends Controller
 {
@@ -84,10 +85,25 @@ class SatuanHargaController extends Controller
     public function destroy($id)
     {
         $satuanHarga = SatuanHarga::findOrFail($id);
-        $satuanHarga->delete();
-        return redirect()
-            ->route('satuanHarga.index')
-            ->with('success', 'Data satuan harga berhasil dihapus');
+
+        DB::beginTransaction();
+
+        try {
+            $satuanHarga->delete();
+
+            DB::commit();
+
+            return redirect()
+                ->route('satuanHarga.index')
+                ->with('success', 'Data satuan harga berhasil dihapus');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()
+                ->route('satuanHarga.index')
+                ->with('error', 'Gagal menghapus data satuan harga: ' . $e->getMessage());
+        }
     }
 }
 

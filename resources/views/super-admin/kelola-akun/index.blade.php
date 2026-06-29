@@ -53,13 +53,9 @@
                                     <form action="{{ route('kelolaAkunDelete', $item->id_pengguna) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-
-                                        <button type="button" class="btn btn-sm btn-danger" data-toggle="modal"
-                                            data-target="#hapusModal{{ $item->id_pengguna }}">
+                                        <button type="button" class="btn btn-danger btn-sm btn-hapus">
                                             <i class="fas fa-trash"></i>
                                         </button>
-
-                                        @include('super-admin.kelola-akun.modal')
                                     </form>
                                 </td>
                             </tr>

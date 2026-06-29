@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\StatusPesanan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
 
 class StatusPesananController extends Controller
 {
@@ -80,13 +82,28 @@ class StatusPesananController extends Controller
             ->with('success', 'Data status pesanan berhasil diperbarui');
     }
 
-    public function destroy($id) 
+    public function destroy($id)
     {
         $statusPesanan = StatusPesanan::findOrFail($id);
-        $statusPesanan->delete();
-        return redirect()
-            ->route('statusPesanan.index')
-            ->with('success', 'Data status pesanan berhasil dihapus');
+
+        DB::beginTransaction();
+
+        try {
+            $statusPesanan->delete();
+
+            DB::commit();
+
+            return redirect()
+                ->route('statusPesanan.index')
+                ->with('success', 'Data status pesanan berhasil dihapus');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()
+                ->route('statusPesanan.index')
+                ->with('error', 'Gagal menghapus data status pesanan: ' . $e->getMessage());
+        }
     }
 }
 

@@ -6,6 +6,7 @@ use App\Models\JenisPembayaran;
 use App\Models\KategoriUsaha;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class KategoriUsahaController extends Controller
 {
@@ -118,10 +119,25 @@ class KategoriUsahaController extends Controller
     public function destroy($id)
     {
         $kategori = KategoriUsaha::findOrFail($id);
-        $kategori->delete();
-        return redirect()
-            ->route('kategoriUsaha.index')
-            ->with('success', 'Data kategori usaha berhasil dihapus');
+
+        DB::beginTransaction();
+
+        try {
+            $kategori->delete();
+
+            DB::commit();
+
+            return redirect()
+                ->route('kategoriUsaha.index')
+                ->with('success', 'Data kategori usaha berhasil dihapus');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()
+                ->route('kategoriUsaha.index')
+                ->with('error', 'Gagal menghapus data kategori usaha: ' . $e->getMessage());
+        }
     }
 }
 

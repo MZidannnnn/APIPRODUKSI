@@ -287,6 +287,7 @@ class PembayaranController extends Controller
         }
     }
 
+    // Riwayat transaksi di admin
     public function TampilRiwayatTransaksi(Request $request)
     {
         $user = Auth::user();
@@ -332,6 +333,7 @@ class PembayaranController extends Controller
         ]);
     }
 
+    // Detail riwayat transaksi di Admin
     public function detailRiwayatTransaksi(Pesanan $pesanan)
     {
         $user = Auth::user();
@@ -396,7 +398,7 @@ class PembayaranController extends Controller
         ]);
     }
 
-    //bukti bayar admin
+    //bukti bayar di admin
     public function lihatBuktiPesanan(Pesanan $pesanan)
     {
         $user = Auth::user();

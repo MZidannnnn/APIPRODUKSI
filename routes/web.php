@@ -128,9 +128,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/pesanan/{pesanan}/detail', [PesananController::class, 'detailRiwayat'])->name('klien.pesanan.detail');
         
         // fitur batalkan pesanan
-        Route::post('/pesanan/{pesanan}/batal', [PembayaranController::class, 'cancelPesanan'])
-            ->name('pesanan.batal');
-        // end fitur batalkan pesanan
+        Route::post('/pesanan/{pesanan}/batal', [PembayaranController::class, 'cancelPesanan'])->name('pesanan.batal');
 
         // transaksi midtrans
         Route::post('/pembayaran/midtrans', [PembayaranController::class, 'createTransaction'])->name('pembayaran.midtrans');

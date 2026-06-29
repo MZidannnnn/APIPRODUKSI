@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\JenisPembayaran;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class JenisPembayaranController extends Controller
 {
@@ -81,13 +82,28 @@ class JenisPembayaranController extends Controller
             ->with('success', 'Data jenis pembayaran berhasil diperbarui');
     }
 
-    public function destroy($id) 
+    public function destroy($id)
     {
         $jenisPembayaran = JenisPembayaran::findOrFail($id);
-        $jenisPembayaran->delete();
-        return redirect()
-            ->route('jenisPembayaran.index')
-            ->with('success', 'Data jenis pembayaran berhasil dihapus');
+
+        DB::beginTransaction();
+
+        try {
+            $jenisPembayaran->delete();
+
+            DB::commit();
+
+            return redirect()
+                ->route('jenisPembayaran.index')
+                ->with('success', 'Data jenis pembayaran berhasil dihapus');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()
+                ->route('jenisPembayaran.index')
+                ->with('error', 'Gagal menghapus data jenis pembayaran: ' . $e->getMessage());
+        }
     }
 } 
 

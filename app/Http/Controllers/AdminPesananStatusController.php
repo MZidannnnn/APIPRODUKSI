@@ -68,7 +68,8 @@ class AdminPesananStatusController extends Controller
             ->whereHas('statusPesanan', function ($q) {
                 $q->whereNotIn('nama_status_pesanan', [
                     'Pesanan Selesai',
-                    'Pesanan Dibatalkan'
+                    'Pesanan Dibatalkan',
+                    'Pesanan Kadaluarsa'
                 ]);
             });
 
@@ -80,7 +81,7 @@ class AdminPesananStatusController extends Controller
         }
 
         $pesanan = $query
-            ->orderByDesc('tanggal_pesan')
+            ->latest('kode_resi_pesanan')
             ->get();
 
         return view('admin.progres-pesanan.index', [

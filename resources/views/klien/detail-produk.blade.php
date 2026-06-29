@@ -25,6 +25,7 @@
         $satuan = $itemProduksi->satuanHarga->nama_satuan ?? null;
 
         $bolehDp = strtolower($itemProduksi->kategoriUsaha->jenisPembayaran->nama_jenis_pembayaran ?? '') === 'dp';
+        $isBaliho = strtolower($itemProduksi->kategoriUsaha->nama_kategori ?? '') === 'space iklan baliho';
     @endphp
 
     <a href="{{ $backUrl }}" class="btn-kembali">
@@ -186,13 +187,18 @@
                 </div>
 
                 <div class="flex-row-group align-end">
-                    <div class="form-group w-100">
-                        <label>Jadwal Pemasangan</label>
-                        <small class="helper-date">Pilih tanggal pemasangan</small>
-                        <input type="date" name="jadwal_pemasangan" class="input-pesan date-input" required>
-                    </div>
+                    @if ($isBaliho)
+                        <div class="form-group w-100">
+                            <label>Jadwal Pemasangan</label>
+                            <small class="helper-date">Pilih tanggal pemasangan</small>
+                            <input type="date" name="jadwal_pemasangan" class="input-pesan date-input" required>
+                        </div>
+                    @else
+                        <!-- Spacer for flex layout -->
+                        <div class="form-group w-100" style="display: none;"></div>
+                    @endif
 
-                    <div class="subtotal-box bottom-subtotal">
+                    <div class="subtotal-box bottom-subtotal" @if(!$isBaliho) style="margin-left: auto;" @endif>
                         <small>Subtotal</small>
                         <strong id="subtotalTextBottom">Rp 0</strong>
                     </div>
@@ -227,10 +233,7 @@
                         </a>
                     @endauth
 
-                    <button
-                        type="submit"
-                        class="btn-beli"
-                        id="btnSubmitBeli"
+                    <button type="submit" class="btn-beli" id="btnSubmitBeli"
                         {{ $itemProduksi->status_aktif !== 'Aktif' || !$detailPertama ? 'disabled' : '' }}>
                         Bayar
                     </button>
@@ -469,6 +472,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
+            const btnSubmitBeli = document.getElementById('btnSubmitBeli');
+            let originalBtnText = '';
+            if (btnSubmitBeli) {
+                originalBtnText = btnSubmitBeli.innerHTML;
+                btnSubmitBeli.disabled = true;
+                btnSubmitBeli.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Memproses...';
+            }
+
             try {
                 const responsePesanan = await fetch(checkoutForm.action, {
                     method: 'POST',
@@ -483,6 +494,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (!responsePesanan.ok || !dataPesanan.id_pesanan) {
                     alert(dataPesanan.message || 'Pesanan gagal dibuat.');
+                    if (btnSubmitBeli) {
+                        btnSubmitBeli.disabled = false;
+                        btnSubmitBeli.innerHTML = originalBtnText;
+                    }
                     return;
                 }
 
@@ -506,6 +521,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (!responseBayar.ok || !dataBayar.snap_token) {
                     alert(dataBayar.message || 'Gagal membuat pembayaran Midtrans.');
+                    if (btnSubmitBeli) {
+                        btnSubmitBeli.disabled = false;
+                        btnSubmitBeli.innerHTML = originalBtnText;
+                    }
                     return;
                 }
 
@@ -517,6 +536,10 @@ document.addEventListener('DOMContentLoaded', function () {
             } catch (error) {
                 console.error(error);
                 alert('Terjadi kesalahan saat memproses pesanan.');
+                if (btnSubmitBeli) {
+                    btnSubmitBeli.disabled = false;
+                    btnSubmitBeli.innerHTML = originalBtnText;
+                }
             }
         });
     }

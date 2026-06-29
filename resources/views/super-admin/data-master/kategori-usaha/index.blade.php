@@ -63,13 +63,9 @@
                                     <form action="{{ route('kategoriUsaha.destroy', $item->id_kategori) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-
-                                        <button type="button" class="btn btn-sm btn-danger" data-toggle="modal"
-                                            data-target="#hapusModal{{ $item->id_kategori }}">
+                                        <button type="button" class="btn btn-danger btn-sm btn-hapus">
                                             <i class="fas fa-trash"></i>
                                         </button>
-
-                                        @include('super-admin.data-master.kategori-usaha.modal')
                                     </form>
                                 </td>
                             </tr>

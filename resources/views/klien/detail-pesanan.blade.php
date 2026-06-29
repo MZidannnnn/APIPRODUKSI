@@ -20,7 +20,7 @@
         <h1>Detail Pesanan</h1>
         <p>{{ $pesanan->kode_resi_pesanan ?? '#' . $pesanan->id_pesanan }}</p>
     </div>
-
+    
     <div class="detail-card">
 
         <div class="produk-section">

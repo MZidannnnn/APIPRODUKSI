@@ -150,7 +150,7 @@
                     && in_array($latestType, ['Full'], true)
                     && $latestStatus !== 'Lunas';
 
-                $canPayPelunasan = $status === 'Pesanan selesai, silahkan lunasi pembayaran'
+                $canPayPelunasan = strtolower($status) === 'pesanan selesai, silahkan lunasi pembayaran'
                     && !$pelunasanPaid
                     && $sisaBayar > 0;
 
@@ -239,7 +239,8 @@
                     <div class="order-actions">
                         @if ($canCancel)
                             <button type="button" class="btn-outline-danger cancel-btn"
-                                data-endpoint="{{ route('pesanan.batal', $order->id_pesanan) }}">
+                                data-endpoint="{{ route('pesanan.batal', $order->id_pesanan) }}"
+                                onclick="event.preventDefault(); event.stopPropagation();">
                                 Batalkan Pesanan
                             </button>
                         @endif
@@ -296,12 +297,20 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('.pay-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+            btn.disabled = true;
+
             const endpoint = btn.dataset.tipe === "Pelunasan"
                 ? "{{ route('pembayaran.midtrans') }}"
                 : "{{ route('pembayaran.retry') }}";
 
-            const res = await fetch(endpoint, {
+            try {
+                const res = await fetch(endpoint, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -318,6 +327,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (!res.ok || !data.snap_token) {
                 alert(data.message || 'Gagal membuat pembayaran.');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
                 return;
             }
 
@@ -340,16 +351,25 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 onError: function () {
                     alert('Pembayaran gagal.');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
                 },
                 onClose: function () {
                     window.location.reload();
                 }
             });
+            } catch (err) {
+                alert('Terjadi kesalahan jaringan.');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         });
     });
 
     document.querySelectorAll('.cancel-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             if (!confirm('Yakin ingin membatalkan pesanan ini?')) return;
 
             const res = await fetch(btn.dataset.endpoint, {
@@ -369,7 +389,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             alert(data.message || 'Pesanan berhasil dibatalkan.');
-            window.location.reload();
+            window.location.href = "?status=Dibatalkan";
         });
     });
 
