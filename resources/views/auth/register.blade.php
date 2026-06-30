@@ -6,6 +6,7 @@
 
     <title>Sign Up Klien</title>
 
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="stylesheet" href="{{ asset('fe-klien/auth-klien.css') }}">
 
     <link rel="stylesheet"
