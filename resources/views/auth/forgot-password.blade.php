@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lupa Password</title>
 
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="shortcut icon" href="/favicon.ico?v={{ time() }}">
+    <link rel="icon" href="/favicon.ico?v={{ time() }}" type="image/x-icon">
+    
+    <link href="{{ asset('sbadmin2/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('fe-klien/auth-klien.css') }}">
 
     <link rel="stylesheet"

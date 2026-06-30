@@ -6,7 +6,9 @@
 
     <title>Sign Up Klien</title>
 
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="shortcut icon" href="/favicon.ico?v={{ time() }}">
+    <link rel="icon" href="/favicon.ico?v={{ time() }}" type="image/x-icon">
+
     <link rel="stylesheet" href="{{ asset('fe-klien/auth-klien.css') }}">
 
     <link rel="stylesheet"

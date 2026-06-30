@@ -8,7 +8,9 @@
     <title>Advisel Pramana | Login</title>
 
     <!-- Font & Icon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="shortcut icon" href="/favicon.ico?v={{ time() }}">
+    <link rel="icon" href="/favicon.ico?v={{ time() }}" type="image/x-icon">
+    
     <link href="{{ asset('sbadmin2/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800" rel="stylesheet">
 
