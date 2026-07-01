@@ -12,7 +12,7 @@
     <title>Advisel Pramana</title>
 
     <!-- Custom fonts for this template-->
-    <<link rel="shortcut icon" href="/favicon.ico?v={{ time() }}">
+    <link rel="shortcut icon" href="/favicon.ico?v={{ time() }}">
     <link rel="icon" href="/favicon.ico?v={{ time() }}" type="image/x-icon">
 
     <link href="{{ asset('sbadmin2/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">

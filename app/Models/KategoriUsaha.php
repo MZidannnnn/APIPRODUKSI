@@ -14,7 +14,7 @@ class KategoriUsaha extends Model
         'id_jenis_pembayaran',
         'kode_unik',
         'nama_kategori',
-        'jenis_harga',
+        'bidang_layanan',
         'deskripsi',
     ];
 

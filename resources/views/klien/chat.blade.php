@@ -7,7 +7,7 @@
 @section('content')
 <div class="chat-list-page">
 
-    <a href="{{ url()->previous() }}" class="btn-kembali">
+    <a href="{{ route('dashboard') }}" class="btn-kembali">
         <i class="fas fa-chevron-left"></i>
         Kembali
     </a>

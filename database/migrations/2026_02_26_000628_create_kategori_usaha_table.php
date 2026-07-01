@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id_jenis_pembayaran');
             $table->string('kode_unik', 10)->unique();
             $table->string('nama_kategori', 100);
-            $table->enum('jenis_harga', ['Harga Tetap', 'Harga Kostum']);
+            $table->enum('bidang_layanan', ['Media Promosi', 'Produksi']);
             $table->text('deskripsi')->nullable();
             $table->timestamps();
 

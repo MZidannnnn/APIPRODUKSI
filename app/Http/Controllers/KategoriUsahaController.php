@@ -42,7 +42,7 @@ class KategoriUsahaController extends Controller
             'kode_unik'           => ['required', 'string', 'max:10', 'regex:/^[A-Z0-9]+$/', Rule::unique('kategori_usaha', 'kode_unik')],
             'nama_kategori'         => 'required|max:100',
             'id_jenis_pembayaran'   => 'required',
-            'jenis_harga'           => 'required|in:Harga Tetap,Harga Kostum',
+            'bidang_layanan'      => 'required|in:Media Promosi,Produksi',
             'deskripsi'             => 'nullable',
         ], [
             'kode_unik.required'  => 'Kode unik wajib diisi',
@@ -51,15 +51,15 @@ class KategoriUsahaController extends Controller
             'nama_kategori.required'         => 'Nama kategori usaha wajib diisi',
             'nama_kategori.max'              => 'Nama kategori usaha maksimal 100 karakter',
             'id_jenis_pembayaran.required'   => 'Jenis pembayaran wajib dipilih',
-            'jenis_harga.required'           => 'Jenis harga wajib dipilih',
-            'jenis_harga.in'                 => 'Jenis harga tidak valid',
+            'bidang_layanan.required'        => 'Bidang layanan wajib dipilih',
+            'bidang_layanan.in'              => 'Bidang layanan tidak valid',
         ]);
 
         KategoriUsaha::create([
             'id_jenis_pembayaran' => $request->id_jenis_pembayaran,
             'kode_unik'           => $request->kode_unik,
             'nama_kategori'       => $request->nama_kategori,
-            'jenis_harga'         => $request->jenis_harga,
+            'bidang_layanan'      => $request->bidang_layanan,
             'deskripsi'           => $request->deskripsi,
         ]);
 
@@ -88,7 +88,7 @@ class KategoriUsahaController extends Controller
             'kode_unik'           => ['required', 'string', 'max:10', 'regex:/^[A-Z0-9]+$/', Rule::unique('kategori_usaha', 'kode_unik')->ignore($id, 'id_kategori')],
             'nama_kategori'         => 'required|max:100',
             'id_jenis_pembayaran'   => 'required',
-            'jenis_harga'           => 'required|in:Harga Tetap,Harga Kostum',
+            'bidang_layanan'      => 'required|in:Media Promosi,Produksi',
             'deskripsi'             => 'nullable',
         ], [
             'kode_unik.required'  => 'Kode unik wajib diisi',
@@ -97,8 +97,8 @@ class KategoriUsahaController extends Controller
             'nama_kategori.required'         => 'Nama kategori usaha wajib diisi',
             'nama_kategori.max'              => 'Nama kategori usaha maksimal 100 karakter',
             'id_jenis_pembayaran.required'   => 'Jenis pembayaran wajib dipilih',
-            'jenis_harga.required'           => 'Jenis harga wajib dipilih',
-            'jenis_harga.in'                 => 'Jenis harga tidak valid',
+            'bidang_layanan.required'        => 'Bidang layanan wajib dipilih',
+            'bidang_layanan.in'              => 'Bidang layanan tidak valid',
         ]);
 
         $kategori = KategoriUsaha::findOrFail($id);
@@ -107,7 +107,7 @@ class KategoriUsahaController extends Controller
             'id_jenis_pembayaran' => $request->id_jenis_pembayaran,
             'kode_unik'           => $request->kode_unik,
             'nama_kategori'       => $request->nama_kategori,
-            'jenis_harga'         => $request->jenis_harga,
+            'bidang_layanan'      => $request->bidang_layanan,
             'deskripsi'           => $request->deskripsi,
         ]);
 

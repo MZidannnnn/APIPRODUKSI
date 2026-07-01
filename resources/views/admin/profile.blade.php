@@ -28,10 +28,10 @@
                             <span><i class="fas fa-envelope text-gray-500 mr-2"></i> Email</span>
                             <span class="font-weight-600 text-dark">{{ $user->email }}</span>
                         </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <!-- <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                             <span><i class="fas fa-circle text-success mr-2" style="font-size: 10px;"></i> Status</span>
-                            <span class="badge badge-success px-2 py-1">Aktif</span>
-                        </li>
+                            <span class="badge badge-success px-2 py-1">Aktif</span> 
+                        </li> -->
                     </ul>
                 </div>
             </div>
