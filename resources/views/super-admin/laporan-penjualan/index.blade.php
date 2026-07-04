@@ -47,6 +47,14 @@
                     </div>
                 </div>
             </form>
+
+            @if (!empty($filters['tanggal_mulai']) && !empty($filters['tanggal_selesai']))
+                <div class="alert alert-success mt-3 mb-0">
+                    <strong>Total Penjualan:</strong>
+                    Rp {{ number_format($totalPenjualan, 0, ',', '.') }}
+                </div>
+            @endif
+
         </div>
 
         <div class="card-body">
@@ -54,38 +62,48 @@
                 <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
                     <thead class="bg-primary text-white">
                         <tr class="text-center">
-                            <th>Id Pesanan</th>
+                            <th>Kode Transaksi</th>
                             <th>Tgl Pesan</th>
+                            <th>Tgl Selesai</th>
                             <th>Nama Penerima</th>
                             <th>Produk</th> 
                             <th>Ukuran</th>
                             <th>Qty</th>
                             <th>Total Harga</th>
-                            <th>Status Pesanan</th>
-                            {{-- <th>Tgl Bayar</th> --}}
                             <th>Tipe Bayar</th>
                             <th>Jumlah Bayar</th>
                             <th>Payment Type</th>
-                            <th>Status Bayar</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         @foreach($laporan as $row)
                             <tr>
-                                <td>{{ $row->id_pesanan }}</td>
-                                <td>{{ $row->tanggal_pesan }}</td>
+                                <td class="font-weight-bold text-gray-800">
+                                    <span class="badge badge-dark px-2 py-1">
+                                        {{ $row->kode_resi_pesanan ?? '#' . $row->id_pesanan }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <i class="far fa-calendar-alt text-muted mr-1"></i>
+                                    {{ $row->tanggal_pesan ? \Carbon\Carbon::parse($row ->tanggal_pesan)->format('d M Y') : '-' }}
+                                </td>
+                                <td>
+                                    <i class="far fa-calendar-alt text-muted mr-1"></i>
+                                    {{ $row->tanggal_selesai ? \Carbon\Carbon::parse($row->tanggal_selesai)->format('d M Y') : '-' }}
+                                </td>
                                 <td>{{ $row->nama_penerima }}</td>
                                 <td>{{ $row->nama_item }}</td>
                                 <td>{{ $row->ukuran }}</td>
-                                <td>{{ $row->kuantitas }}</td>
-                                <td>{{ $row->total_harga }}</td>
-                                <td>{{ $row->status_pesanan }}</td>
-                                {{-- <td>{{ optional($row->tanggal_bayar)->format('Y-m-d') }}</td> --}}
-                                <td>{{ $row->tipe_pembayaran }}</td>
-                                <td>{{ $row->jumlah_bayar }}</td>
+                                <td class="text-center">{{ $row->kuantitas }}</td>
+                                <td class="font-weight-bold text-success text-right">
+                                    Rp {{ number_format($row->total_harga, 0, ',', '.') }}
+                                </td>
+                                <td class="text-center">{{ $row->tipe_pembayaran }}</td>
+                                <td class="font-weight-bold text-success text-right">
+                                    Rp {{ number_format($row->jumlah_bayar ?? 0, 0, ',', '.') }}
+                                </td>
                                 <td>{{ $row->payment_type }}</td>
-                                <td>{{ $row->status_bayar }}</td>
                             </tr>
                         @endforeach
                         </tbody>

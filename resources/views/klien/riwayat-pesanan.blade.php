@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="{{ asset('fe-klien/riwayat-pesanan.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <script src="https://app.sandbox.midtrans.com/snap/snap.js"
         data-client-key="{{ config('midtrans.client_key') }}">
     </script>
@@ -178,8 +180,10 @@
                 };
 
                 $rincian = $order->rincianPesanan->first();
-            @endphp
 
+                $isSablon = strtolower($itemProduksi->kategoriUsaha->nama_kategori ?? '') === 'sablon';
+            @endphp
+            
             <a href="{{ route('klien.pesanan.detail', $order->id_pesanan) }}" class="order-link">
             <div class="order-card">
                 <!-- BAGIAN KIRI CARD -->
@@ -206,12 +210,22 @@
                             <span>
                                 <i class="fas fa-box"></i>
                                 {{ $rincian->kuantitas ?? 1 }}x
-                            </span>
+                            </span> 
                         </div>
+
+                        <p style="margin-bottom: 5px;">
+                            <i class="fas fa-calendar-alt"></i>
+                            Tanggal Pesan:
+                            {{ $order->tanggal_pesan ? \Carbon\Carbon::parse($order->tanggal_pesan)->translatedFormat('d F Y') : '-' }}
+                        </p>
+
+                        @php
+                            $isSablon = stripos($produk->kategoriUsaha->nama_kategori ?? '', 'Sablon') !== false || stripos($produk->nama_item ?? '', 'Sablon') !== false;
+                        @endphp
 
                         <p>
                             <i class="fas fa-calendar-days"></i>
-                            Jadwal Pemasangan:
+                            {{ !empty($isSablon) ? 'Jadwal Pengambilan' : 'Jadwal Pemasangan' }}:
                             {{ $order->jadwal_pemasangan ? \Carbon\Carbon::parse($order->jadwal_pemasangan)->translatedFormat('d F Y') : '-' }}
                         </p>
 
@@ -286,12 +300,10 @@
 
     <!-- =========================================================
          PAGINATION
-
-         <div class="pagination-wrapper">
+    ========================================================= -->
+    <div class="pagination-wrapper">
         {{ $pesanan->links() }}
     </div>
-    ========================================================= -->
-    
 
 </main>
 
@@ -371,30 +383,59 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    document.querySelectorAll('.cancel-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
+    document.querySelectorAll('.cancel-btn').forEach(button => {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            if (!confirm('Yakin ingin membatalkan pesanan ini?')) return;
 
-            const res = await fetch(btn.dataset.endpoint, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
-                    "Accept": "application/json"
+            const endpoint = this.dataset.endpoint;
+
+            Swal.fire({
+                title: 'Batalkan Pesanan?',
+                text: 'Pesanan yang dibatalkan tidak bisa diproses kembali.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#c62828',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Batalkan',
+                cancelButtonText: 'Kembali',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(endpoint, {
+                        method: 'POST', // ← ganti PATCH ke POST
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(async response => {
+                        const data = await response.json();
+
+                        if (!response.ok) {
+                            throw new Error(data.message || 'Gagal');
+                        }
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: data.message || 'Pesanan berhasil dibatalkan.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = "?status=Dibatalkan";
+                        });
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: error.message
+                        });
+                    });
                 }
             });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                alert(data.message || 'Gagal membatalkan pesanan.');
-                return;
-            }
-
-            alert(data.message || 'Pesanan berhasil dibatalkan.');
-            window.location.href = "?status=Dibatalkan";
         });
     });
 

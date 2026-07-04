@@ -25,7 +25,7 @@
         $satuan = $itemProduksi->satuanHarga->nama_satuan ?? null;
 
         $bolehDp = strtolower($itemProduksi->kategoriUsaha->jenisPembayaran->nama_jenis_pembayaran ?? '') === 'dp';
-        $isBaliho = strtolower($itemProduksi->kategoriUsaha->nama_kategori ?? '') === 'space iklan baliho';
+        $isSablon = strtolower($itemProduksi->kategoriUsaha->nama_kategori ?? '') === 'sablon';
     @endphp
 
     <a href="{{ $backUrl }}" class="btn-kembali">
@@ -187,18 +187,18 @@
                 </div>
 
                 <div class="flex-row-group align-end">
-                    @if ($isBaliho)
-                        <div class="form-group w-100">
-                            <label>Jadwal Pemasangan</label>
-                            <small class="helper-date">Pilih tanggal pemasangan</small>
-                            <input type="date" name="jadwal_pemasangan" class="input-pesan date-input" required>
-                        </div>
-                    @else
-                        <!-- Spacer for flex layout -->
-                        <div class="form-group w-100" style="display: none;"></div>
-                    @endif
+                    <div class="form-group w-100">
+                        <label>
+                            {{ $isSablon ? 'Jadwal Pengambilan' : 'Jadwal Pemasangan' }}
+                        </label>
 
-                    <div class="subtotal-box bottom-subtotal" @if(!$isBaliho) style="margin-left: auto;" @endif>
+                        <small class="helper-date">
+                            {{ $isSablon ? 'Pilih Tanggal Pengambilan' : 'Pilih Tanggal Pemasangan' }}
+                        </small>
+                        <input type="date" name="jadwal_pemasangan" class="input-pesan date-input" required>
+                    </div>
+                  
+                    <div class="subtotal-box bottom-subtotal">
                         <small>Subtotal</small>
                         <strong id="subtotalTextBottom">Rp 0</strong>
                     </div>

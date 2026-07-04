@@ -15,44 +15,55 @@
 
     <table>
         <thead>
-        <tr>
-            <th>Id Pesanan</th>
-            <th>Tgl Pesan</th>
-            <th>Nama Penerima</th>
-            <th>Produk</th>
-            <th>Ukuran</th>
-            <th>Qty</th>
-            <th>Total Harga</th>
-            <th>Status Pesanan</th>
-            {{-- <th>Tgl Bayar</th> --}}
-            <th>Tipe Bayar</th>
-            <th>Jumlah Bayar</th>
-            <th>Payment Type</th>
-            <th>Status Bayar</th>
-        </tr>
+            <tr>
+                <th>Kode Transaksi</th>
+                <th>Tgl Pesan</th>
+                <th>Tgl Selesai</th>
+                <th>Nama Penerima</th>
+                <th>Produk</th> 
+                <th>Ukuran</th>
+                <th>Qty</th>
+                <th>Total Harga</th>
+                <th>Tipe Bayar</th>
+                <th>Jumlah Bayar</th>
+                <th>Payment Type</th>
+            </tr>
         </thead>
+
         <tbody>
-        @forelse($rows as $row)
-            <tr>
-                <td>{{ $row->id_pesanan }}</td>
-                <td>{{ $row->tanggal_pesan }}</td>
-                <td>{{ $row->nama_penerima }}</td>
-                <td>{{ $row->nama_item }}</td>
-                <td>{{ $row->ukuran }}</td>
-                <td>{{ $row->kuantitas }}</td>
-                <td>{{ $row->total_harga }}</td>
-                <td>{{ $row->status_pesanan }}</td>
-                {{-- <td>{{ optional($row->tanggal_bayar)->format('Y-m-d') }}</td> --}}
-                <td>{{ $row->tipe_pembayaran }}</td>
-                <td>{{ $row->jumlah_bayar }}</td>
-                <td>{{ $row->payment_type }}</td>
-                <td>{{ $row->status_bayar }}</td>
-            </tr>
-        @empty
-            <tr>
-                <td colspan="12">Tidak ada data</td>
-            </tr>
-        @endforelse
+            @forelse($rows as $row)
+                <tr>
+                    <td>{{ $row->kode_resi_pesanan ?? '#' . $row->id_pesanan }}</td>
+                    <td>{{ $row->tanggal_pesan }}</td>
+                    <td>{{ $row->tanggal_selesai }}</td>
+                    <td>{{ $row->nama_penerima }}</td>
+                    <td>{{ $row->nama_item }}</td>
+                    <td>{{ $row->ukuran }}</td>
+                    <td>{{ $row->kuantitas }}</td>
+                    <td>{{ $row->total_harga }}</td>
+                    <td>{{ $row->status_pesanan }}</td>
+                    <td>{{ $row->tipe_pembayaran }}</td>
+                    <td>{{ $row->jumlah_bayar }}</td>
+                    <td>{{ $row->payment_type }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="12">Tidak ada data</td>
+                </tr>
+            @endforelse
+
+            @if($rows->count() > 0)
+                <tr>
+                    <td colspan="10" align="right">
+                        <strong>Total Pendapatan</strong>
+                    </td>
+                    <td colspan="2">
+                        <strong>
+                            Rp {{ number_format($totalPenjualan, 0, ',', '.') }}
+                        </strong>
+                    </td>
+                </tr>
+            @endif
         </tbody>
     </table>
 </body>

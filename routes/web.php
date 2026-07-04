@@ -215,15 +215,11 @@ Route::middleware('auth')->group(function () {
         Route::resource('/super-admin/jenis-pembayaran', JenisPembayaranController::class) ->names('jenisPembayaran');
 
         // route untuk export pdf dan excel
-        Route::get('/super-admin/laporan/penjualan', [LaporanPenjualanController::class, 'index'])
-            ->name('laporan.penjualan.index');
+        Route::get('/super-admin/laporan/penjualan', [LaporanPenjualanController::class, 'index'])->name('laporan.penjualan.index');
 
-        Route::get('/super-admin/laporan/penjualan/excel', [LaporanPenjualanController::class, 'exportExcel'])
-            ->name('laporan.penjualan.excel');
+        Route::get('/super-admin/laporan/penjualan/excel', [LaporanPenjualanController::class, 'exportExcel'])->name('laporan.penjualan.excel');
 
-        Route::get('/super-admin/laporan/penjualan/pdf', [LaporanPenjualanController::class, 'exportPdf'])
-            ->name('laporan.penjualan.pdf');
-        // >>
+        Route::get('/super-admin/laporan/penjualan/pdf', [LaporanPenjualanController::class, 'exportPdf'])->name('laporan.penjualan.pdf');
     });
 
     /*

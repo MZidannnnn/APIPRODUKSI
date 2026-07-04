@@ -15,7 +15,7 @@ return new class extends Migration
             $table->bigIncrements('id_rincian_pesanan');
             $table->unsignedBigInteger('id_pesanan');
             $table->unsignedBigInteger('id_detail_produk');
-            $table->integer('kuantitas');
+            $table->unsignedInteger('kuantitas');
             $table->decimal('subtotal', 14, 2);
             // $table->enum('barang_disediakan_usah', ['Ya', 'Tidak']);
             // $table->string('file_desain', 255)->nullable();

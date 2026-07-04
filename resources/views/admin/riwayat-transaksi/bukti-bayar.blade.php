@@ -9,7 +9,7 @@
             Bukti Pembayaran
         </h1>
 
-        <a href="{{ route('admin.riwayat-transaksi.detail', $pesanan->id_pesanan) }}"
+        <a href="{{ url()->previous() }}"
            class="btn btn-secondary btn-sm">
             <i class="fas fa-arrow-left mr-1"></i> Kembali
         </a>

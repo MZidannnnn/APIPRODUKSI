@@ -1,169 +1,350 @@
-/* Reset & Base */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #fff;
-    color: #333;
-}
-
-/* Navbar Section */
-.navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 4%;
-    border-bottom: 1px solid #eee;
-    position: relative;
-    background: white;
-    z-index: 20;
-}
-
-/* Dekorasi Garis Hijau di Pojok Navbar */
-.nav-decor {
-    position: absolute;
-    top: 0;
-    width: 120px;
-    z-index: -1;
-}
-.nav-decor.left { left: 0; }
-.nav-decor.right { right: 0; transform: scaleX(-1); }
-
-.search-wrapper {
-    display: flex;
-    flex: 1;
-    max-width: 500px;
-    margin: 0 30px;
-}
-
-.search-input {
-    width: 100%;
-    padding: 10px 15px;
-    border: 1px solid #333;
-    border-right: none;
-    font-size: 14px;
-}
-
-.search-btn {
-    background: #008a45;
-    color: white;
-    border: 1px solid #333;
-    padding: 0 15px;
-    cursor: pointer;
-}
-
-/* Container Utama */
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 30px 20px;
+    max-width: 1000px;
+    margin: 35px auto;
+    padding: 0 20px;
 }
 
-/* Hero / About Card */
-.about-card {
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 15px;
-    padding: 30px;
+/* PROFILE CARD */
+.profile-card {
     display: flex;
+    justify-content: space-between;
     align-items: center;
     gap: 30px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    margin-bottom: 40px;
+    padding: 28px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.25);
 }
 
-.about-text { flex: 2; }
-.about-text h1 { font-size: 24px; margin-bottom: 15px; text-transform: uppercase; }
-.about-text p { font-size: 14px; line-height: 1.6; color: #444; text-align: justify; }
+.profile-text h1 {
+    font-size: 28px;
+    margin-bottom: 12px;
+}
 
-.about-logo-wrapper { flex: 1; text-align: center; }
-.about-logo-wrapper img { width: 180px; }
+.profile-text p {
+    max-width: 690px;
+    line-height: 1.7;
+    font-size: 15px;
+}
 
-.social-links {
+.profile-logo img {
+    width: 150px;
+}
+
+/* SOCIAL */
+.social-icons {
+    margin-top: 25px;
     display: flex;
-    gap: 12px;
-    margin-top: 20px;
+    gap: 8px;
 }
 
-.icon-circle {
-    width: 32px;
-    height: 32px;
-    border: 1px solid #333;
+.social-icons a {
+    width: 30px;
+    height: 30px;
+    border: 2px solid #777;
+    color: #555;
     border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+}
+
+/* =========================
+   SERVICES SECTION (GLOW UP)
+========================= */
+.services-section {
+    margin: 40px 0 50px 0;
+}
+
+/* Aksen garis di bawah judul */
+.services-section h2 {
+    font-size: 24px; 
+    margin-bottom: 25px;
+    position: relative;
+    padding-bottom: 12px;
+    color: #222;
+}
+
+.services-section h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: #008a46;
+    border-radius: 4px;
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-top: 25px;
+}
+
+/* Card Styling Premium */
+.service-card {
+    background: #ffffff;
+    border: 1px solid #f0f0f0;
+    border-radius: 16px; /* Ujung lebih membulat halus */
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Hover Effect Melayang & Glowing */
+.service-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 25px rgba(0, 138, 70, 0.12); /* Bayangan hijau tipis */
+    border-color: rgba(0, 138, 70, 0.2);
+}
+
+/* Ikon dengan Background Lembut */
+.service-icon {
+    width: 65px;
+    height: 65px;
+    background: rgba(0, 138, 70, 0.08); /* Latar belakang hijau transparan */
+    color: #008a46; /* Menyesuaikan warna tema */
+    border-radius: 16px; /* Mengotak bersudut halus */
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    font-size: 14px;
+    font-size: 28px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
 }
 
-/* Kategori */
-.section-title { font-size: 18px; margin-bottom: 15px; font-weight: bold; }
+/* Ikon Menyala saat Card di Hover */
+.service-card:hover .service-icon {
+    background: #008a46;
+    color: #ffffff;
+    transform: scale(1.05) rotate(-5deg); /* Efek membesar & sedikit miring */
+}
 
-.category-flex {
+.service-card h3 {
+    font-size: 1.25rem;
+    color: #222222;
+    margin-bottom: 12px;
+    font-weight: 700;
+}
+
+.service-card p {
+    font-size: 0.95rem;
+    color: #666666;
+    line-height: 1.7;
+    margin: 0;
+}
+
+/* SECTION */
+.section {
+    margin-top: 28px;
+}
+
+.section h2 {
+    font-size: 22px; 
+    margin-bottom: 15px;
+}
+
+/* KATEGORI */
+.kategori-list {
     display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    padding-bottom: 10px;
-    margin-bottom: 35px;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
-/* Sembunyikan scrollbar tapi tetap bisa scroll */
-.category-flex::-webkit-scrollbar { display: none; }
-
-.btn-cat {
-    padding: 8px 20px;
-    border: 1px solid #333;
+.kategori {
+    padding: 7px 16px;
+    border: 1px solid #aaa;
     border-radius: 20px;
-    background: white;
-    white-space: nowrap;
-    cursor: pointer;
-    font-size: 13px;
-    transition: 0.3s;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 
-.btn-cat.active { background: #333; color: white; }
-.btn-cat:hover:not(.active) { background: #f0f0f0; }
-
-/* Product Grid */
-.product-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 25px;
+.kategori.active {
+    background: #222;
+    color: #fff;
 }
 
-.product-item { text-align: left; }
+/* Foto */
 
-.product-img {
+/* Produk */
+.produk-cover {
     width: 100%;
-    aspect-ratio: 1/1;
-    background: #fff;
-    border: 1px solid #ccc;
-    border-radius: 12px;
-    position: relative;
-    margin-bottom: 10px;
+    height: 260px;
+    object-fit: cover;
 }
 
-.heart-icon {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    font-size: 18px;
-    cursor: pointer;
+.card {
+    border-radius: 14px;
+    overflow: hidden;
 }
 
-.product-name { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
-.product-price { color: #008a45; font-weight: bold; font-size: 13px; }
-
-/* Responsive Mobile */
-@media (max-width: 768px) {
-    .navbar { flex-wrap: wrap; justify-content: space-between; }
-    .search-wrapper { order: 3; max-width: 100%; margin: 15px 0 0 0; }
-    .about-card { flex-direction: column-reverse; padding: 20px; }
-    .about-logo-wrapper img { width: 130px; }
-    .product-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+.card-body h5 {
+    font-size: 20px;
 }
+
+.card-body p {
+    line-height: 1.5;
+}
+
+.badge {
+    font-size: 12px;
+}
+
+.btn-success {
+    border-radius: 8px;
+}
+
+/* Button */
+.btn-detail {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: #008a46;
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.btn-detail:hover {
+    background: #00753c;
+    color: white;
+}
+
+/* =========================================================
+   RESPONSIVE TABLET - DASHBOARD
+========================================================= */
+@media (max-width: 992px) {
+    .produk-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .produk-img {
+        aspect-ratio: 3 / 4;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE HP - DASHBOARD
+========================================================= */
+@media (max-width: 768px) {      /*harus dibedah */
+    .produk-cover {
+        height: 220px;
+    }
+
+    .profile-card {
+        flex-direction: column-reverse;
+        text-align: center;
+        padding: 22px;
+    }
+
+    .profile-text h1 {
+        font-size: 24px;
+    }
+
+    .profile-text p {
+        font-size: 14px;
+    }
+
+    .social-icons {
+        justify-content: center;
+    }
+
+    .profile-logo img {
+        width: 120px;
+    }
+
+    .produk-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .produk-img {
+        height: 220px;
+    }
+
+    .produk-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .produk-card h3 {
+        font-size: 16px;
+        margin-top: 12px;
+        margin-bottom: 6px;
+    }
+
+    .produk-card p {
+        font-size: 14px;
+        margin: 0;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE HP KECIL - DASHBOARD
+========================================================= */
+@media (max-width: 480px) {      /*harus dibedah */
+    .profile-card {
+        flex-direction: column-reverse;
+        text-align: center;
+        padding: 22px;
+    }
+
+    .profile-text h1 {
+        font-size: 24px;
+    }
+
+    .profile-text p {
+        font-size: 14px;
+    }
+
+    .social-icons {
+        justify-content: center;
+    }
+
+    .profile-logo img {
+        width: 120px;
+    }
+
+    .produk-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 22px;
+    }
+
+    .produk-img {
+        width: 100%;
+        aspect-ratio: 3 / 4;
+        height: auto;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .produk-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .produk-card h3 {
+        font-size: 16px;
+        margin-top: 12px;
+        margin-bottom: 6px;
+    }
+
+    .produk-card p {
+        font-size: 14px;
+        margin: 0;
+    }
+}
+

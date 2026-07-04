@@ -15,8 +15,8 @@
 
 <section class="detail-wrapper">
 
-    <a href="{{ route('klien.pesanan.riwayat') }}" class="btn-back">
-        <i class="fas fa-arrow-left"></i> Kembali ke Riwayat
+    <a href="{{ url()->previous() }}" class="btn-back">
+        <i class="fas fa-arrow-left"></i> Kembali
     </a>
 
     <div class="detail-header">
@@ -40,9 +40,17 @@
 
             <div class="produk-info">
                 <h2>{{ $pesanan->detailProduk->itemProduksi->nama_item }}</h2>
-                <p>{{ $pesanan->detailProduk->ukuran }}</p>
+                
+                <p>
+                    <i class="fas fa-box"></i>
+                    {{ $rincian->kuantitas ?? 1 }}x
+                </p> 
+                <span>
+                    <i class="fas fa-ruler-combined"></i>
+                    Ukuran: {{ $order->detailProduk->ukuran ?? '-' }}
+                </span>
 
-                <span class="badge-status">
+                <span class="badge-status {{ strtolower(str_replace([' ', ','], '-', $pesanan->statusPesanan->nama_status_pesanan)) }}">
                     {{ $pesanan->statusPesanan->nama_status_pesanan }}
                 </span>
             </div>
@@ -89,15 +97,52 @@
             <h3>Riwayat Pembayaran</h3>
 
             @forelse ($pesanan->pembayaran as $bayar)
+                @php
+                    $rawPaymentType = $bayar->payment_type;
+                    $payload = $bayar->payload ?? [];
+                    $paymentName = '-';
+
+                    if ($rawPaymentType === 'bank_transfer') {
+                        $bank = strtoupper($payload['va_numbers'][0]['bank'] ?? '');
+                        if (!$bank && isset($payload['permata_va_number'])) $bank = 'PERMATA';
+                        $paymentName = $bank ? "Transfer Bank ($bank VA)" : 'Transfer Bank (VA)';
+                    } elseif ($rawPaymentType === 'echannel') {
+                        $paymentName = 'Mandiri Bill';
+                    } elseif ($rawPaymentType === 'cstore') {
+                        $store = ucfirst(strtolower($payload['store'] ?? ''));
+                        $paymentName = $store ? "Gerai Retail ($store)" : 'Indomaret / Alfamart';
+                    } elseif ($rawPaymentType === 'gopay') {
+                        $paymentName = 'GoPay';
+                    } elseif ($rawPaymentType === 'shopeepay') {
+                        $paymentName = 'ShopeePay';
+                    } elseif ($rawPaymentType === 'qris') {
+                        $issuer = $payload['issuer'] ?? '';
+                        $paymentName = $issuer ? "QRIS ($issuer)" : 'QRIS';
+                    } elseif ($rawPaymentType === 'credit_card') {
+                        $bank = ucfirst(strtolower($payload['bank'] ?? ''));
+                        $paymentName = $bank ? "Kartu Kredit ($bank)" : 'Kartu Kredit';
+                    } elseif ($rawPaymentType) {
+                        $paymentName = ucwords(str_replace('_', ' ', $rawPaymentType));
+                    } elseif ($bayar->bukti_bayar) {
+                        $paymentName = 'Upload Bukti Bayar';
+                    }
+
+                    $statusBayarClass = match($bayar->status_bayar) {
+                        'Lunas' => 'status-lunas',
+                        'Pending' => 'status-pending',
+                        'Kedaluwarsa' => 'status-kedaluwarsa',
+                        default => 'status-default'
+                    };
+                @endphp
                 <div class="payment-item">
                     <div>
                         <strong>{{ $bayar->tipe_pembayaran }}</strong>
-                        <p>{{ $bayar->payment_type ?? '-' }}</p>
+                        <p class="payment-method-text">{{ $paymentName }}</p>
                     </div>
 
                     <div>
                         <strong>Rp {{ number_format($bayar->jumlah_bayar, 0, ',', '.') }}</strong>
-                        <span>{{ $bayar->status_bayar }}</span>
+                        <span class="{{ $statusBayarClass }}">{{ $bayar->status_bayar }}</span>
                     </div>
                 </div>
             @empty

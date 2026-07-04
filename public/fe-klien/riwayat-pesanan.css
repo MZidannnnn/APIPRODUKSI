@@ -14,7 +14,7 @@ html, body {
 }
 
 body {
-    font-family: Arial, sans-serif;
+    font-family: Arial, sans-serif; 
     background: #ffffff;
     color: #111;
 }
@@ -142,7 +142,6 @@ body {
     border-radius: 30px;
 
     font-size: 15px;
-    font-weight: 700;
 
     box-shadow: 0 3px 8px rgba(0,0,0,.18);
 }
@@ -744,4 +743,49 @@ body {
         width: 100%; 
         text-align: center;
     }
+}
+/* =========================================================
+   BOOTSTRAP PAGINATION STYLING
+========================================================= */
+.pagination {
+    display: flex;
+    padding-left: 0;
+    list-style: none;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 20px;
+}
+
+.page-item .page-link, .page-item span.page-link {
+    position: relative;
+    display: block;
+    color: #008a46;
+    text-decoration: none;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+}
+
+.page-item.active .page-link, .page-item.active span.page-link {
+    z-index: 3;
+    color: #fff;
+    background-color: #008a46;
+    border-color: #008a46;
+}
+
+.page-item.disabled .page-link, .page-item.disabled span.page-link {
+    color: #6c757d;
+    pointer-events: none;
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+.page-link:hover {
+    z-index: 2;
+    color: #006f38;
+    background-color: #e9ecef;
+    border-color: #dee2e6;
 }

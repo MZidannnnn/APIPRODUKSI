@@ -133,7 +133,11 @@ body {
 }
 
 /* Opsional: Jika status mengandung kata "Selesai", warnanya otomatis menyesuaikan via JS atau style dinamis */
-/* .badge-status.selesai { background-color: #d4edda; color: #155724; } */
+.badge-status.belum-bayar { background-color: #fff3cd; color: #8a5a00; border: 1px solid #ffeeba; }
+.badge-status.pesanan-diproses { background-color: #e7f1ff; color: #0b5ed7; border: 1px solid #b6d4fe; }
+.badge-status.pesanan-selesai { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+.badge-status.pesanan-selesai--silahkan-lunasi-pembayaran { background-color: #fff0e6; color: #c25a00; border: 1px solid #ffdfc5; }
+.badge-status.pesanan-dibatalkan, .badge-status.pesanan-kadaluarsa { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
 
 /* ==========================================================================
    INFO GRID DATA TRANSAKSI
@@ -207,10 +211,11 @@ body {
     display: block;
 }
 
-.payment-item p {
-    font-size: 12px;
-    color: #777777;
-    margin-top: 2px;
+.payment-method-text {
+    font-size: 13px;
+    color: #4a5568;
+    margin-top: 4px;
+    font-weight: 500;
 }
 
 .payment-item div:last-child {
@@ -229,12 +234,22 @@ body {
 }
 
 /* Kondisional warna status bayar lunas */
-.payment-item span:contains("Lunas"), 
-.payment-item span:contains("lunas"),
-.payment-item span:contains("SUCCESS"),
-.payment-item span:contains("success") {
+.payment-item span.status-lunas {
     background-color: #d4edda;
     color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.payment-item span.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.payment-item span.status-kedaluwarsa {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
 }
 
 .payment-section > p {
@@ -296,4 +311,27 @@ body {
         width: 100%;
         padding-top: 8px;
     }
+}
+/* ==========================================================================
+   PRODUK META (UKURAN & KUANTITAS)
+========================================================================== */
+.produk-meta {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+.produk-meta span {
+    font-size: 13px;
+    color: #666666;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+.produk-meta span i {
+    color: #008a46;
+    font-size: 14px;
 }

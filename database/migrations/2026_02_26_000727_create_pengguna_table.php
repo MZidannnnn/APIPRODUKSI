@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id_role');
             $table->unsignedBigInteger('id_kategori')->nullable();
             $table->string('nama_pengguna', 100)->unique();
-            $table->string('email', 150);
+            $table->string('email', 150)->unique();
             $table->string('password', 255);
             $table->rememberToken();
             $table->timestamps();
