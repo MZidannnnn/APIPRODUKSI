@@ -49,7 +49,7 @@ class PesananController extends Controller
             'alamat_penerima' => 'required|string',
             'No_hp_penerima' => 'required|string|max:20',
             'total_harga' => 'required|numeric|min:0',
-            'jadwal_pemasangan' => 'nullable|date',
+            'jadwal_pemasangan' => 'required|date',
         ]);
 
         Pesanan::create($validated);
@@ -90,7 +90,7 @@ class PesananController extends Controller
             'alamat_penerima' => 'required|string',
             'No_hp_penerima' => 'required|string|max:20',
             'total_harga' => 'required|numeric|min:0',
-            'jadwal_pemasangan' => 'nullable|date',
+            'jadwal_pemasangan' => 'required|date',
         ]);
 
         $pesanan->update($validated);
@@ -114,12 +114,57 @@ class PesananController extends Controller
     public function beliSekarang(Request $request)
     {
         $validated = $request->validate([
-            'id_detail_produk' => 'required|exists:detail_produk,id_detail_produk',
-            'nama_penerima' => 'required|string|max:100',
-            'alamat_penerima' => 'required|string',
-            'No_hp_penerima' => 'required|string|max:20',
-            'kuantitas' => 'required|integer|min:1',
-            'jadwal_pemasangan' => 'nullable|date',
+            'id_detail_produk' => [
+                'required',
+                'exists:detail_produk,id_detail_produk'
+            ],
+
+            'nama_penerima' => [
+                'required',
+                'string',
+                'max:100'
+            ],
+
+            'alamat_penerima' => [
+                'required',
+                'string',
+                'min:10'
+            ],
+
+            'No_hp_penerima' => [
+                'required',
+                'regex:/^08[0-9]{8,11}$/'
+            ],
+
+            'kuantitas' => [
+                'required',
+                'integer',
+                'min:1'
+            ],
+
+            'jadwal_pemasangan' => [
+                'required',
+                'date',
+                'after_or_equal:today'
+            ],
+        ], [
+
+            'nama_penerima.required' => 'Nama pemesan wajib diisi.',
+            'nama_penerima.max' => 'Nama pemesan maksimal 100 karakter.',
+
+            'alamat_penerima.required' => 'Alamat pemesan wajib diisi.',
+            'alamat_penerima.min' => 'Alamat minimal 10 karakter.',
+
+            'No_hp_penerima.required' => 'Nomor HP / WhatsApp wajib diisi.',
+            'No_hp_penerima.regex' => 'Nomor HP harus diawali 08 dan terdiri dari 10-13 digit.',
+
+            'kuantitas.required' => 'Jumlah pesanan wajib diisi.',
+            'kuantitas.integer' => 'Jumlah pesanan harus berupa angka.',
+            'kuantitas.min' => 'Jumlah pesanan minimal 1.',
+
+            'jadwal_pemasangan.required' => 'Silakan pilih jadwal.',
+            'jadwal_pemasangan.date' => 'Format tanggal tidak valid.',
+            'jadwal_pemasangan.after_or_equal' => 'Jadwal tidak boleh sebelum hari ini.',
         ]);
 
         $detail = DetailProduk::with('itemProduksi.kategoriUsaha')->findOrFail($validated['id_detail_produk']);

@@ -20,7 +20,7 @@ class StatusPesananSeeder extends Seeder
             // ['nama_status_pesanan' => 'Menunggu Pelunasan', 'created_at' => now(), 'updated_at' => now()], // Status baru untuk skema DP
             ['nama_status_pesanan' => 'Pesanan Selesai', 'created_at' => now(), 'updated_at' => now()],
             ['nama_status_pesanan' => 'Pesanan Dibatalkan', 'created_at' => now(), 'updated_at' => now()],
-            ['nama_status_pesanan' => 'Pesanan Kadaluarsa', 'created_at' => now(), 'updated_at' => now()],
+            //['nama_status_pesanan' => 'Pesanan Kadaluarsa', 'created_at' => now(), 'updated_at' => now()],
         ]);
     }
 }

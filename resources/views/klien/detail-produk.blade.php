@@ -26,6 +26,7 @@
 
         $bolehDp = strtolower($itemProduksi->kategoriUsaha->jenisPembayaran->nama_jenis_pembayaran ?? '') === 'dp';
         $isSablon = strtolower($itemProduksi->kategoriUsaha->nama_kategori ?? '') === 'sablon';
+        $isInterior = strtolower($itemProduksi->kategoriUsaha->nama_kategori ?? '') === 'interior';
     @endphp
 
     <a href="{{ $backUrl }}" class="btn-kembali">
@@ -168,40 +169,71 @@
 
                 <div class="form-group">
                     <label>Nama Pemesan</label>
-                    <input type="text" name="nama_penerima" class="input-pesan" required>
+                    <input
+                        type="text"
+                        name="nama_penerima"
+                        class="input-pesan @error('nama_penerima') is-invalid @enderror"
+                        value="{{ old('nama_penerima') }}">
+
+                    @error('nama_penerima')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
                 </div>
 
                 <div class="form-group">
                     <label>Alamat Pemesan</label>
                     <textarea
                         name="alamat_penerima"
-                        class="input-pesan textarea-pesan"
-                        rows="3"
-                        placeholder="Masukkan alamat lengkap"
-                        required></textarea>
+                        class="input-pesan textarea-pesan @error('alamat_penerima') is-invalid @enderror">{{ old('alamat_penerima') }}</textarea>
+
+                    @error('alamat_penerima')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
                 </div>
 
                 <div class="form-group">
-                    <label>No. HP / WhatsApp</label>
-                    <input type="number" name="No_hp_penerima" class="input-pesan" required>
+                    <label>No. WhatsApp</label>
+                    <input
+                        type="number"
+                        name="no_telp_penerima"
+                        class="input-pesan @error('no_telp_penerima') is-invalid @enderror"
+                        value="{{ old('no_telp_penerima') }}">
+
+                    @error('no_telp_penerima')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
                 </div>
 
-                <div class="flex-row-group align-end">
-                    <div class="form-group w-100">
-                        <label>
-                            {{ $isSablon ? 'Jadwal Pengambilan' : 'Jadwal Pemasangan' }}
-                        </label>
+               <div class="form-group w-100">
+                    <label>
+                        @if ($isSablon)
+                            Jadwal Pengambilan
+                        @elseif ($isInterior)
+                            Jadwal Pengantaran
+                        @else
+                            Jadwal Pemasangan
+                        @endif
+                    </label>
 
-                        <small class="helper-date">
-                            {{ $isSablon ? 'Pilih Tanggal Pengambilan' : 'Pilih Tanggal Pemasangan' }}
-                        </small>
-                        <input type="date" name="jadwal_pemasangan" class="input-pesan date-input" required>
-                    </div>
-                  
-                    <div class="subtotal-box bottom-subtotal">
-                        <small>Subtotal</small>
-                        <strong id="subtotalTextBottom">Rp 0</strong>
-                    </div>
+                    <small class="helper-date">
+                        @if ($isSablon)
+                            Pilih Tanggal Pengambilan
+                        @elseif ($isInterior)
+                            Pilih Tanggal Pengantaran
+                        @else
+                            Pilih Tanggal Pemasangan
+                        @endif
+                    </small>
+
+                    <input
+                        type="date"
+                        name="jadwal_pemasangan"
+                        class="input-pesan date-input @error('jadwal_pemasangan') is-invalid @enderror"
+                        value="{{ old('jadwal_pemasangan') }}">
+
+                    @error('jadwal_pemasangan')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
                 </div>
 
                 @if ($bolehDp)

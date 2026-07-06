@@ -432,6 +432,17 @@ input[type="number"] {
     display: none; /* Di Desktop disembunyikan karena sudah ada di atas */
 }
 
+.is-invalid{
+    border:1px solid #dc3545 !important;
+}
+
+.text-danger{
+    color:#dc3545;
+    font-size:13px;
+    margin-top:4px;
+    display:block;
+}
+
 
 /* =========================================================
    MEDIA QUERIES (SINKRONISASI RESPONSIVE SMARTPHONE)

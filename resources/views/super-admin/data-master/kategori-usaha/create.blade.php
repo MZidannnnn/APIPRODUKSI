@@ -57,32 +57,28 @@
             {{-- Jenis Harga --}}
             <div class="form-group">
 
-                <label>Jenis Harga</label>
+                <label>Bidang Layanan</label>
 
-                <select name="jenis_harga"
-                    class="form-control @error('jenis_harga') is-invalid @enderror">
+                <select name="bidang_layanan"
+                    class="form-control @error('bidang_layanan') is-invalid @enderror">
 
                     <option value="">
-                        -- Pilih Jenis Harga --
+                        -- Pilih Bidang Layanan --
                     </option>
 
-                    <option value="Harga Tetap"
-                        {{ old('jenis_harga') == 'Harga Tetap' ? 'selected' : '' }}>
-
-                        Harga Tetap
-
+                    <option value="Media Promosi"
+                        {{ old('bidang_layanan') == 'Media Promosi' ? 'selected' : '' }}>
+                        Media Promosi   
                     </option>
 
-                    <option value="Harga Kostum"
-                        {{ old('jenis_harga') == 'Harga Kostum' ? 'selected' : '' }}>
-
-                        Harga Kostum
-
+                    <option value="Produksi"
+                        {{ old('bidang_layanan') == 'Produksi' ? 'selected' : '' }}>
+                        Produksi
                     </option>
 
                 </select>
 
-                @error('jenis_harga')
+                @error('bidang_layanan')
                     <div class="invalid-feedback">
                         {{ $message }}
                     </div>

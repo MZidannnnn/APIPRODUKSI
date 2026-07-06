@@ -180,8 +180,6 @@
                 };
 
                 $rincian = $order->rincianPesanan->first();
-
-                $isSablon = strtolower($itemProduksi->kategoriUsaha->nama_kategori ?? '') === 'sablon';
             @endphp
             
             <a href="{{ route('klien.pesanan.detail', $order->id_pesanan) }}" class="order-link">
@@ -219,14 +217,24 @@
                             {{ $order->tanggal_pesan ? \Carbon\Carbon::parse($order->tanggal_pesan)->translatedFormat('d F Y') : '-' }}
                         </p>
 
-                        @php
-                            $isSablon = stripos($produk->kategoriUsaha->nama_kategori ?? '', 'Sablon') !== false || stripos($produk->nama_item ?? '', 'Sablon') !== false;
+                       @php
+                            $kategori = strtolower($produk->kategoriUsaha->nama_kategori ?? '');
+
+                            if (str_contains($kategori, 'sablon')) {
+                                $labelJadwal = 'Jadwal Pengambilan';
+                            } elseif (str_contains($kategori, 'interior')) {
+                                $labelJadwal = 'Jadwal Di Antar';
+                            } else {
+                                $labelJadwal = 'Jadwal Pemasangan';
+                            }
                         @endphp
 
                         <p>
                             <i class="fas fa-calendar-days"></i>
-                            {{ !empty($isSablon) ? 'Jadwal Pengambilan' : 'Jadwal Pemasangan' }}:
-                            {{ $order->jadwal_pemasangan ? \Carbon\Carbon::parse($order->jadwal_pemasangan)->translatedFormat('d F Y') : '-' }}
+                            {{ $labelJadwal }}:
+                            {{ $order->jadwal_pemasangan
+                                ? \Carbon\Carbon::parse($order->jadwal_pemasangan)->translatedFormat('d F Y')
+                                : '-' }}
                         </p>
 
                         <span class="badge-status {{ $badgeClass }}">

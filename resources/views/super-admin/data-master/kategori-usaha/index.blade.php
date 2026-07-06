@@ -23,7 +23,7 @@
                             <th width="5%">No</th>
                             <th>Nama Kategori</th>
                             <th>Kode Unik Pesanan</th>
-                            <th>Jenis Harga</th>
+                            <th>Bidang Layanan</th>
                             <th>Jenis Pembayaran</th>
                             <th width="15%">
                                 <i class="fas fa-cog"></i>
@@ -41,13 +41,13 @@
                                 <td>{{ $item->kode_unik }}</td>
 
                                 <td class="text-center">
-                                    @if ($item->jenis_harga == 'Harga Tetap')
+                                    @if ($item->bidang_layanan == 'Media Promosi')
                                         <span class="badge badge-success">
-                                            {{ $item->jenis_harga }}
+                                            {{ $item->bidang_layanan }}
                                         </span>
                                     @else
                                         <span class="badge badge-warning">
-                                            {{ $item->jenis_harga }}
+                                            {{ $item->bidang_layanan }}
                                         </span>
                                     @endif
                                 </td>
