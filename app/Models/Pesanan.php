@@ -30,11 +30,6 @@ class Pesanan extends Model
     ];
 
     // RELATIONSHIPS
-    public function percakapan()
-    {
-        return $this->hasOne(Percakapan::class, 'id_pesanan', 'id_pesanan');
-    }
-
     public function pengguna()
     {
         return $this->belongsTo(Pengguna::class, 'id_pengguna', 'id_pengguna');

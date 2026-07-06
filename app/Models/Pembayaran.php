@@ -14,7 +14,6 @@ class Pembayaran extends Model
         'id_pesanan',
         'tipe_pembayaran',
         'jumlah_bayar',
-        'metode_bayar',
         'payment_type',
         'transaction_id',
         'order_id',

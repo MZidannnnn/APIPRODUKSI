@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('percakapan', function (Blueprint $table) {
             $table->bigIncrements('id_percakapan');
             $table->unsignedBigInteger('id_pengguna');
-            $table->unsignedBigInteger('id_pesanan')->nullable();
             $table->unsignedBigInteger('id_item_produksi')->nullable();
             $table->unsignedBigInteger('id_kategori')->nullable();
             $table->timestamp('terakhir_aktif')->nullable();
@@ -24,12 +23,6 @@ return new class extends Migration
                 ->references('id_pengguna')
                 ->on('pengguna')
                 ->onDelete('restrict')
-                ->onUpdate('cascade');
-
-            $table->foreign('id_pesanan')
-                ->references('id_pesanan')
-                ->on('pesanan')
-                ->onDelete('set null')
                 ->onUpdate('cascade');
 
             $table->foreign('id_item_produksi')
@@ -42,7 +35,6 @@ return new class extends Migration
 
             $table->index(['id_pengguna', 'id_item_produksi']);
             $table->index(['id_kategori']);
-            $table->index(['id_pengguna', 'id_pesanan']);
         });
     }
 

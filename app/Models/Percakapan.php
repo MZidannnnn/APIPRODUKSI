@@ -11,7 +11,6 @@ class Percakapan extends Model
 
     protected $fillable = [
         'id_pengguna',
-        'id_pesanan',
         'id_item_produksi',
         'id_kategori',
         'terakhir_aktif',
@@ -34,11 +33,6 @@ class Percakapan extends Model
     public function pengguna()
     {
         return $this->belongsTo(Pengguna::class, 'id_pengguna', 'id_pengguna');
-    }
-
-    public function pesanan()
-    {
-        return $this->belongsTo(Pesanan::class, 'id_pesanan', 'id_pesanan');
     }
 
     public function pesan()

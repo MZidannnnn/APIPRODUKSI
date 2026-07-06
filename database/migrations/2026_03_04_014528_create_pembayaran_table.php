@@ -16,7 +16,6 @@ return new class extends Migration
             $table->unsignedBigInteger('id_pesanan');
             $table->enum('tipe_pembayaran', ['DP', 'Full', 'Pelunasan'])->default('Full');
             $table->decimal('jumlah_bayar', 14, 2);
-            $table->string('metode_bayar', 50)->nullable();
             $table->string('payment_type', 50)->nullable();
             $table->string('transaction_id', 100)->nullable();
             $table->string('order_id', 100)->nullable();
