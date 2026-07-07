@@ -41,15 +41,18 @@ class PesananController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'id_pengguna' => 'required|exists:pengguna,id_pengguna',
-            'id_status_pesanan' => 'required|exists:status_pesanan,id_status_pesanan',
-            'tanggal_pesan' => 'required|date',
+        $request->validate([
             'nama_penerima' => 'required|string|max:100',
-            'alamat_penerima' => 'required|string',
-            'No_hp_penerima' => 'required|string|max:20',
-            'total_harga' => 'required|numeric|min:0',
-            'jadwal_pemasangan' => 'required|date',
+            'alamat_penerima' => 'required|string|min:10',
+            'No_hp_penerima' => 'required|regex:/^08[0-9]{8,11}$/',
+            'jadwal_pemasangan' => 'required|date|after_or_equal:today',
+        ],[
+            'nama_penerima.required' => 'Nama pemesan wajib diisi.',
+            'alamat_penerima.required' => 'Alamat wajib diisi.',
+            'No_hp_penerima.required' => 'Nomor HP wajib diisi.',
+            'No_hp_penerima.regex' => 'Nomor HP tidak valid.',
+            'jadwal_pemasangan.required' => 'Silakan pilih jadwal.',
+            'jadwal_pemasangan.after_or_equal' => 'Jadwal tidak boleh sebelum hari ini.',
         ]);
 
         Pesanan::create($validated);
@@ -64,7 +67,7 @@ class PesananController extends Controller
     public function show(Pesanan $pesanan)
     {
         $pesanan->load('pengguna', 'statusPesanan');
-        return view('Pesanan.show', compact('pesanan'));
+        return view('Pesanan.show', compact('pesanan')); 
     }
 
     /**

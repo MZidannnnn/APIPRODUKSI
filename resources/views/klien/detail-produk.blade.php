@@ -169,38 +169,42 @@
 
                 <div class="form-group">
                     <label>Nama Pemesan</label>
+
                     <input
                         type="text"
                         name="nama_penerima"
-                        class="input-pesan @error('nama_penerima') is-invalid @enderror"
-                        value="{{ old('nama_penerima') }}">
+                        value="{{ old('nama_penerima') }}"
+                        class="input-pesan @error('nama_penerima') input-error @enderror">
 
                     @error('nama_penerima')
-                        <small class="text-danger">{{ $message }}</small>
+                        <span class="error-message">{{ $message }}</span>
                     @enderror
                 </div>
 
                 <div class="form-group">
                     <label>Alamat Pemesan</label>
+
                     <textarea
                         name="alamat_penerima"
-                        class="input-pesan textarea-pesan @error('alamat_penerima') is-invalid @enderror">{{ old('alamat_penerima') }}</textarea>
+                        class="input-pesan textarea-pesan @error('alamat_penerima') input-error @enderror"
+                        rows="3">{{ old('alamat_penerima') }}</textarea>
 
                     @error('alamat_penerima')
-                        <small class="text-danger">{{ $message }}</small>
+                        <span class="error-message">{{ $message }}</span>
                     @enderror
                 </div>
 
                 <div class="form-group">
                     <label>No. WhatsApp</label>
-                    <input
-                        type="number"
-                        name="no_telp_penerima"
-                        class="input-pesan @error('no_telp_penerima') is-invalid @enderror"
-                        value="{{ old('no_telp_penerima') }}">
 
-                    @error('no_telp_penerima')
-                        <small class="text-danger">{{ $message }}</small>
+                    <input
+                        type="text"
+                        name="No_hp_penerima"
+                        value="{{ old('No_hp_penerima') }}"
+                        class="input-pesan @error('No_hp_penerima') input-error @enderror">
+
+                    @error('No_hp_penerima')
+                        <span class="error-message">{{ $message }}</span>
                     @enderror
                 </div>
 
@@ -228,11 +232,11 @@
                     <input
                         type="date"
                         name="jadwal_pemasangan"
-                        class="input-pesan date-input @error('jadwal_pemasangan') is-invalid @enderror"
-                        value="{{ old('jadwal_pemasangan') }}">
+                        value="{{ old('jadwal_pemasangan') }}"
+                        class="input-pesan date-input @error('jadwal_pemasangan') input-error @enderror">
 
                     @error('jadwal_pemasangan')
-                        <small class="text-danger">{{ $message }}</small>
+                        <span class="error-message">{{ $message }}</span>
                     @enderror
                 </div>
 
@@ -524,12 +528,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const dataPesanan = await responsePesanan.json();
 
-                if (!responsePesanan.ok || !dataPesanan.id_pesanan) {
-                    alert(dataPesanan.message || 'Pesanan gagal dibuat.');
+                if (responsePesanan.status === 422) {
+
+                    // hapus error lama
+                    document.querySelectorAll('.error-message').forEach(el => el.remove());
+                    document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+
+                    for (const field in dataPesanan.errors) {
+
+                        const input = checkoutForm.querySelector(`[name="${field}"]`);
+
+                        if (input) {
+
+                            input.classList.add('input-error');
+
+                            const error = document.createElement('span');
+                            error.className = 'error-message';
+                            error.textContent = dataPesanan.errors[field][0];
+
+                            input.insertAdjacentElement('afterend', error);
+                        }
+                    }
+
                     if (btnSubmitBeli) {
                         btnSubmitBeli.disabled = false;
                         btnSubmitBeli.innerHTML = originalBtnText;
                     }
+
+                    return;
+                }
+
+                if (!responsePesanan.ok) {
+                    alert(dataPesanan.message);
                     return;
                 }
 
