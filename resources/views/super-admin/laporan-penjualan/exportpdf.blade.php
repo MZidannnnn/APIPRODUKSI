@@ -41,7 +41,6 @@
                     <td>{{ $row->ukuran }}</td>
                     <td>{{ $row->kuantitas }}</td>
                     <td>{{ $row->total_harga }}</td>
-                    <td>{{ $row->status_pesanan }}</td>
                     <td>{{ $row->tipe_pembayaran }}</td>
                     <td>{{ $row->jumlah_bayar }}</td>
                     <td>{{ $row->payment_type }}</td>
