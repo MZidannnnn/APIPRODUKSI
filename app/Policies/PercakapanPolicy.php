@@ -17,7 +17,7 @@ class PercakapanPolicy
 
     public function accessAdmin(Pengguna $user, Percakapan $percakapan): bool
     {
-        return (int) $user->id_role === 2
-            && (int) $user->id_kategori === (int) $percakapan->id_kategori;
+        // Admin (role 2) bisa mengakses semua percakapan tanpa filter kategori
+        return (int) $user->id_role === 2;
     }
 }

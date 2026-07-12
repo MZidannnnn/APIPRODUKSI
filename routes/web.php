@@ -47,9 +47,6 @@ Route::get('/search/live', [CariProdukController::class, 'liveSearch'])->name('k
 // 2. Route untuk halaman grid Hasil Pencarian (ketika di-Enter)
 Route::get('/search', [CariProdukController::class, 'search'])->name('klien.search');
 
-// 3. Route untuk halaman Target (Detail Produk)
-//Route::get('/produk/{id}', [CariProdukController::class, 'detailProduk'])->name('klien.detailProduk');
-
 /*
 |--------------------------------------------------------------------------
 | ROUTE GUEST (BELUM LOGIN)
@@ -71,7 +68,7 @@ Route::middleware('guest')->group(function () {
         return view('welcome-admin');
     })->name('welcomeAdmin');
 
-    // login admin
+    // login admin/owner
     Route::get('/login/admin', [AuthController::class, 'showLoginAdmin'])->name('loginAdmin');
     Route::post('/login/admin', [AuthController::class, 'loginAdmin'])->name('loginAdminProses');
 
@@ -115,7 +112,7 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | KLIEN
+    | KLIEN (role 3)
     |--------------------------------------------------------------------------
     */
 
@@ -137,11 +134,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/pembayaran/{pembayaran}/upload-bukti', [PembayaranController::class, 'showUploadForm'])->name('pembayaran.upload.form');
         Route::post('/pembayaran/{pembayaran}/upload-bukti', [PembayaranController::class, 'uploadBukti'])->name('pembayaran.upload');
 
-        // harga kostum
-        //Route::get('/pesanan/{pesanan}/status-harga', [PersetujuanHargaController::class, 'showStatus'])->name('pesanan.statusHarga');
-        //Route::post('/pesanan/{pesanan}/setuju-harga', [PersetujuanHargaController::class, 'setujuHarga'])->name('pesanan.setujuHarga');
-        //Route::post('/pesanan/{pesanan}/tolak-harga', [PersetujuanHargaController::class, 'tolakHarga'])->name('pesanan.tolakHarga');
-
         // fitur chat klien
         Route::get('/chat', [ChatKlienController::class, 'index'])->name('chat.index');
         Route::get('/chat/{id}/messages', [ChatKlienController::class, 'messages'])->name('chat.messages');
@@ -156,8 +148,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/pesanan/riwayat', [PesananController::class, 'riwayatPesanan'])->name('klien.pesanan.riwayat');
         Route::post('/pembayaran/{pembayaran}/sync-success', [PembayaranController::class, 'syncSuccess'])->name('pembayaran.sync-success');
 
-        
-
         // Profil klien
         Route::get('/profile', [KlienProfileController::class, 'index'])->name('klien.profile');
         Route::put('/profile', [KlienProfileController::class, 'update'])->name('klien.profile.update');
@@ -166,137 +156,86 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | SUPER ADMIN
+    | OWNER (role 1) — Hanya akses statistik dan export laporan
     |--------------------------------------------------------------------------
     */
 
     Route::middleware('checkRole:1')->group(function () {
-        // dashboard super admin
-        Route::get('/super-admin/dashboard', [AdminDashboardController::class, 'dashboardSuperAdmin'])->name('dashboardSuperAdmin');
+        // Dashboard statistik owner (satu-satunya halaman yang boleh diakses owner)
+        Route::get('/owner/dashboard', [AdminDashboardController::class, 'dashboardOwner'])->name('dashboardOwner');
 
-        // KELOLA AKUN
-
-        //Kelola Akun
-        Route::get('/kelola-akun/{role}', [PenggunaController::class, 'index'])->name('viewKelolaAkun');
-
-        // Form tambah akun
-        Route::get('/kelola-akun/create/{role}', [PenggunaController::class, 'create']) ->name('kelolaAkunCreate');
-
-        // Simpan data akun
-        Route::post('/kelola-akun/store', [PenggunaController::class, 'store']) ->name('kelolaAkunStore');
-
-        // Form edit akun
-        Route::get('/kelola-akun/edit/{id}', [PenggunaController::class, 'edit']) ->name('kelolaAkunEdit');
-
-        // Update data akun
-        Route::put('/kelola-akun/update/{id}', [PenggunaController::class, 'update']) ->name('kelolaAkunUpdate');
-
-        // Hapus akun
-        Route::delete('/kelola-akun/delete/{id}', [PenggunaController::class, 'destroy']) ->name('kelolaAkunDelete');
-
-        // View data akun berdasarkan role
-        Route::get('/kelola-akun/{role}', [PenggunaController::class, 'index']) ->name('viewKelolaAkun');
-
-
-        // Data Master
-        // View data akun berdasarkan role
-        Route::get('/data-master', [KategoriUsahaController::class, 'index']) ->name('viewDataMaster');
-
-        // Kategori Usaha
-        Route::resource('/super-admin/kategori-usaha', KategoriUsahaController::class) ->names('kategoriUsaha'); 
-
-        // Satus Pesanan
-        Route::resource('/super-admin/status-pesanan', StatusPesananController::class) ->names('statusPesanan');
-
-        //Satuan Harga
-        Route::resource('/super-admin/satuan-harga', SatuanHargaController::class) ->names('satuanHarga');
-
-        // Jenis Pembayaran
-        Route::resource('/super-admin/jenis-pembayaran', JenisPembayaranController::class) ->names('jenisPembayaran');
-
-        // route untuk export pdf dan excel
-        Route::get('/super-admin/laporan/penjualan', [LaporanPenjualanController::class, 'index'])->name('laporan.penjualan.index');
-
-        Route::get('/super-admin/laporan/penjualan/excel', [LaporanPenjualanController::class, 'exportExcel'])->name('laporan.penjualan.excel');
-
-        Route::get('/super-admin/laporan/penjualan/pdf', [LaporanPenjualanController::class, 'exportPdf'])->name('laporan.penjualan.pdf');
+        // Export laporan (eksklusif untuk owner)
+        Route::get('/owner/laporan/penjualan', [LaporanPenjualanController::class, 'index'])->name('laporan.penjualan.index');
+        Route::get('/owner/laporan/penjualan/excel', [LaporanPenjualanController::class, 'exportExcel'])->name('laporan.penjualan.excel');
+        Route::get('/owner/laporan/penjualan/pdf', [LaporanPenjualanController::class, 'exportPdf'])->name('laporan.penjualan.pdf');
     });
 
     /*
     |--------------------------------------------------------------------------
-    | ADMIN
+    | ADMIN (role 2) — Akses penuh ke semua fitur operasional kecuali export
     |--------------------------------------------------------------------------
     */
 
     Route::middleware('checkRole:2')->group(function () {
-        // dashboard admin
+        // Dashboard admin
         Route::get('/admin/dashboard', [AdminDashboardController::class, 'dashboardAdmin'])->name('dashboardAdmin');
 
-        
+        // KELOLA AKUN
+        Route::get('/kelola-akun/{role}', [PenggunaController::class, 'index'])->name('viewKelolaAkun');
+        Route::get('/kelola-akun/create/{role}', [PenggunaController::class, 'create'])->name('kelolaAkunCreate');
+        Route::post('/kelola-akun/store', [PenggunaController::class, 'store'])->name('kelolaAkunStore');
+        Route::get('/kelola-akun/edit/{id}', [PenggunaController::class, 'edit'])->name('kelolaAkunEdit');
+        Route::put('/kelola-akun/update/{id}', [PenggunaController::class, 'update'])->name('kelolaAkunUpdate');
+        Route::delete('/kelola-akun/delete/{id}', [PenggunaController::class, 'destroy'])->name('kelolaAkunDelete');
 
-        // Route::get('/admin/pesanan/{pesanan}/penawaran', [PersetujuanHargaController::class, 'showAdmin'])
-        //     ->name('admin.pesanan.penawaran');
+        // Data Master
+        Route::get('/data-master', [KategoriUsahaController::class, 'index'])->name('viewDataMaster');
 
-        // Route::post('/admin/pesanan/{pesanan}/penawaran', [PersetujuanHargaController::class, 'ajukanHarga'])
-        //     ->name('admin.pesanan.ajukanHarga');
- 
-        // fitur chat admin
-        Route::get('/admin/chat', [ChatAdminController::class, 'index'])->name('admin.chat.index');
-        // Route::get('/admin/chat/{id}', [ChatAdminController::class, 'show'])->name('admin.chat.show');
-        // Route::get('/admin/chat/{id}/messages', [ChatAdminController::class, 'messages'])->name('admin.chat.messages');
-        // Route::post('/admin/chat/{id}/messages', [ChatAdminController::class, 'send'])->name('admin.chat.send');
-        Route::get('/admin/chat/{percakapan}', [ChatAdminController::class, 'show'])->name('admin.chat.show')
-            ->middleware('can:accessAdmin,percakapan');
+        // Kategori Usaha
+        Route::resource('/admin/kategori-usaha', KategoriUsahaController::class)->names('kategoriUsaha'); 
 
-        Route::get('/admin/chat/{percakapan}/messages', [ChatAdminController::class, 'messages'])->name('admin.chat.messages')
-            ->middleware('can:accessAdmin,percakapan');
+        // Status Pesanan
+        Route::resource('/admin/status-pesanan', StatusPesananController::class)->names('statusPesanan');
 
-        Route::post('/admin/chat/{percakapan}/messages', [ChatAdminController::class, 'send'])->name('admin.chat.send')
-            ->middleware('can:accessAdmin,percakapan');
+        // Satuan Harga
+        Route::resource('/admin/satuan-harga', SatuanHargaController::class)->names('satuanHarga');
 
-        //Profil admin
-        Route::get('/admin/profile', [AdminProfileController::class, 'edit'])->name('admin.profile.edit');
-        Route::put('/admin/profile', [AdminProfileController::class, 'update'])->name('admin.profile.update');
-
-        
-
-       
-    });
-
-    Route::middleware('checkRole:1,2')->group(function () { 
+        // Jenis Pembayaran
+        Route::resource('/admin/jenis-pembayaran', JenisPembayaranController::class)->names('jenisPembayaran');
 
         // CRUD item produksi
-        // Route::resource('itemProduksi', ItemProduksiController::class);
-    // CRUD item produksi
-        Route::resource('/admin/item-produksi', ItemProduksiController::class) ->names('admin.itemProduksi');
+        Route::resource('/admin/item-produksi', ItemProduksiController::class)->names('admin.itemProduksi');
 
         // Riwayat transaksi admin
         Route::get('/admin/riwayat-transaksi', [PembayaranController::class, 'TampilRiwayatTransaksi'])->name('admin.riwayat-transaksi.index');
         Route::get('/admin/riwayat-transaksi/{pesanan}', [PembayaranController::class, 'detailRiwayatTransaksi'])->name('admin.riwayat-transaksi.detail');
-        // end route riwayat transaksi admin
 
-        // route update status pesanan admin
+        // update status pesanan admin
         Route::get('/admin/edit-status-pesanan/{pesanan}', [AdminPesananStatusController::class, 'editStatusPesanan'])->name('admin.editStatusPesanan');
         Route::patch('/admin/update-status-pesanan/{pesanan}', [AdminPesananStatusController::class, 'updateStatusPesanan'])->name('admin.updateStatusPesanan');
         Route::get('/admin/pesanan', [AdminPesananStatusController::class, 'tampilAdminPesanan'])->name('admin.tampilPesanan');
         Route::get('/admin/progres-pesanan/{id}/edit', [AdminPesananStatusController::class, 'edit'])->name('admin.progres-pesanan.edit');
         Route::put('/admin/progres-pesanan/{id}', [AdminPesananStatusController::class, 'update'])->name('admin.progres-pesanan.update');
-        // end route update status pesanan admin
 
-        //Lihat Bukti Bayar Klien
+        // Lihat Bukti Bayar Klien
         Route::get('/admin/riwayat-transaksi/{pesanan}/bukti-bayar', [PembayaranController::class, 'lihatBuktiPesanan'])->name('admin.riwayat-transaksi.bukti-bayar');
-
         Route::get('/admin/bukti-bayar/{pembayaran}/file', [PembayaranController::class, 'tampilFileBukti'])->name('admin.bukti-bayar.file');
+
+        // fitur chat admin (akses semua percakapan)
+        Route::get('/admin/chat', [ChatAdminController::class, 'index'])->name('admin.chat.index');
+        Route::get('/admin/chat/{percakapan}', [ChatAdminController::class, 'show'])->name('admin.chat.show')
+            ->middleware('can:accessAdmin,percakapan');
+        Route::get('/admin/chat/{percakapan}/messages', [ChatAdminController::class, 'messages'])->name('admin.chat.messages')
+            ->middleware('can:accessAdmin,percakapan');
+        Route::post('/admin/chat/{percakapan}/messages', [ChatAdminController::class, 'send'])->name('admin.chat.send')
+            ->middleware('can:accessAdmin,percakapan');
+
+        // Profil admin
+        Route::get('/admin/profile', [AdminProfileController::class, 'edit'])->name('admin.profile.edit');
+        Route::put('/admin/profile', [AdminProfileController::class, 'update'])->name('admin.profile.update');
     });
 });
 
-
-
-//Route::resource('itemProduksi', ItemProduksiController::class);
-//Route::resource('pengguna', PenggunaController::class);
-// Route::get('/login-tes', function () {
-//     return view('auth.login');
-// });
 
 Route::get('/riwayat-pesanan', function () {
     return view('klien.riwayat-pesanan');
@@ -305,19 +244,3 @@ Route::get('/riwayat-pesanan', function () {
 Route::get('/profile/test', function () {
     return view('klien.profile');
 });
-
-// route::get('/dashboard', function () {
-//     return view('pelanggan.dashboard');
-// });
-
-// Route::get('/test-admin', function () {
-//     return view('dashboard', [
-//         'role' => 'Admin'
-//     ]);
-// });
-
-// Route::get('/test-superadmin', function () {
-//     return view('dashboard', [
-//         'role' => 'Super-Admin'
-//     ]);
-// });

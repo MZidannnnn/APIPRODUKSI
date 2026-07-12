@@ -172,8 +172,8 @@ class AuthController extends Controller
             $user = Auth::user();
 
             if ((int) $user->id_role === 1) {
-                return redirect()->route('dashboardSuperAdmin')
-                    ->with('success', 'Anda berhasil login sebagai Super Admin');
+                return redirect()->route('dashboardOwner')
+                    ->with('success', 'Anda berhasil login sebagai Owner');
             }
 
             if ((int) $user->id_role === 2) {
@@ -188,7 +188,7 @@ class AuthController extends Controller
 
             return back()
                 ->withErrors([
-                    'email' => 'Akses hanya untuk Admin dan Super Admin.',
+                    'email' => 'Akses hanya untuk Admin dan Owner.',
                 ])
                 ->onlyInput('email');
         }

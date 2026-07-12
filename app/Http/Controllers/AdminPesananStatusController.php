@@ -42,10 +42,7 @@ class AdminPesananStatusController extends Controller
     {
         Gate::authorize('viewAny', Pesanan::class);
 
-        $user = Auth::user();
-        $isSuperAdmin = (int) $user->id_role === 1;
-
-        $query = Pesanan::query()
+        $pesanan = Pesanan::query()
             ->select([
                 'id_pesanan',
                 'kode_resi_pesanan',
@@ -71,16 +68,7 @@ class AdminPesananStatusController extends Controller
                     'Pesanan Dibatalkan',
                     'Pesanan Kadaluarsa'
                 ]);
-            });
-
-        // Admin biasa hanya lihat kategori sendiri
-        if (! $isSuperAdmin) {
-            $query->whereHas('detailProduk.itemProduksi', function ($q) use ($user) {
-                $q->where('id_kategori', (int) $user->id_kategori);
-            });
-        }
-
-        $pesanan = $query
+            })
             ->latest('kode_resi_pesanan')
             ->get();
 
@@ -93,25 +81,14 @@ class AdminPesananStatusController extends Controller
 
     public function edit($id)
     {
-        $user = Auth::user();
-        $isSuperAdmin = (int) $user->id_role === 1;
-
-        $query = Pesanan::with([
+        // Admin (role 2) bisa edit semua pesanan tanpa filter kategori
+        $pesanan = Pesanan::with([
             'pengguna',
             'statusPesanan',
             'detailProduk.itemProduksi.kategoriUsaha',
             'rincianPesanan.detailProduk.itemProduksi.satuanHarga',
             'pembayaran' => fn ($q) => $q->latest('created_at'),
-        ]);
-
-        // Filter hanya untuk admin biasa
-        if (! $isSuperAdmin) {
-            $query->whereHas('detailProduk.itemProduksi', function ($q) use ($user) {
-                $q->where('id_kategori', (int) $user->id_kategori);
-            });
-        }
-
-        $pesanan = $query->findOrFail($id);
+        ])->findOrFail($id);
 
         $statusPesanan = StatusPesanan::all();
 
@@ -131,19 +108,8 @@ class AdminPesananStatusController extends Controller
             'id_status_pesanan.exists' => 'Status pesanan tidak valid.',
         ]);
 
-        $user = Auth::user();
-        $isSuperAdmin = (int) $user->id_role === 1;
-
-        $query = Pesanan::query();
-
-        // Filter hanya untuk admin biasa
-        if (! $isSuperAdmin) {
-            $query->whereHas('detailProduk.itemProduksi', function ($q) use ($user) {
-                $q->where('id_kategori', (int) $user->id_kategori);
-            });
-        }
-
-        $pesanan = $query->findOrFail($id);
+        // Admin (role 2) bisa update semua pesanan tanpa filter kategori
+        $pesanan = Pesanan::findOrFail($id);
 
         $pesanan->update([
             'id_status_pesanan' => $request->id_status_pesanan,

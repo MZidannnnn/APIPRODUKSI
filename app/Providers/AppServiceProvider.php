@@ -33,16 +33,19 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
+        // Role 2 (Admin) mendapat akses penuh ke semua operasi model utama.
+        // Role 1 (Owner) hanya boleh mengakses dashboard statistik dan export laporan,
+        // sehingga TIDAK diberikan Gate::before bypass global.
         Gate::before(function (Pengguna $user, string $ability, array $arguments = []): ?bool {
-            if ((int) $user->id_role !== 1) {
+            if ((int) $user->id_role !== 2) {
                 return null;
             }
 
             $target = $arguments[0] ?? null;
 
             $allowed = [
-                Pesanan::class => ['viewAny', 'updateStatus'],
-                Pembayaran::class => ['viewAdminHistory'],
+                Pesanan::class     => ['viewAny', 'updateStatus'],
+                Pembayaran::class  => ['viewAdminHistory'],
                 ItemProduksi::class => ['viewAny', 'view', 'create', 'update', 'delete'],
             ];
 

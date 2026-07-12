@@ -14,12 +14,12 @@ class PenggunaSeeder extends Seeder
      */
     public function run(): void
     {
-        // Super Admin
+        // Owner
         Pengguna::create([
             'id_role'       => 1,
-            'nama_pengguna' => 'Super Admin',
-            'email'         => 'superadmin@gmail.com',
-            'password'      => 'admin123',
+            'nama_pengguna' => 'Owner',
+            'email'         => 'owner@gmail.com',
+            'password'      => 'owner12345',
         ]);
 
         // Admin
@@ -30,7 +30,7 @@ class PenggunaSeeder extends Seeder
             'password'      => 'admin123',
         ]);
 
-        // Pelanggan
+        // Klien
         Pengguna::create([
             'id_role'       => 3,
             'nama_pengguna' => 'User Demo',

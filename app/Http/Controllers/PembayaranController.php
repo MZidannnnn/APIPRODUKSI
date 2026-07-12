@@ -290,13 +290,10 @@ class PembayaranController extends Controller
     // Riwayat transaksi di admin
     public function TampilRiwayatTransaksi(Request $request)
     {
-        $user = Auth::user();
-        $isSuperAdmin = (int) $user->id_role === 1;
-
         $bulan = $request->bulan ?? now()->month;
         $tahun = $request->tahun ?? now()->year;
 
-        $query = Pesanan::with([
+        $riwayatTransaksi = Pesanan::with([
             'pengguna',
             'statusPesanan',
             'detailProduk.itemProduksi.kategoriUsaha',
@@ -310,19 +307,10 @@ class PembayaranController extends Controller
             ]);
         })
         ->whereMonth('updated_at', $bulan)
-        ->whereYear('updated_at', $tahun);
-
-        // Filter kategori hanya untuk admin biasa
-        if (! $isSuperAdmin) {
-            $query->whereHas('detailProduk.itemProduksi', function ($q) use ($user) {
-                $q->where('id_kategori', $user->id_kategori);
-            });
-        }
-
-        $riwayatTransaksi = $query
-            ->latest('updated_at')
-            ->paginate(10)
-            ->withQueryString();
+        ->whereYear('updated_at', $tahun)
+        ->latest('updated_at')
+        ->paginate(10)
+        ->withQueryString();
 
         return view('admin.riwayat-transaksi.index', [
             'title' => 'Riwayat Transaksi',
@@ -336,9 +324,6 @@ class PembayaranController extends Controller
     // Detail riwayat transaksi di Admin
     public function detailRiwayatTransaksi(Pesanan $pesanan)
     {
-        $user = Auth::user();
-        $isSuperAdmin = (int) $user->id_role === 1;
-
         $pesanan->load([
             'pengguna',
             'statusPesanan',
@@ -348,15 +333,6 @@ class PembayaranController extends Controller
             'rincianPesanan.detailProduk.itemProduksi.fotoProduk',
             'pembayaran' => fn ($q) => $q->latest('created_at'),
         ]);
-
-        // Admin biasa hanya boleh akses sesuai kategori
-        if (! $isSuperAdmin) {
-            abort_unless(
-                (int) optional($pesanan->detailProduk?->itemProduksi)->id_kategori === (int) $user->id_kategori,
-                403,
-                'Anda tidak berhak mengakses transaksi ini.'
-            );
-        }
 
         return view('admin.riwayat-transaksi.detail', [
             'title' => 'Detail Nota Transaksi',
@@ -401,23 +377,11 @@ class PembayaranController extends Controller
     //bukti bayar di admin
     public function lihatBuktiPesanan(Pesanan $pesanan)
     {
-        $user = Auth::user();
-        $isSuperAdmin = (int) $user->id_role === 1;
-
         $pesanan->load([
             'pengguna',
             'detailProduk.itemProduksi',
             'pembayaran' => fn ($q) => $q->latest('created_at'),
         ]);
-
-        // Admin biasa hanya boleh lihat bukti bayar sesuai kategori
-        if (! $isSuperAdmin) {
-            abort_unless(
-                (int) optional($pesanan->detailProduk?->itemProduksi)->id_kategori === (int) $user->id_kategori,
-                403,
-                'Anda tidak berhak mengakses bukti pembayaran ini.'
-            );
-        }
 
         return view('admin.riwayat-transaksi.bukti-bayar', compact('pesanan'));
     }

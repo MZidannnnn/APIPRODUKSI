@@ -20,7 +20,7 @@ class RedirectByRole
             $role = (int) Auth::user()->id_role;
 
             if ($role === 1) {
-                return redirect()->route('dashboardSuperAdmin');
+                return redirect()->route('dashboardOwner');
             }
 
             if ($role === 2) {

@@ -23,7 +23,6 @@ class ChatAdminController extends Controller
         $admin = Auth::user();
 
         $percakapanList = Percakapan::with(['pengguna', 'itemProduksi'])
-            ->where('id_kategori', $admin->id_kategori)
             ->withCount(['pesan as unread_count' => function ($q) use ($admin) {
                 $q->whereNull('dibaca_pada')
                     ->where('id_pengirim', '!=', $admin->id_pengguna);
@@ -37,9 +36,7 @@ class ChatAdminController extends Controller
     {
         $admin = Auth::user();
 
-        $percakapan = Percakapan::where('id_percakapan', $percakapan->id_percakapan)
-            ->where('id_kategori', $admin->id_kategori)
-            ->firstOrFail();
+        // Admin (role 2) memiliki akses global — tidak perlu filter id_kategori
 
         return view('admin/chat-admin/detail-chat', [
             'percakapan' => $percakapan,
@@ -53,9 +50,7 @@ class ChatAdminController extends Controller
 
         $admin = Auth::user();
 
-        $percakapan = Percakapan::where('id_percakapan', $percakapan->id_percakapan)
-            ->where('id_kategori', $admin->id_kategori)
-            ->firstOrFail();
+        // Admin (role 2) memiliki akses global — tidak perlu filter id_kategori
 
         $query = $percakapan->pesan()
             ->with([
