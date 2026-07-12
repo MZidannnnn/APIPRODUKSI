@@ -9,15 +9,14 @@
                 <div class="sidebar-brand-text mx-3">Advisel Pramana</div>
             </a>
 
-             <!-- Menu role 1 super admin -->
-            @if(Auth::user()->id_role == 1)
-
+        <!-- Menu role 1 Owner -->
+        @if(Auth::user()->id_role == 1)
             <!-- Divider -->
             <hr class="sidebar-divider my-0">
 
             <!-- Nav Item - Dashboard -->
             <li class="nav-item {{ $menuDashboard ?? '' }}">
-                <a class="nav-link" href=" {{ route('dashboardSuperAdmin') }}">
+                <a class="nav-link" href="{{ route('dashboardOwner') }}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span></a>
             </li>
@@ -27,7 +26,39 @@
 
             <!-- Heading -->
             <div class="sidebar-heading">
-                MENU SUPER ADMIN
+                MENU OWNER
+            </div>
+
+            <!-- Laporan Penjualan -->
+            <li class="nav-item {{ $menuLaporanPenjualan ?? '' }}">
+                <a class="nav-link" href="{{ route('laporan.penjualan.index') }}">
+                    <i class="fas fa-fw fa-folder-open"></i>
+                    <span>Laporan Penjualan</span>
+                </a>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+        @endif
+
+        <!-- Menu role 2 Admin -->
+        @if(Auth::user()->id_role == 2)
+            <!-- Divider -->
+            <hr class="sidebar-divider my-0">
+
+            <!-- Nav Item - Dashboard -->
+            <li class="nav-item {{ $menuDashboard ?? '' }}">
+                <a class="nav-link" href="{{ route('dashboardAdmin') }}">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Dashboard</span></a>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+
+            <!-- Heading -->
+            <div class="sidebar-heading">
+                MENU ADMIN
             </div>
 
             <!-- Kelola Akun -->
@@ -39,10 +70,8 @@
                 </a>
                 <div id="collapseTwo" class="collapse {{ $collapseKelolaAkun ?? '' }}" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item {{ ($role ?? '') == 1 ? 'active' : '' }}" href="{{ route('viewKelolaAkun', 1) }}">Super Admin</a>
-
+                        <a class="collapse-item {{ ($role ?? '') == 1 ? 'active' : '' }}" href="{{ route('viewKelolaAkun', 1) }}">Owner</a>
                         <a class="collapse-item {{ ($role ?? '') == 2 ? 'active' : '' }}" href="{{ route('viewKelolaAkun', 2) }}">Admin</a>
-
                         <a class="collapse-item {{ ($role ?? '') == 3 ? 'active' : '' }}" href="{{ route('viewKelolaAkun', 3) }}">Klien</a>
                     </div>
                 </div>
@@ -58,59 +87,13 @@
                 <div id="collapseUtilities"  class="collapse {{ $collapseDataMaster ?? '' }}" aria-labelledby="headingUtilities"
                     data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item {{ ($master ?? '') == 'kategoriUsaha' ? 'active' : '' }}" href="{{ route('kategoriUsaha.index') }}">
-                            Kategori Usaha
-                        </a>
-
-                        <a class="collapse-item {{ ($master ?? '') == 'statusPesanan' ? 'active' : '' }}" href="{{ route('statusPesanan.index') }}">
-                            Status Pesanan
-                        </a>
-
-                        <a class="collapse-item {{ ($master ?? '') == 'satuanHarga' ? 'active' : '' }}" href="{{ route('satuanHarga.index') }}">
-                            Satuan Harga
-                        </a>
-
-                        <a class="collapse-item {{ ($master ?? '') == 'jenisPembayaran' ? 'active' : '' }}" href="{{ route('jenisPembayaran.index') }}">
-                            Jenis Pembayaran
-                        </a>
+                        <a class="collapse-item {{ ($master ?? '') == 'kategoriUsaha' ? 'active' : '' }}" href="{{ route('kategoriUsaha.index') }}">Kategori Usaha</a>
+                        <a class="collapse-item {{ ($master ?? '') == 'statusPesanan' ? 'active' : '' }}" href="{{ route('statusPesanan.index') }}">Status Pesanan</a>
+                        <a class="collapse-item {{ ($master ?? '') == 'satuanHarga' ? 'active' : '' }}" href="{{ route('satuanHarga.index') }}">Satuan Harga</a>
+                        <a class="collapse-item {{ ($master ?? '') == 'jenisPembayaran' ? 'active' : '' }}" href="{{ route('jenisPembayaran.index') }}">Jenis Pembayaran</a>
                     </div>
                 </div>
             </li>
-
-            <!-- Laporan Penjualan -->
-            <li class="nav-item {{ $menuLaporanPenjualan ?? '' }}">
-                <a class="nav-link" href="{{ route('laporan.penjualan.index') }}">
-                    <i class="fas fa-fw fa-folder-open"></i>
-                    <span>Laporan Penjualan</span></a>
-            </li>
-
-            <!-- Divider -->
-            <hr class="sidebar-divider">
-        @endif
-
-        <!-- Menu role 2 admin -->
-        @if(in_array(Auth::user()->id_role, [1,2]))
-
-            <!-- Dashboard Admin -->
-            @if(Auth::user()->id_role == 2)
-                <!-- Divider -->
-                <hr class="sidebar-divider my-0">
-
-                <!-- Nav Item - Dashboard -->
-                <li class="nav-item {{ $menuDashboard ?? '' }}">
-                    <a class="nav-link" href=" {{ route('dashboardAdmin') }}">
-                        <i class="fas fa-fw fa-tachometer-alt"></i>
-                        <span>Dashboard</span></a>
-                </li>
-
-                <!-- Divider -->
-                <hr class="sidebar-divider">
-            @endif
-
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                MENU ADMIN
-            </div>
 
             <li class="nav-item {{ $menuDataProduk ?? '' }}">
                 <a class="nav-link" href="{{ route('admin.itemProduksi.index') }}">

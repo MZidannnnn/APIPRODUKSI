@@ -17,16 +17,8 @@ class PesananPolicy
 
     public function updateStatus(Pengguna $user, Pesanan $pesanan): bool
     {
-        if ((int) $user->id_role !== 2) {
-            return false;
-        }
-
-        $pesanan->loadMissing('detailProduk.itemProduksi');
-
-        $kategoriId = $pesanan->detailProduk?->itemProduksi?->id_kategori;
-
-        return $kategoriId !== null
-            && (int) $kategoriId === (int) $user->id_kategori;
+        // Admin (role 2) bisa update status semua pesanan tanpa filter kategori
+        return (int) $user->id_role === 2;
     }
 
     public function viewAny(Pengguna $user): bool

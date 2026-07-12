@@ -24,7 +24,8 @@ class PesanLampiranPolicy
         }
 
         if ((int) $user->id_role === 2) {
-            return (int) $user->id_kategori === (int) $percakapan->id_kategori;
+            // Admin (role 2) memiliki akses global — tidak perlu filter id_kategori
+            return true;
         }
 
         return (int) $percakapan->id_pengguna === (int) $user->id_pengguna;

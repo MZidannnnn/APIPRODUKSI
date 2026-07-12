@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('role', function (Blueprint $table) {
             $table->bigIncrements('id_role');
             $table->string('nama_role', 30);
-            // untuk sementara role ada 3 yaitu admin idnya 2, super admin idnya 3, dan klien id nya 1
+            // Role: owner (id=1), admin (id=2), klien (id=3)
             $table->timestamps();
         });
     }

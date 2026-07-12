@@ -17,7 +17,7 @@ class PenggunaController extends Controller
         $user = Pengguna::where('id_role', $role)->get();
 
         $data = [
-            'title' => $title = ($role == 1) ? 'Data Akun Super Admin' : (($role == 2) ? 'Data Akun Admin' : 'Data Akun Klien'),
+            'title' => $title = ($role == 1) ? 'Data Akun Owner' : (($role == 2) ? 'Data Akun Admin' : 'Data Akun Klien'),
             'menuKelolaAkun' => 'active',
             'collapseKelolaAkun' => 'show',
             'user' => $user,
@@ -30,7 +30,7 @@ class PenggunaController extends Controller
     public function create($role)
     {
         $data = [
-            'title' => $title = ($role == 1) ? 'Tambah Data Akun Super Admin' : (($role == 2) ? 'Tambah Data Akun Admin' : 'Tambah Data Akun Klien'),
+            'title' => $title = ($role == 1) ? 'Tambah Data Akun Owner' : (($role == 2) ? 'Tambah Data Akun Admin' : 'Tambah Data Akun Klien'),
             'menuKelolaAkun' => 'active',
             'collapseKelolaAkun' => 'show',
             'role' => $role,

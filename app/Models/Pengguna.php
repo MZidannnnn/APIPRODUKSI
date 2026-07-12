@@ -43,7 +43,7 @@ class Pengguna extends Authenticatable
     public function getNamaRoleAttribute()
     {
         return match ($this->id_role) {
-            1 => 'Super Admin',
+            1 => 'Owner',
             2 => 'Admin',
             3 => 'Klien',
             default => '-',
