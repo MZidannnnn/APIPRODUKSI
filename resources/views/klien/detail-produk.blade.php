@@ -320,8 +320,11 @@
                     <div id="info-jarak" class="info-card-biaya">
                         <div class="info-card-biaya-row">
                             <span class="info-card-biaya-icon"><i class="fas fa-tags"></i></span>
-                            <span class="info-card-biaya-label">Tarif Dasar</span>
-                            <span class="info-card-biaya-value">Rp {{ number_format($itemProduksi->konfigurasiBiaya->getRawOriginal('tarif_per_km') ?? $itemProduksi->konfigurasiBiaya->tarif_per_km, 0, ',', '.') }} / km</span>
+                            <span class="info-card-biaya-label">Ketentuan Tarif</span>
+                            <span class="info-card-biaya-value" style="font-size: 0.9em; text-align: right;">
+                                <strong>Gratis</strong> (≤ 45 km) <br>
+                                Rp {{ number_format($itemProduksi->konfigurasiBiaya->getRawOriginal('tarif_per_km') ?? $itemProduksi->konfigurasiBiaya->tarif_per_km, 0, ',', '.') }} / km (> 45 km)
+                            </span>
                         </div>
                         <div class="info-card-biaya-row">
                             <span class="info-card-biaya-icon"><i class="fas fa-route"></i></span>
@@ -569,12 +572,26 @@ document.addEventListener('DOMContentLoaded', function () {
         
         let globalBiayaJarak = 0;
         if (configBiaya.is_jarak) {
-            globalBiayaJarak = parseFloat(currentRoutingDistance || 0) * configBiaya.tarif_per_km;
+            let jarakKm = parseFloat(currentRoutingDistance || 0);
+
+            if (jarakKm <= 45) {
+                globalBiayaJarak = 0;
+            } else {
+                globalBiayaJarak = jarakKm * configBiaya.tarif_per_km;
+            }
 
             const elJarak = document.getElementById('display-jarak');
             const elBiayaJarak = document.getElementById('display-biaya-jarak');
-            if (elJarak) elJarak.textContent = parseFloat(currentRoutingDistance || 0).toFixed(2);
-            if (elBiayaJarak) elBiayaJarak.textContent = formatRupiah(globalBiayaJarak);
+            if (elJarak) elJarak.textContent = jarakKm.toFixed(2);
+            if (elBiayaJarak) {
+                if (jarakKm <= 45) {
+                    elBiayaJarak.textContent = 'Gratis';
+                    elBiayaJarak.style.color = '#28a745';
+                } else {
+                    elBiayaJarak.textContent = formatRupiah(globalBiayaJarak);
+                    elBiayaJarak.style.color = '';
+                }
+            }
         }
 
         let globalBiayaWaktu = 0;
