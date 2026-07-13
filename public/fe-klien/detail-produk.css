@@ -306,6 +306,349 @@ input[type="number"] {
     font-weight: 800;
 }
 
+/* --- RINCIAN HARGA (PRICE SUMMARY CARD) --- */
+.rincian-harga-wrapper {
+    margin-top: 16px;
+    width: 100%;
+}
+
+.rincian-harga-card {
+    background: linear-gradient(135deg, #f8faf9 0%, #f0f7f3 100%);
+    border: 1px solid #d4e8dc;
+    border-radius: 12px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.rincian-harga-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 18px;
+    background: rgba(0, 138, 70, 0.06);
+    border-bottom: 1px solid #d4e8dc;
+    font-size: 14px;
+    font-weight: 700;
+    color: #008a46;
+    letter-spacing: 0.3px;
+}
+
+.rincian-harga-header i {
+    font-size: 14px;
+    opacity: 0.85;
+}
+
+.rincian-harga-body {
+    padding: 14px 18px 6px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rincian-harga-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.rincian-label {
+    font-size: 13px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+.rincian-label i {
+    font-size: 12px;
+    color: #999;
+    width: 16px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.rincian-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #222;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.rincian-value--prioritas {
+    color: #e67e22;
+}
+
+.rincian-harga-divider {
+    height: 1px;
+    margin: 6px 18px 0 18px;
+    background: linear-gradient(to right, transparent, #c5dece 30%, #c5dece 70%, transparent);
+}
+
+.rincian-harga-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px 16px 18px;
+    gap: 12px;
+}
+
+.rincian-total-label {
+    font-size: 15px;
+    font-weight: 700;
+    color: #333;
+}
+
+.rincian-total-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: #008a46;
+    letter-spacing: -0.5px;
+}
+
+/* --- DP PAYMENT INFO (inside rincian card) --- */
+.rincian-dp-section {
+    padding-bottom: 4px;
+}
+
+.rincian-dp-body {
+    padding: 12px 18px 8px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rincian-value--dp {
+    color: #008a46;
+    font-weight: 700;
+}
+
+.rincian-value--sisa {
+    color: #999;
+    font-weight: 500;
+    font-style: italic;
+}
+
+.rincian-dp-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 4px 18px 14px 18px;
+    padding: 10px 14px;
+    background: rgba(0, 138, 70, 0.05);
+    border-left: 3px solid #008a46;
+    border-radius: 0 6px 6px 0;
+    font-size: 12px;
+    color: #555;
+    line-height: 1.5;
+}
+
+.rincian-dp-note i {
+    color: #008a46;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+/* --- INFO CARD BIAYA (Jarak & Waktu) --- */
+.info-card-biaya {
+    background: linear-gradient(135deg, #f8faf9 0%, #f0f7f3 100%);
+    border: 1px solid #d4e8dc;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.info-card-biaya--waktu {
+    margin-top: 8px;
+    margin-bottom: 16px;
+}
+
+.info-card-biaya-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #008a46;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #d4e8dc;
+    margin-bottom: 2px;
+}
+
+.info-card-biaya-title i {
+    font-size: 13px;
+}
+
+.info-card-biaya-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-card-biaya-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(0, 138, 70, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.info-card-biaya-icon i {
+    font-size: 12px;
+    color: #008a46;
+}
+
+.info-card-biaya-label {
+    flex: 1;
+    font-size: 13px;
+    color: #555;
+    font-weight: 500;
+}
+
+.info-card-biaya-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: #222;
+    white-space: nowrap;
+}
+
+.info-card-biaya-value--highlight {
+    color: #008a46;
+}
+
+.info-card-biaya-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    background: rgba(0, 138, 70, 0.05);
+    border-left: 3px solid #008a46;
+    border-radius: 0 6px 6px 0;
+    font-size: 12px;
+    color: #555;
+    line-height: 1.5;
+    margin-top: 2px;
+}
+
+.info-card-biaya-note i {
+    color: #008a46;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+/* --- PAYMENT TOGGLE (DP / FULL) --- */
+.payment-toggle-group {
+    display: flex;
+    gap: 10px;
+}
+
+.payment-toggle-option {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    margin: 0;
+}
+
+.payment-toggle-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.payment-toggle-option:hover {
+    border-color: #b0d9c2;
+    background: #fafffe;
+}
+
+.payment-toggle-option.active {
+    border-color: #008a46;
+    background: linear-gradient(135deg, #f0f9f4 0%, #e6f5ec 100%);
+    box-shadow: 0 2px 8px rgba(0, 138, 70, 0.1);
+}
+
+.payment-toggle-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.payment-toggle-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.payment-toggle-option.active .payment-toggle-icon {
+    background: rgba(0, 138, 70, 0.12);
+}
+
+.payment-toggle-icon i {
+    font-size: 16px;
+    color: #999;
+    transition: color 0.2s ease;
+}
+
+.payment-toggle-option.active .payment-toggle-icon i {
+    color: #008a46;
+}
+
+.payment-toggle-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.payment-toggle-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #333;
+}
+
+.payment-toggle-desc {
+    font-size: 11px;
+    color: #999;
+    font-weight: 400;
+}
+
+.payment-toggle-option.active .payment-toggle-desc {
+    color: #5a9e78;
+}
+
+.payment-toggle-check {
+    font-size: 18px;
+    color: #ddd;
+    transition: color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.payment-toggle-option.active .payment-toggle-check {
+    color: #008a46;
+}
+
 /* Wrapper Aksi Utama (Tombol Bawah) */
 .button-action-wrapper {
     display: flex;
@@ -539,6 +882,39 @@ input[type="number"] {
     /* Tambahkan ini agar ada jarak bernapas sebelum tombol Beli */
     .qty-subtotal-row {
         margin-bottom: 16px; 
+    }
+
+    /* Payment toggle stacks on small screens */
+    .payment-toggle-group {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .payment-toggle-option {
+        padding: 10px 12px;
+    }
+
+    .payment-toggle-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    /* Info card adjustments for mobile */
+    .info-card-biaya {
+        padding: 12px 14px;
+    }
+
+    .info-card-biaya-icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .info-card-biaya-label {
+        font-size: 12px;
+    }
+
+    .info-card-biaya-value {
+        font-size: 12px;
     }
 
 }

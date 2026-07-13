@@ -18,8 +18,13 @@ class Pesanan extends Model
         'tanggal_pesan',
         'nama_penerima',
         'alamat_penerima',
+        'latitude',
+        'longitude',
+        'alamat_lengkap',
         'No_hp_penerima',
         'total_harga',
+        'total_biaya_jarak',
+        'total_biaya_waktu',
         'jadwal_pemasangan',
     ];
 
@@ -105,12 +110,12 @@ class Pesanan extends Model
     // hitung total harga
     public function totalRincian(): float
     {
-        $total = $this->relationLoaded('rincianPesanan')
+        $totalBarang = $this->relationLoaded('rincianPesanan')
             ? $this->rincianPesanan->sum('subtotal')
             : $this->rincianPesanan()->sum('subtotal');
 
-        $total = (float) $total;
+        $totalAkhir = (float) $totalBarang + (float) $this->total_biaya_jarak + (float) $this->total_biaya_waktu;
 
-        return $total > 0 ? $total : (float) $this->total_harga;
+        return $totalAkhir > 0 ? $totalAkhir : (float) $this->total_harga;
     }
 }

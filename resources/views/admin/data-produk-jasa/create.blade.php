@@ -154,6 +154,49 @@
 
                 <hr class="mt-4">
 
+                <!-- Pengaturan Biaya Dinamis -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="font-weight-bold text-primary m-0">Pengaturan Biaya Tambahan & Pengiriman</h5>
+                </div>
+                
+                <div class="row mb-3 bg-light p-3 border rounded mx-1">
+                    <div class="col-md-6 border-right">
+                        <div class="custom-control custom-switch mb-3">
+                            <input type="checkbox" class="custom-control-input" id="is_biaya_jarak_aktif" name="is_biaya_jarak_aktif" value="1" {{ old('is_biaya_jarak_aktif') ? 'checked' : '' }}>
+                            <label class="custom-control-label font-weight-bold" for="is_biaya_jarak_aktif">Aktifkan Biaya Transport/Jarak</label>
+                        </div>
+                        <div id="form-biaya-jarak" class="pl-4 {{ old('is_biaya_jarak_aktif') ? '' : 'd-none' }}">
+                            <div class="form-group mb-2">
+                                <label>Tarif per Kilometer (Rp) :</label>
+                                <input type="text" name="tarif_per_km" class="form-control harga" placeholder="Contoh: 10.000" value="{{ old('tarif_per_km') }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="custom-control custom-switch mb-3">
+                            <input type="checkbox" class="custom-control-input" id="is_biaya_waktu_aktif" name="is_biaya_waktu_aktif" value="1" {{ old('is_biaya_waktu_aktif') ? 'checked' : '' }}>
+                            <label class="custom-control-label font-weight-bold" for="is_biaya_waktu_aktif">Aktifkan Biaya Waktu/Urgensi</label>
+                        </div>
+                        <div id="form-biaya-waktu" class="pl-4 {{ old('is_biaya_waktu_aktif') ? '' : 'd-none' }}">
+                            <div class="form-group mb-2">
+                                <label>Batas Hari Zona Merah (Blokir Pesanan) :</label>
+                                <input type="number" name="batas_hari_zona_merah" class="form-control" placeholder="Contoh: 1 (Untuk H-1)" value="{{ old('batas_hari_zona_merah') }}">
+                            </div>
+                            <div class="form-group mb-2">
+                                <label>Batas Hari Zona Kuning (Dikenakan Urgensi) :</label>
+                                <input type="number" name="batas_hari_zona_kuning" class="form-control" placeholder="Contoh: 3 (Untuk H-3)" value="{{ old('batas_hari_zona_kuning') }}">
+                            </div>
+                            <div class="form-group mb-2">
+                                <label>Tarif Tambahan Urgensi (Rp) :</label>
+                                <input type="text" name="biaya_urgensi" class="form-control harga" placeholder="Contoh: 50.000" value="{{ old('biaya_urgensi') }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="mt-4">
+
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="font-weight-bold text-primary m-0">Foto Produk</h5>
                     <button type="button" class="btn btn-success btn-sm" id="btn-tambah-foto">
@@ -252,12 +295,15 @@
 
             document.addEventListener('input', function (e) {
                 if (e.target.classList.contains('harga')) {
-
                     // hanya angka
                     let angka = e.target.value.replace(/[^0-9]/g, '');
 
                     // format ribuan
-                    e.target.value = new Intl.NumberFormat('id-ID').format(angka);
+                    if (angka === '') {
+                        e.target.value = '';
+                    } else {
+                        e.target.value = new Intl.NumberFormat('id-ID').format(angka);
+                    }
                 }
             });
 
@@ -281,6 +327,45 @@
                     }
                 }
             });
+
+            // Toggle logika untuk Biaya Tambahan
+            const toggleJarak = document.getElementById('is_biaya_jarak_aktif');
+            const formJarak = document.getElementById('form-biaya-jarak');
+            if (toggleJarak && formJarak) {
+                // Cek state awal
+                if (toggleJarak.checked) {
+                    formJarak.classList.remove('d-none');
+                } else {
+                    formJarak.classList.add('d-none');
+                }
+                
+                toggleJarak.addEventListener('change', function() {
+                    if (this.checked) {
+                        formJarak.classList.remove('d-none');
+                    } else {
+                        formJarak.classList.add('d-none');
+                    }
+                });
+            }
+
+            const toggleWaktu = document.getElementById('is_biaya_waktu_aktif');
+            const formWaktu = document.getElementById('form-biaya-waktu');
+            if (toggleWaktu && formWaktu) {
+                // Cek state awal
+                if (toggleWaktu.checked) {
+                    formWaktu.classList.remove('d-none');
+                } else {
+                    formWaktu.classList.add('d-none');
+                }
+                
+                toggleWaktu.addEventListener('change', function() {
+                    if (this.checked) {
+                        formWaktu.classList.remove('d-none');
+                    } else {
+                        formWaktu.classList.add('d-none');
+                    }
+                });
+            }
         });
     </script>
 @endsection

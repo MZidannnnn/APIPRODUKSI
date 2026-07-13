@@ -170,14 +170,86 @@ class PesananController extends Controller
             'jadwal_pemasangan.after_or_equal' => 'Jadwal tidak boleh sebelum hari ini.',
         ]);
 
-        $detail = DetailProduk::with('itemProduksi.kategoriUsaha')->findOrFail($validated['id_detail_produk']);
+        $detail = DetailProduk::with('itemProduksi.konfigurasiBiaya')->findOrFail($validated['id_detail_produk']);
+        $konfigurasi = $detail->itemProduksi->konfigurasiBiaya;
+
+        // Validasi minimum lead time (Zona Merah)
+        if ($konfigurasi && $konfigurasi->is_biaya_waktu_aktif && $konfigurasi->batas_hari_zona_merah !== null) {
+            $minHari = $konfigurasi->batas_hari_zona_merah;
+            $minDate = now()->addDays($minHari)->startOfDay();
+            $jadwal = \Carbon\Carbon::parse($validated['jadwal_pemasangan'])->startOfDay();
+
+            if ($jadwal->lte(now()->addDays($minHari - 1)->startOfDay())) { // lte so if today + batas_hari_zona_merah is tomorrow it is blocked
+                return redirect()->back()->withErrors([
+                    'jadwal_pemasangan' => 'Tanggal pengerjaan terlalu dekat. Harus lebih dari H-' . $minHari . ' dari hari pemesanan.'
+                ])->withInput();
+            }
+        }
 
         $status = StatusPesanan::where('nama_status_pesanan', 'Belum Bayar')->first();
 
         $kuantitas = (int) $validated['kuantitas'];
         $subtotal = round((float) $detail->harga_dasar * $kuantitas, 2);
 
-        $pesanan = DB::transaction(function () use ($validated, $detail, $status, $kuantitas, $subtotal) {
+        $biaya_jarak = 0;
+        $biaya_waktu = 0;
+
+        if ($konfigurasi) {
+            // Kalkulasi Biaya Jarak
+            if ($konfigurasi->is_biaya_jarak_aktif) {
+                $workshopCoord = \App\Models\WorkshopCoordinate::first();
+                $latWorkshop = $workshopCoord ? $workshopCoord->latitude : '-3.2994'; 
+                $lonWorkshop = $workshopCoord ? $workshopCoord->longitude : '114.5933';
+                
+                $latKlien = $request->input('latitude');
+                $lonKlien = $request->input('longitude');
+
+                if ($latKlien && $lonKlien) {
+                    $jarak_km = 0;
+                    try {
+                        $response = \Illuminate\Support\Facades\Http::timeout(5)
+                            ->get("http://router.project-osrm.org/route/v1/driving/{$lonWorkshop},{$latWorkshop};{$lonKlien},{$latKlien}?overview=false");
+                            
+                        if ($response->successful() && $response->json('routes.0.distance')) {
+                            $jarakMeter = $response->json('routes.0.distance'); // Asal OSRM (Meter)
+                            $jarak_km = $jarakMeter / 1000; // Konversi ke KM
+                        } else {
+                            $jarak_km = $this->hitungJarakHaversine((float)$latWorkshop, (float)$lonWorkshop, (float)$latKlien, (float)$lonKlien);
+                        }
+                    } catch (\Exception $e) {
+                        $jarak_km = $this->hitungJarakHaversine((float)$latWorkshop, (float)$lonWorkshop, (float)$latKlien, (float)$lonKlien);
+                    }
+
+                    $biaya_jarak = round($jarak_km * $konfigurasi->tarif_per_km);
+                }
+            }
+
+            // Kalkulasi Biaya Waktu (Urgensi)
+            if ($konfigurasi->is_biaya_waktu_aktif) {
+                $tanggal_pesan = now()->startOfDay();
+                $jadwal = \Carbon\Carbon::parse($validated['jadwal_pemasangan'])->startOfDay();
+                $selisih_hari = $tanggal_pesan->diffInDays($jadwal, false);
+
+                // Zona Merah (Blokir)
+                if ($konfigurasi->batas_hari_zona_merah !== null && $selisih_hari < $konfigurasi->batas_hari_zona_merah) {
+                    return response()->json([
+                        'message' => 'Tanggal pemasangan terlalu dekat. Silakan pilih hari lain.'
+                    ], 422);
+                }
+
+                // Zona Kuning (Urgensi)
+                if ($konfigurasi->batas_hari_zona_kuning !== null) {
+                    $batas_akhir_kuning = $konfigurasi->batas_hari_zona_merah + $konfigurasi->batas_hari_zona_kuning - 1;
+                    if ($selisih_hari >= $konfigurasi->batas_hari_zona_merah && $selisih_hari <= $batas_akhir_kuning) {
+                        $biaya_waktu = $konfigurasi->biaya_urgensi;
+                    }
+                }
+            }
+        }
+
+        $grand_total = $subtotal + $biaya_jarak + $biaya_waktu;
+
+        $pesanan = DB::transaction(function () use ($validated, $detail, $status, $kuantitas, $subtotal, $biaya_jarak, $biaya_waktu, $grand_total, $request) {
             $pesanan = Pesanan::create([
                 'id_pengguna' => Auth::id(),
                 'id_detail_produk' => $detail->id_detail_produk,
@@ -185,8 +257,13 @@ class PesananController extends Controller
                 'tanggal_pesan' => now()->toDateString(),
                 'nama_penerima' => $validated['nama_penerima'],
                 'alamat_penerima' => $validated['alamat_penerima'],
+                'latitude' => $request->input('latitude'),
+                'longitude' => $request->input('longitude'),
+                'alamat_lengkap' => $request->input('alamat_lengkap'),
                 'No_hp_penerima' => $validated['No_hp_penerima'],
-                'total_harga' => $subtotal,
+                'total_harga' => $grand_total,
+                'total_biaya_jarak' => $biaya_jarak,
+                'total_biaya_waktu' => $biaya_waktu,
                 'jadwal_pemasangan' => $validated['jadwal_pemasangan'] ?? null,
             ]);
 
@@ -232,11 +309,13 @@ class PesananController extends Controller
             'satuanHarga',
             'detailProduk',
             'fotoProduk',
+            'konfigurasiBiaya'
         ])->findOrFail($id);
 
         $userId = Auth::id();
+        $workshopCoord = \App\Models\WorkshopCoordinate::first();
 
-        return view('klien.detail-produk', compact('itemProduksi', 'userId'));
+        return view('klien.detail-produk', compact('itemProduksi', 'userId', 'workshopCoord'));
         //return view('test/detail-produk', compact('itemProduksi', 'userId'));
     }
 
@@ -348,5 +427,16 @@ class PesananController extends Controller
         ]);
 
         return view('klien.detail-pesanan', compact('pesanan'));
+    }
+
+    private function hitungJarakHaversine($lat1, $lon1, $lat2, $lon2) {
+        $earthRadius = 6371; // Radius bumi dalam Kilometer
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+        
+        $a = sin($dLat/2) * sin($dLat/2) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon/2) * sin($dLon/2);
+        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+        
+        return $earthRadius * $c; // Mengembalikan hasil jarak (KM)
     }
 }
