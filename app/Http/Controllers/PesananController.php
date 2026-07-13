@@ -220,7 +220,11 @@ class PesananController extends Controller
                         $jarak_km = $this->hitungJarakHaversine((float)$latWorkshop, (float)$lonWorkshop, (float)$latKlien, (float)$lonKlien);
                     }
 
-                    $biaya_jarak = round($jarak_km * $konfigurasi->tarif_per_km);
+                    if ($jarak_km <= 45) {
+                        $biaya_jarak = 0;
+                    } else {
+                        $biaya_jarak = round($jarak_km * $konfigurasi->tarif_per_km);
+                    }
                 }
             }
 
