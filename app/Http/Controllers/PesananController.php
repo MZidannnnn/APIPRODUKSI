@@ -146,7 +146,7 @@ class PesananController extends Controller
             ],
 
             'jadwal_pemasangan' => [
-                'required',
+                'nullable',
                 'date',
                 'after_or_equal:today'
             ],
@@ -173,16 +173,24 @@ class PesananController extends Controller
         $detail = DetailProduk::with('itemProduksi.konfigurasiBiaya')->findOrFail($validated['id_detail_produk']);
         $konfigurasi = $detail->itemProduksi->konfigurasiBiaya;
 
-        // Validasi minimum lead time (Zona Merah)
-        if ($konfigurasi && $konfigurasi->is_biaya_waktu_aktif && $konfigurasi->batas_hari_zona_merah !== null) {
-            $minHari = $konfigurasi->batas_hari_zona_merah;
-            $minDate = now()->addDays($minHari)->startOfDay();
-            $jadwal = \Carbon\Carbon::parse($validated['jadwal_pemasangan'])->startOfDay();
-
-            if ($jadwal->lte(now()->addDays($minHari - 1)->startOfDay())) { // lte so if today + batas_hari_zona_merah is tomorrow it is blocked
+        // Validasi jadwal required jika tipe penentuan waktu adalah tanggal
+        if (!$konfigurasi || $konfigurasi->tipe_penentuan_waktu === 'tanggal') {
+            if (empty($validated['jadwal_pemasangan'])) {
                 return redirect()->back()->withErrors([
-                    'jadwal_pemasangan' => 'Tanggal pengerjaan terlalu dekat. Harus lebih dari H-' . $minHari . ' dari hari pemesanan.'
+                    'jadwal_pemasangan' => 'Silakan pilih jadwal pengantaran/pemasangan.'
                 ])->withInput();
+            }
+
+            // Validasi minimum lead time (Batas Minimal Waktu Pemesanan)
+            if ($konfigurasi && $konfigurasi->batas_hari_zona_merah !== null) {
+                $minHari = $konfigurasi->batas_hari_zona_merah;
+                $jadwal = \Carbon\Carbon::parse($validated['jadwal_pemasangan'])->startOfDay();
+
+                if ($jadwal->lte(now()->addDays($minHari - 1)->startOfDay())) {
+                    return redirect()->back()->withErrors([
+                        'jadwal_pemasangan' => 'Tanggal pengerjaan terlalu dekat. Harus lebih dari H-' . $minHari . ' dari hari pemesanan.'
+                    ])->withInput();
+                }
             }
         }
 
@@ -192,8 +200,6 @@ class PesananController extends Controller
         $subtotal = round((float) $detail->harga_dasar * $kuantitas, 2);
 
         $biaya_jarak = 0;
-        $biaya_waktu = 0;
-
         if ($konfigurasi) {
             // Kalkulasi Biaya Jarak
             if ($konfigurasi->is_biaya_jarak_aktif) {
@@ -228,32 +234,11 @@ class PesananController extends Controller
                 }
             }
 
-            // Kalkulasi Biaya Waktu (Urgensi)
-            if ($konfigurasi->is_biaya_waktu_aktif) {
-                $tanggal_pesan = now()->startOfDay();
-                $jadwal = \Carbon\Carbon::parse($validated['jadwal_pemasangan'])->startOfDay();
-                $selisih_hari = $tanggal_pesan->diffInDays($jadwal, false);
-
-                // Zona Merah (Blokir)
-                if ($konfigurasi->batas_hari_zona_merah !== null && $selisih_hari < $konfigurasi->batas_hari_zona_merah) {
-                    return response()->json([
-                        'message' => 'Tanggal pemasangan terlalu dekat. Silakan pilih hari lain.'
-                    ], 422);
-                }
-
-                // Zona Kuning (Urgensi)
-                if ($konfigurasi->batas_hari_zona_kuning !== null) {
-                    $batas_akhir_kuning = $konfigurasi->batas_hari_zona_merah + $konfigurasi->batas_hari_zona_kuning - 1;
-                    if ($selisih_hari >= $konfigurasi->batas_hari_zona_merah && $selisih_hari <= $batas_akhir_kuning) {
-                        $biaya_waktu = $konfigurasi->biaya_urgensi;
-                    }
-                }
-            }
         }
 
-        $grand_total = $subtotal + $biaya_jarak + $biaya_waktu;
+        $grand_total = $subtotal + $biaya_jarak;
 
-        $pesanan = DB::transaction(function () use ($validated, $detail, $status, $kuantitas, $subtotal, $biaya_jarak, $biaya_waktu, $grand_total, $request) {
+        $pesanan = DB::transaction(function () use ($validated, $detail, $status, $kuantitas, $subtotal, $biaya_jarak, $grand_total, $request) {
             $pesanan = Pesanan::create([
                 'id_pengguna' => Auth::id(),
                 'id_detail_produk' => $detail->id_detail_produk,
@@ -267,7 +252,6 @@ class PesananController extends Controller
                 'No_hp_penerima' => $validated['No_hp_penerima'],
                 'total_harga' => $grand_total,
                 'total_biaya_jarak' => $biaya_jarak,
-                'total_biaya_waktu' => $biaya_waktu,
                 'jadwal_pemasangan' => $validated['jadwal_pemasangan'] ?? null,
             ]);
 

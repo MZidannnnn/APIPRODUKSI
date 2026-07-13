@@ -24,7 +24,6 @@ class Pesanan extends Model
         'No_hp_penerima',
         'total_harga',
         'total_biaya_jarak',
-        'total_biaya_waktu',
         'jadwal_pemasangan',
     ];
 
@@ -114,7 +113,7 @@ class Pesanan extends Model
             ? $this->rincianPesanan->sum('subtotal')
             : $this->rincianPesanan()->sum('subtotal');
 
-        $totalAkhir = (float) $totalBarang + (float) $this->total_biaya_jarak + (float) $this->total_biaya_waktu;
+        $totalAkhir = (float) $totalBarang + (float) $this->total_biaya_jarak;
 
         return $totalAkhir > 0 ? $totalAkhir : (float) $this->total_harga;
     }
