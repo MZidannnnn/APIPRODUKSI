@@ -233,6 +233,9 @@ Route::middleware('auth')->group(function () {
         // Profil admin
         Route::get('/admin/profile', [AdminProfileController::class, 'edit'])->name('admin.profile.edit');
         Route::put('/admin/profile', [AdminProfileController::class, 'update'])->name('admin.profile.update');
+        // Pengaturan Koordinat Workshop
+        Route::get('/admin/workshop-coordinate', [App\Http\Controllers\WorkshopCoordinateController::class, 'edit'])->name('admin.workshop-coordinate.edit');
+        Route::put('/admin/workshop-coordinate', [App\Http\Controllers\WorkshopCoordinateController::class, 'update'])->name('admin.workshop-coordinate.update');
     });
 });
 

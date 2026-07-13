@@ -43,4 +43,9 @@ class ItemProduksi extends Model
     {
         return $this->hasMany(FotoProduk::class, 'id_item_produksi', 'id_item_produksi');
     }
+
+    public function konfigurasiBiaya()
+    {
+        return $this->hasOne(KonfigurasiBiayaDinamis::class, 'id_item_produksi', 'id_item_produksi');
+    }
 }

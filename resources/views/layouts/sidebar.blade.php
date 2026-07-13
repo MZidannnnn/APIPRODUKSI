@@ -100,6 +100,11 @@
                     <i class="fas fa-fw fa-box"></i>
                     <span>Data Produk Jasa</span></a>
             </li>
+            <li class="nav-item {{ request()->routeIs('admin.workshop-coordinate.*') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('admin.workshop-coordinate.edit') }}">
+                    <i class="fas fa-fw fa-map-marker-alt"></i>
+                    <span>Koordinat Workshop</span></a>
+            </li>
 
             <li class="nav-item {{ $menuProgresPesanan ?? '' }}">
                 <a class="nav-link" href="{{ route('admin.tampilPesanan') }}">

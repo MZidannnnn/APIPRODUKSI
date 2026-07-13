@@ -7,6 +7,7 @@ use App\Models\ItemProduksi;
 use App\Models\KategoriUsaha;
 use App\Models\SatuanHarga;
 use App\Models\FotoProduk;
+use App\Models\KonfigurasiBiayaDinamis;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -134,6 +135,16 @@ class ItemProduksiController extends Controller
                 }
             }
 
+            KonfigurasiBiayaDinamis::create([
+                'id_item_produksi' => $itemProduksi->id_item_produksi,
+                'is_biaya_jarak_aktif' => $request->has('is_biaya_jarak_aktif'),
+                'tarif_per_km' => $request->has('is_biaya_jarak_aktif') && $request->tarif_per_km ? str_replace('.', '', $request->tarif_per_km) : null,
+                'is_biaya_waktu_aktif' => $request->has('is_biaya_waktu_aktif'),
+                'batas_hari_zona_merah' => $request->has('is_biaya_waktu_aktif') ? $request->batas_hari_zona_merah : null,
+                'batas_hari_zona_kuning' => $request->has('is_biaya_waktu_aktif') ? $request->batas_hari_zona_kuning : null,
+                'biaya_urgensi' => $request->has('is_biaya_waktu_aktif') && $request->biaya_urgensi ? str_replace('.', '', $request->biaya_urgensi) : null,
+            ]);
+
             DB::commit();
 
             return redirect()
@@ -154,7 +165,7 @@ class ItemProduksiController extends Controller
      */
     public function edit($id)
     {
-        $itemProduksi = ItemProduksi::with(['detailProduk', 'fotoProduk', 'kategoriUsaha', 'satuanHarga'])
+        $itemProduksi = ItemProduksi::with(['detailProduk', 'fotoProduk', 'kategoriUsaha', 'satuanHarga', 'konfigurasiBiaya'])
             ->findOrFail($id);
 
         Gate::authorize('update', $itemProduksi);
@@ -264,6 +275,18 @@ class ItemProduksiController extends Controller
                 }
             }
 
+            KonfigurasiBiayaDinamis::updateOrCreate(
+                ['id_item_produksi' => $itemProduksi->id_item_produksi],
+                [
+                    'is_biaya_jarak_aktif' => $request->has('is_biaya_jarak_aktif'),
+                    'tarif_per_km' => $request->has('is_biaya_jarak_aktif') && $request->tarif_per_km ? str_replace('.', '', $request->tarif_per_km) : null,
+                    'is_biaya_waktu_aktif' => $request->has('is_biaya_waktu_aktif'),
+                    'batas_hari_zona_merah' => $request->has('is_biaya_waktu_aktif') ? $request->batas_hari_zona_merah : null,
+                    'batas_hari_zona_kuning' => $request->has('is_biaya_waktu_aktif') ? $request->batas_hari_zona_kuning : null,
+                    'biaya_urgensi' => $request->has('is_biaya_waktu_aktif') && $request->biaya_urgensi ? str_replace('.', '', $request->biaya_urgensi) : null,
+                ]
+            );
+
             DB::commit();
 
             return redirect()
@@ -275,7 +298,7 @@ class ItemProduksiController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan saat memperbarui data');
+                ->with('error', 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage());
         }
     }
 

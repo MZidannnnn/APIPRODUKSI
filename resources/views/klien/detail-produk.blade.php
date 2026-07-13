@@ -2,11 +2,62 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('fe-klien/detail-produk.css') }}?v={{ time() }}">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+<style>
+    #map { height: 250px; width: 100%; border-radius: 8px; z-index: 1; }
+    .search-map-container { position: relative; margin-bottom: 10px; }
+    #searchAlamat { width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; }
+    #btnSearchAlamat { position: absolute; right: 0; top: 0; height: 100%; border: none; background: #007bff; color: white; padding: 0 15px; border-radius: 0 4px 4px 0; }
+    
+    #search-suggestions {
+        position: absolute;
+        top: 100%; 
+        left: 0;
+        width: 100%;
+        background-color: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        max-height: 250px;
+        overflow-y: auto;
+        z-index: 9999;
+        margin-top: 4px;
+        padding: 0;
+        list-style: none;
+        display: none;
+    }
+    #search-suggestions button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 12px 16px;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 14px;
+        color: #333;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        line-height: 1.4;
+    }
+    #search-suggestions button:last-child {
+        border-bottom: none;
+    }
+    #search-suggestions button:hover {
+        background-color: #f8f9fa;
+        color: #0056b3;
+    }
+</style>
 @endpush
 
 @push('head')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 @endpush
 
 @section('content')
@@ -27,6 +78,11 @@
         $bolehDp = strtolower($itemProduksi->kategoriUsaha->jenisPembayaran->nama_jenis_pembayaran ?? '') === 'dp';
         $isSablon = strtolower($itemProduksi->kategoriUsaha->nama_kategori ?? '') === 'sablon';
         $isInterior = strtolower($itemProduksi->kategoriUsaha->nama_kategori ?? '') === 'interior';
+        
+        $minDate = now()->toDateString();
+        if ($itemProduksi->konfigurasiBiaya && $itemProduksi->konfigurasiBiaya->is_biaya_waktu_aktif && $itemProduksi->konfigurasiBiaya->batas_hari_zona_merah !== null) {
+            $minDate = now()->addDays($itemProduksi->konfigurasiBiaya->batas_hari_zona_merah)->toDateString();
+        }
     @endphp
 
     <a href="{{ $backUrl }}" class="btn-kembali">
@@ -98,7 +154,7 @@
                         <button type="button"
                             class="size-btn {{ $index === 0 ? 'active' : '' }}"
                             data-id-detail-produk="{{ $detail->id_detail_produk }}"
-                            data-harga="{{ $detail->harga_dasar }}">
+                            data-harga="{{ $detail->getRawOriginal('harga_dasar') ?? $detail->harga_dasar }}">
                             {{ $detail->ukuran ?? '-' }}
                         </button>
                     @empty
@@ -108,6 +164,7 @@
             </div>
 
             <input type="hidden" name="id_detail_produk" id="idDetailProduk" value="{{ $detailPertama->id_detail_produk ?? '' }}">
+            <input type="hidden" id="raw-harga-dasar" value="{{ $detailPertama ? ($detailPertama->getRawOriginal('harga_dasar') ?? $detailPertama->harga_dasar) : 0 }}">
             <input type="hidden" name="subtotal" id="subtotalInput" value="0">
 
             <hr class="divider">
@@ -122,9 +179,67 @@
                         <button type="button" id="plusQty">+</button>
                     </div>
                 </div>
+            </div>
 
-                <div class="subtotal-box main-subtotal">
-                    <strong id="subtotalTextTop">Rp 0</strong>
+            <div class="rincian-harga-wrapper">
+                <div class="rincian-harga-card">
+                    <div class="rincian-harga-header">
+                        <i class="fas fa-receipt"></i>
+                        <span>Rincian Biaya</span>
+                    </div>
+
+                    <div class="rincian-harga-body">
+                        <div class="rincian-harga-item">
+                            <span class="rincian-label">
+                                <i class="fas fa-cube"></i> Subtotal Produk
+                            </span>
+                            <span id="rincian-produk" class="rincian-value">Belum dihitung</span>
+                        </div>
+
+                        <div class="rincian-harga-item" id="rincian-transport-row">
+                            <span class="rincian-label">
+                                <i class="fas fa-truck"></i> Biaya Transportasi
+                            </span>
+                            <span id="rincian-transport" class="rincian-value">Belum dihitung</span>
+                        </div>
+
+                        <div class="rincian-harga-item" id="rincian-waktu-row" style="display: none !important;">
+                            <span class="rincian-label">
+                                <i class="fas fa-bolt"></i> Layanan Prioritas
+                            </span>
+                            <span id="rincian-waktu" class="rincian-value rincian-value--prioritas">Rp 0</span>
+                        </div>
+                    </div>
+
+                    <div class="rincian-harga-divider"></div>
+
+                    <div class="rincian-harga-total">
+                        <span class="rincian-total-label">Grand Total</span>
+                        <span id="subtotalTextTop" class="rincian-total-value">Rp 0</span>
+                    </div>
+
+                    {{-- DP Payment Info Section --}}
+                    <div id="dp-info-section" class="rincian-dp-section" style="display: none;">
+                        <div class="rincian-harga-divider"></div>
+                        <div class="rincian-dp-body">
+                            <div class="rincian-harga-item">
+                                <span class="rincian-label">
+                                    <i class="fas fa-wallet"></i> Bayar Sekarang (DP 50%)
+                                </span>
+                                <span id="dp-bayar-sekarang" class="rincian-value rincian-value--dp">Rp 0</span>
+                            </div>
+                            <div class="rincian-harga-item">
+                                <span class="rincian-label">
+                                    <i class="fas fa-clock-rotate-left"></i> Sisa Pelunasan
+                                </span>
+                                <span id="dp-sisa-pelunasan" class="rincian-value rincian-value--sisa">Rp 0</span>
+                            </div>
+                        </div>
+                        <div class="rincian-dp-note">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Anda cukup membayar <strong>50%</strong> dari total harga terlebih dahulu. Sisa pelunasan akan dibayarkan setelah pesanan selesai dikerjakan.</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -182,17 +297,50 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Alamat Pemesan</label>
+                    <label>Alamat Lengkap (Tujuan / Pemasangan)</label>
 
                     <textarea
                         name="alamat_penerima"
                         class="input-pesan textarea-pesan @error('alamat_penerima') input-error @enderror"
-                        rows="3">{{ old('alamat_penerima') }}</textarea>
+                        rows="2">{{ old('alamat_penerima') }}</textarea>
 
                     @error('alamat_penerima')
                         <span class="error-message">{{ $message }}</span>
                     @enderror
                 </div>
+
+                @if($itemProduksi->konfigurasiBiaya && $itemProduksi->konfigurasiBiaya->is_biaya_jarak_aktif)
+                <div class="form-group">
+                    <label>Pin Lokasi Anda (Untuk Hitung Tambahan Biaya Jarak)</label>
+                    <div class="search-map-container">
+                        <input type="text" id="searchAlamat" placeholder="Cari daerah / jalan...">
+                        <button type="button" id="btnSearchAlamat"><i class="fas fa-search"></i></button>
+                        <div id="search-suggestions"></div>
+                    </div>
+                    <div id="info-jarak" class="info-card-biaya">
+                        <div class="info-card-biaya-row">
+                            <span class="info-card-biaya-icon"><i class="fas fa-tags"></i></span>
+                            <span class="info-card-biaya-label">Tarif Dasar</span>
+                            <span class="info-card-biaya-value">Rp {{ number_format($itemProduksi->konfigurasiBiaya->getRawOriginal('tarif_per_km') ?? $itemProduksi->konfigurasiBiaya->tarif_per_km, 0, ',', '.') }} / km</span>
+                        </div>
+                        <div class="info-card-biaya-row">
+                            <span class="info-card-biaya-icon"><i class="fas fa-route"></i></span>
+                            <span class="info-card-biaya-label">Jarak dari Workshop</span>
+                            <span class="info-card-biaya-value"><span id="display-jarak">0</span> km</span>
+                        </div>
+                        <div class="info-card-biaya-row">
+                            <span class="info-card-biaya-icon"><i class="fas fa-truck"></i></span>
+                            <span class="info-card-biaya-label">Est. Biaya Transport</span>
+                            <span class="info-card-biaya-value info-card-biaya-value--highlight" id="display-biaya-jarak">Rp 0</span>
+                        </div>
+                    </div>
+                    <div id="map"></div>
+                    <small class="text-muted mt-1 d-block">Penting: Geser pin untuk penyesuaian letak yang paling presisi.</small>
+                    <input type="hidden" name="latitude" id="latitude">
+                    <input type="hidden" name="longitude" id="longitude">
+                    <input type="hidden" name="alamat_lengkap" id="alamat_lengkap">
+                </div>
+                @endif
 
                 <div class="form-group">
                     <label>No. WhatsApp</label>
@@ -229,30 +377,82 @@
                         @endif
                     </small>
 
+                    @if($itemProduksi->konfigurasiBiaya && $itemProduksi->konfigurasiBiaya->is_biaya_waktu_aktif)
+                    @php
+                        $batasMerah = $itemProduksi->konfigurasiBiaya->batas_hari_zona_merah;
+                        $batasKuning = $itemProduksi->konfigurasiBiaya->batas_hari_zona_kuning;
+                        $batasAkhirKuning = $batasMerah + $batasKuning - 1;
+                        $tarifUrgensi = $itemProduksi->konfigurasiBiaya->getRawOriginal('biaya_urgensi') ?? $itemProduksi->konfigurasiBiaya->biaya_urgensi;
+                    @endphp
+                    <div class="info-card-biaya info-card-biaya--waktu">
+                        <div class="info-card-biaya-title">
+                            <i class="fas fa-clock"></i> Aturan Waktu Pemesanan
+                        </div>
+                        <div class="info-card-biaya-row">
+                            <span class="info-card-biaya-icon"><i class="fas fa-calendar-check"></i></span>
+                            <span class="info-card-biaya-label">Pemesanan Minimal</span>
+                            <span class="info-card-biaya-value">H-{{ $batasMerah }} dari hari ini</span>
+                        </div>
+                        <div class="info-card-biaya-row">
+                            <span class="info-card-biaya-icon"><i class="fas fa-bolt"></i></span>
+                            <span class="info-card-biaya-label">Biaya Prioritas</span>
+                            <span class="info-card-biaya-value info-card-biaya-value--highlight">Rp {{ number_format($tarifUrgensi, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="info-card-biaya-note">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Pemesanan pada rentang <strong>H-{{ $batasMerah }}</strong> s/d <strong>H-{{ $batasAkhirKuning }}</strong> dikenakan biaya prioritas. Setelah tanggal tersebut bebas biaya tambahan.</span>
+                        </div>
+                    </div>
+                    @endif
+
+
                     <input
                         type="date"
                         name="jadwal_pemasangan"
+                        id="jadwalPemasangan"
                         value="{{ old('jadwal_pemasangan') }}"
+                        min="{{ $minDate }}"
                         class="input-pesan date-input @error('jadwal_pemasangan') input-error @enderror">
 
                     @error('jadwal_pemasangan')
                         <span class="error-message">{{ $message }}</span>
                     @enderror
+                    <div id="urgency-warning" class="text-warning font-weight-bold mt-2" style="display: none; font-size: 0.85rem;"><i class="fas fa-exclamation-triangle"></i> Jadwal yang Anda pilih termasuk dalam Layanan Prioritas dan dikenakan biaya tambahan.</div>
                 </div>
 
                 @if ($bolehDp)
                     <div class="form-group">
                         <label>Pilihan Pembayaran</label>
 
-                        <label>
-                            <input type="radio" name="tipe_pembayaran" value="DP" checked>
-                            Bayar DP 50%
-                        </label>
+                        <div class="payment-toggle-group">
+                            <label class="payment-toggle-option active" data-payment="DP">
+                                <input type="radio" name="tipe_pembayaran" value="DP" checked>
+                                <div class="payment-toggle-content">
+                                    <div class="payment-toggle-icon">
+                                        <i class="fas fa-hand-holding-dollar"></i>
+                                    </div>
+                                    <div class="payment-toggle-info">
+                                        <span class="payment-toggle-title">DP 50%</span>
+                                        <span class="payment-toggle-desc">Bayar separuh dulu</span>
+                                    </div>
+                                </div>
+                                <span class="payment-toggle-check"><i class="fas fa-check-circle"></i></span>
+                            </label>
 
-                        <label>
-                            <input type="radio" name="tipe_pembayaran" value="Full">
-                            Bayar Full 100%
-                        </label>
+                            <label class="payment-toggle-option" data-payment="Full">
+                                <input type="radio" name="tipe_pembayaran" value="Full">
+                                <div class="payment-toggle-content">
+                                    <div class="payment-toggle-icon">
+                                        <i class="fas fa-credit-card"></i>
+                                    </div>
+                                    <div class="payment-toggle-info">
+                                        <span class="payment-toggle-title">Full 100%</span>
+                                        <span class="payment-toggle-desc">Bayar lunas langsung</span>
+                                    </div>
+                                </div>
+                                <span class="payment-toggle-check"><i class="fas fa-check-circle"></i></span>
+                            </label>
+                        </div>
                     </div>
                 @else
                     <input type="hidden" name="tipe_pembayaran" value="Full">
@@ -324,24 +524,158 @@ document.addEventListener('DOMContentLoaded', function () {
     const subtotalTextBottom = document.getElementById('subtotalTextBottom');
     const subtotalInput = document.getElementById('subtotalInput');
 
-    let hargaAktif = Number(document.querySelector('.size-btn.active')?.dataset.harga || 0);
+    // hargaAktif dihapus, menggunakan input hidden #raw-harga-dasar
+
+    const configBiaya = {
+        is_jarak: {{ ($itemProduksi->konfigurasiBiaya && $itemProduksi->konfigurasiBiaya->is_biaya_jarak_aktif) ? 'true' : 'false' }},
+        tarif_per_km: parseFloat("{{ $itemProduksi->konfigurasiBiaya ? ($itemProduksi->konfigurasiBiaya->getRawOriginal('tarif_per_km') ?? $itemProduksi->konfigurasiBiaya->tarif_per_km) : 0 }}"),
+        is_waktu: {{ ($itemProduksi->konfigurasiBiaya && $itemProduksi->konfigurasiBiaya->is_biaya_waktu_aktif) ? 'true' : 'false' }},
+        batas_hari_zona_merah: parseFloat("{{ $itemProduksi->konfigurasiBiaya ? ($itemProduksi->konfigurasiBiaya->getRawOriginal('batas_hari_zona_merah') ?? $itemProduksi->konfigurasiBiaya->batas_hari_zona_merah) : 0 }}"),
+        batas_hari_zona_kuning: parseFloat("{{ $itemProduksi->konfigurasiBiaya ? ($itemProduksi->konfigurasiBiaya->getRawOriginal('batas_hari_zona_kuning') ?? $itemProduksi->konfigurasiBiaya->batas_hari_zona_kuning) : 0 }}"),
+        biaya_urgensi: parseFloat("{{ $itemProduksi->konfigurasiBiaya ? ($itemProduksi->konfigurasiBiaya->getRawOriginal('biaya_urgensi') ?? $itemProduksi->konfigurasiBiaya->biaya_urgensi) : 0 }}"),
+        workshop_lat: parseFloat("{{ $workshopCoord ? $workshopCoord->latitude : '-3.2994' }}"),
+        workshop_lon: parseFloat("{{ $workshopCoord ? $workshopCoord->longitude : '114.5933' }}")
+    };
 
     function formatRupiah(angka) {
-        return 'Rp ' + new Intl.NumberFormat('id-ID').format(angka);
+        const safeNumber = Math.round(Number(angka)) || 0;
+        return 'Rp ' + safeNumber.toLocaleString('id-ID');
     }
+
+    function hitungJarakHaversine(lat1, lon1, lat2, lon2) {
+        const R = 6371; 
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+        return R * c;
+    }
+
+    let currentRoutingDistance = 0;
 
     function hitungSubtotal(fallbackQty = null) {
         if (!qtyInput || !subtotalInput) return;
 
-        const qty = fallbackQty !== null ? fallbackQty : Number(qtyInput.value || 1);
-        const subtotal = hargaAktif * qty;
-        const formattedSubtotal = formatRupiah(subtotal);
+        let hargaDasar = parseFloat(document.getElementById('raw-harga-dasar')?.value) || 0;
+        
+        // Hindari penangkapan Event object saat dipanggil lewat EventListener
+        const isValidQty = fallbackQty !== null && typeof fallbackQty !== 'object';
+        const qty = isValidQty ? parseFloat(fallbackQty) : parseFloat(qtyInput.value || 1);
+        
+        let subtotal = hargaDasar * qty;
+        
+        let globalBiayaJarak = 0;
+        if (configBiaya.is_jarak) {
+            globalBiayaJarak = parseFloat(currentRoutingDistance || 0) * configBiaya.tarif_per_km;
+
+            const elJarak = document.getElementById('display-jarak');
+            const elBiayaJarak = document.getElementById('display-biaya-jarak');
+            if (elJarak) elJarak.textContent = parseFloat(currentRoutingDistance || 0).toFixed(2);
+            if (elBiayaJarak) elBiayaJarak.textContent = formatRupiah(globalBiayaJarak);
+        }
+
+        let globalBiayaWaktu = 0;
+        const urgencyWarningEl = document.getElementById('urgency-warning');
+        if (urgencyWarningEl) urgencyWarningEl.style.display = 'none';
+
+        if (configBiaya.is_waktu) {
+            const jadwalInput = document.getElementById('jadwalPemasangan')?.value;
+            if (jadwalInput) {
+                const now = new Date();
+                now.setHours(0,0,0,0);
+                const jadwalDate = new Date(jadwalInput);
+                if (!isNaN(jadwalDate.getTime())) {
+                    jadwalDate.setHours(0,0,0,0);
+                    const diffTime = jadwalDate - now;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                    const batasAkhirKuning = configBiaya.batas_hari_zona_merah + configBiaya.batas_hari_zona_kuning - 1;
+                    if (diffDays >= configBiaya.batas_hari_zona_merah && diffDays <= batasAkhirKuning) {
+                        globalBiayaWaktu = configBiaya.biaya_urgensi;
+                        if (urgencyWarningEl) urgencyWarningEl.style.display = 'block';
+                    }
+                }
+            }
+        }
+
+        const grandTotal = Math.round(subtotal + globalBiayaJarak + globalBiayaWaktu);
+        const formattedSubtotal = formatRupiah(grandTotal);
 
         if (subtotalTextTop) subtotalTextTop.textContent = formattedSubtotal;
         if (subtotalTextBottom) subtotalTextBottom.textContent = formattedSubtotal;
 
+        // Update Rincian Biaya
+        const elRincianProduk = document.getElementById('rincian-produk');
+        const elRincianTransport = document.getElementById('rincian-transport');
+        const elRincianTransportRow = document.getElementById('rincian-transport-row');
+        const elRincianWaktu = document.getElementById('rincian-waktu');
+        const elRincianWaktuRow = document.getElementById('rincian-waktu-row');
+        
+        if (elRincianProduk) elRincianProduk.textContent = formatRupiah(subtotal);
+        
+        if (elRincianTransport && elRincianTransportRow) {
+            if (!configBiaya.is_jarak || (currentRoutingDistance > 0 && globalBiayaJarak === 0)) {
+                elRincianTransportRow.style.setProperty('display', 'none', 'important');
+            } else {
+                elRincianTransportRow.style.setProperty('display', 'flex', 'important');
+                if (currentRoutingDistance > 0) {
+                    elRincianTransport.textContent = formatRupiah(globalBiayaJarak);
+                } else {
+                    elRincianTransport.textContent = 'Belum dihitung';
+                }
+            }
+        }
+        
+        if (elRincianWaktu && elRincianWaktuRow) {
+            if (globalBiayaWaktu > 0) {
+                elRincianWaktu.textContent = formatRupiah(globalBiayaWaktu);
+                elRincianWaktuRow.style.setProperty('display', 'flex', 'important');
+            } else {
+                elRincianWaktuRow.style.setProperty('display', 'none', 'important');
+            }
+        }
+
+        // Update DP Info Section
+        const dpSection = document.getElementById('dp-info-section');
+        const dpBayarSekarang = document.getElementById('dp-bayar-sekarang');
+        const dpSisaPelunasan = document.getElementById('dp-sisa-pelunasan');
+        const tipePembayaranEl = document.querySelector('input[name="tipe_pembayaran"]:checked');
+        
+        if (dpSection && tipePembayaranEl) {
+            if (tipePembayaranEl.value === 'DP') {
+                const dpAmount = Math.ceil(grandTotal * 0.5);
+                const sisaAmount = grandTotal - dpAmount;
+                dpSection.style.display = 'block';
+                if (dpBayarSekarang) dpBayarSekarang.textContent = formatRupiah(dpAmount);
+                if (dpSisaPelunasan) dpSisaPelunasan.textContent = formatRupiah(sisaAmount);
+            } else {
+                dpSection.style.display = 'none';
+            }
+        }
+
         subtotalInput.value = subtotal;
     }
+
+    const jadwalInputEl = document.getElementById('jadwalPemasangan');
+    if (jadwalInputEl) {
+        jadwalInputEl.addEventListener('change', function() {
+            hitungSubtotal();
+        });
+    }
+
+    // Payment Toggle (DP / Full) Event Listeners
+    const paymentOptions = document.querySelectorAll('.payment-toggle-option');
+    paymentOptions.forEach(function(option) {
+        option.addEventListener('click', function() {
+            paymentOptions.forEach(function(opt) {
+                opt.classList.remove('active');
+            });
+            this.classList.add('active');
+            hitungSubtotal();
+        });
+    });
 
     sizeButtons.forEach(function (button) {
         button.addEventListener('click', function () {
@@ -351,14 +685,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
             this.classList.add('active');
 
-            hargaAktif = Number(this.dataset.harga || 0);
+            let hargaDasarBaru = parseFloat(this.dataset.harga || 0);
+            if (document.getElementById('raw-harga-dasar')) {
+                document.getElementById('raw-harga-dasar').value = hargaDasarBaru;
+            }
 
             if (idDetailProduk) {
                 idDetailProduk.value = this.dataset.idDetailProduk || '';
             }
 
             if (displayHarga) {
-                displayHarga.textContent = formatRupiah(hargaAktif);
+                displayHarga.textContent = formatRupiah(hargaDasarBaru);
             }
 
             hitungSubtotal();
@@ -403,8 +740,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    if (displayHarga && hargaAktif > 0) {
-        displayHarga.textContent = formatRupiah(hargaAktif);
+    let initHarga = parseFloat(document.getElementById('raw-harga-dasar')?.value) || 0;
+    if (displayHarga && initHarga > 0) {
+        displayHarga.textContent = formatRupiah(initHarga);
     }
 
     hitungSubtotal();
@@ -415,6 +753,170 @@ document.addEventListener('DOMContentLoaded', function () {
     const actionBeforeForm = document.getElementById('actionBeforeForm');
     const mobileBackdrop = document.getElementById('mobileBackdrop');
     const checkoutForm = document.getElementById('checkoutForm');
+
+    let mapInitialized = false;
+    let map, marker, workshopMarker, routingControl;
+
+    function initMap() {
+        if (mapInitialized || !document.getElementById('map')) return;
+        
+        let initialLat = configBiaya.workshop_lat;
+        let initialLon = configBiaya.workshop_lon;
+
+        map = L.map('map', {
+            fullscreenControl: true,
+            fullscreenControlOptions: { position: 'topleft' }
+        }).setView([initialLat, initialLon], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        map.on('enterFullscreen', function(){
+            setTimeout(function(){
+                map.invalidateSize();
+            }, 200);
+        });
+
+        map.on('exitFullscreen', function(){
+            setTimeout(function(){
+                map.invalidateSize();
+            }, 200);
+        });
+
+        // Marker Workshop (Origin)
+        var workshopIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        workshopMarker = L.marker([initialLat, initialLon], {icon: workshopIcon}).addTo(map)
+            .bindPopup('<b>Workshop Kami</b><br>Titik awal perusahaan.').openPopup();
+
+        // Marker Klien (Tujuan)
+        let startKlienLat = initialLat - 0.005;
+        let startKlienLon = initialLon;
+        marker = L.marker([startKlienLat, startKlienLon], {draggable: true}).addTo(map)
+            .bindPopup('<b>Lokasi Anda</b><br>Geser pin ini.').openPopup();
+        
+        // Rute Jalan Raya (Routing)
+        routingControl = L.Routing.control({
+            waypoints: [
+                L.latLng(initialLat, initialLon),
+                L.latLng(startKlienLat, startKlienLon)
+            ],
+            createMarker: function() { return null; },
+            addWaypoints: false,
+            routeWhileDragging: true,
+            show: false,
+            lineOptions: {
+                styles: [{color: '#007bff', weight: 4}]
+            }
+        }).addTo(map);
+
+        routingControl.on('routesfound', function(e) {
+            var routes = e.routes;
+            var summary = routes[0].summary;
+            currentRoutingDistance = summary.totalDistance / 1000;
+            hitungSubtotal();
+        });
+
+        // Inisialisasi value
+        document.getElementById('latitude').value = startKlienLat;
+        document.getElementById('longitude').value = startKlienLon;
+
+        marker.on('dragend', function (e) {
+            updateMarkerAndLine(marker.getLatLng().lat, marker.getLatLng().lng);
+        });
+
+        let searchTimeoutId;
+        const searchInput = document.getElementById('searchAlamat');
+        const suggestionsBox = document.getElementById('search-suggestions');
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeoutId);
+            const query = this.value;
+            
+            if(!query) {
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+
+            searchTimeoutId = setTimeout(() => {
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&countrycodes=id&limit=5`)
+                .then(response => response.json())
+                .then(data => {
+                    suggestionsBox.innerHTML = '';
+                    if(data.length > 0) {
+                        data.forEach(item => {
+                            const btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.textContent = item.display_name;
+                            btn.addEventListener('click', function() {
+                                searchInput.value = item.display_name;
+                                suggestionsBox.style.display = 'none';
+                                const lat = parseFloat(item.lat);
+                                const lon = parseFloat(item.lon);
+                                map.setView([lat, lon], 15);
+                                updateMarkerAndLine(lat, lon);
+                                document.getElementById('alamat_lengkap').value = item.display_name;
+                            });
+                            suggestionsBox.appendChild(btn);
+                        });
+                        suggestionsBox.style.display = 'block';
+                    } else {
+                        suggestionsBox.style.display = 'none';
+                    }
+                });
+            }, 500);
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
+        document.getElementById('btnSearchAlamat').addEventListener('click', function() {
+            const query = searchInput.value;
+            if(!query) return;
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&countrycodes=id&limit=1`)
+            .then(response => response.json())
+            .then(data => {
+                if(data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+                    map.setView([lat, lon], 15);
+                    updateMarkerAndLine(lat, lon);
+                    document.getElementById('alamat_lengkap').value = data[0].display_name;
+                    suggestionsBox.style.display = 'none';
+                } else {
+                    alert('Alamat tidak ditemukan');
+                }
+            });
+        });
+
+        mapInitialized = true;
+        
+        // Hitung jarak saat map pertama kali diload
+        setTimeout(hitungSubtotal, 500);
+    }
+
+    function updateMarkerAndLine(lat, lon) {
+        marker.setLatLng([lat, lon]);
+        document.getElementById('latitude').value = lat;
+        document.getElementById('longitude').value = lon;
+        
+        if (routingControl) {
+            routingControl.setWaypoints([
+                L.latLng(configBiaya.workshop_lat, configBiaya.workshop_lon),
+                L.latLng(lat, lon)
+            ]);
+        }
+    }
 
     function bukaForm() {
         if (!pesanForm) return;
@@ -431,6 +933,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 mobileBackdrop.classList.add('show');
             }
         }
+
+        setTimeout(() => {
+            initMap();
+            if (map) map.invalidateSize();
+        }, 300);
     }
 
     function tutupFormMobile() {
