@@ -80,7 +80,7 @@
         $isInterior = strtolower($itemProduksi->kategoriUsaha->nama_kategori ?? '') === 'interior';
         
         $minDate = now()->toDateString();
-        if ($itemProduksi->konfigurasiBiaya && $itemProduksi->konfigurasiBiaya->is_biaya_waktu_aktif && $itemProduksi->konfigurasiBiaya->batas_hari_zona_merah !== null) {
+        if ($itemProduksi->konfigurasiBiaya && $itemProduksi->konfigurasiBiaya->tipe_penentuan_waktu === 'tanggal' && $itemProduksi->konfigurasiBiaya->batas_hari_zona_merah !== null) {
             $minDate = now()->addDays($itemProduksi->konfigurasiBiaya->batas_hari_zona_merah)->toDateString();
         }
     @endphp
@@ -371,56 +371,42 @@
                     </label>
 
                     <small class="helper-date">
+                        @php
+                            $prefixWaktu = ($itemProduksi->konfigurasiBiaya && $itemProduksi->konfigurasiBiaya->tipe_penentuan_waktu === 'estimasi') ? 'Estimasi' : 'Pilih Tanggal';
+                        @endphp
                         @if ($isSablon)
-                            Pilih Tanggal Pengambilan
+                            {{ $prefixWaktu }} Pengambilan
                         @elseif ($isInterior)
-                            Pilih Tanggal Pengantaran
+                            {{ $prefixWaktu }} Pengantaran
                         @else
-                            Pilih Tanggal Pemasangan
+                            {{ $prefixWaktu }} Pemasangan
                         @endif
                     </small>
 
-                    @if($itemProduksi->konfigurasiBiaya && $itemProduksi->konfigurasiBiaya->is_biaya_waktu_aktif)
-                    @php
-                        $batasMerah = $itemProduksi->konfigurasiBiaya->batas_hari_zona_merah;
-                        $batasKuning = $itemProduksi->konfigurasiBiaya->batas_hari_zona_kuning;
-                        $batasAkhirKuning = $batasMerah + $batasKuning - 1;
-                        $tarifUrgensi = $itemProduksi->konfigurasiBiaya->getRawOriginal('biaya_urgensi') ?? $itemProduksi->konfigurasiBiaya->biaya_urgensi;
-                    @endphp
-                    <div class="info-card-biaya info-card-biaya--waktu">
-                        <div class="info-card-biaya-title">
-                            <i class="fas fa-clock"></i> Aturan Waktu Pemesanan
+                    @if($itemProduksi->konfigurasiBiaya && $itemProduksi->konfigurasiBiaya->tipe_penentuan_waktu === 'estimasi')
+                        <div class="info-card-biaya info-card-biaya--waktu">
+                            <div class="info-card-biaya-row">
+                                <span class="info-card-biaya-icon"><i class="fas fa-calendar-alt"></i></span>
+                                <span class="info-card-biaya-label">Estimasi Pengerjaan</span>
+                                <span class="info-card-biaya-value text-success font-weight-bold">{{ $itemProduksi->konfigurasiBiaya->estimasi_pengerjaan }}</span>
+                            </div>
                         </div>
-                        <div class="info-card-biaya-row">
-                            <span class="info-card-biaya-icon"><i class="fas fa-calendar-check"></i></span>
-                            <span class="info-card-biaya-label">Pemesanan Minimal</span>
-                            <span class="info-card-biaya-value">H-{{ $batasMerah }} dari hari ini</span>
-                        </div>
-                        <div class="info-card-biaya-row">
-                            <span class="info-card-biaya-icon"><i class="fas fa-bolt"></i></span>
-                            <span class="info-card-biaya-label">Biaya Prioritas</span>
-                            <span class="info-card-biaya-value info-card-biaya-value--highlight">Rp {{ number_format($tarifUrgensi, 0, ',', '.') }}</span>
-                        </div>
-                        <div class="info-card-biaya-note">
-                            <i class="fas fa-info-circle"></i>
-                            <span>Pemesanan pada rentang <strong>H-{{ $batasMerah }}</strong> s/d <strong>H-{{ $batasAkhirKuning }}</strong> dikenakan biaya prioritas. Setelah tanggal tersebut bebas biaya tambahan.</span>
-                        </div>
-                    </div>
                     @endif
 
 
-                    <input
-                        type="date"
-                        name="jadwal_pemasangan"
-                        id="jadwalPemasangan"
-                        value="{{ old('jadwal_pemasangan') }}"
-                        min="{{ $minDate }}"
-                        class="input-pesan date-input @error('jadwal_pemasangan') input-error @enderror">
+                    @if(!$itemProduksi->konfigurasiBiaya || $itemProduksi->konfigurasiBiaya->tipe_penentuan_waktu === 'tanggal')
+                        <input
+                            type="date"
+                            name="jadwal_pemasangan"
+                            id="jadwalPemasangan"
+                            value="{{ old('jadwal_pemasangan') }}"
+                            min="{{ $minDate }}"
+                            class="input-pesan date-input @error('jadwal_pemasangan') input-error @enderror">
 
-                    @error('jadwal_pemasangan')
-                        <span class="error-message">{{ $message }}</span>
-                    @enderror
-                    <div id="urgency-warning" class="text-warning font-weight-bold mt-2" style="display: none; font-size: 0.85rem;"><i class="fas fa-exclamation-triangle"></i> Jadwal yang Anda pilih termasuk dalam Layanan Prioritas dan dikenakan biaya tambahan.</div>
+                        @error('jadwal_pemasangan')
+                            <span class="error-message">{{ $message }}</span>
+                        @enderror
+                    @endif
                 </div>
 
                 @if ($bolehDp)
@@ -532,10 +518,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const configBiaya = {
         is_jarak: {{ ($itemProduksi->konfigurasiBiaya && $itemProduksi->konfigurasiBiaya->is_biaya_jarak_aktif) ? 'true' : 'false' }},
         tarif_per_km: parseFloat("{{ $itemProduksi->konfigurasiBiaya ? ($itemProduksi->konfigurasiBiaya->getRawOriginal('tarif_per_km') ?? $itemProduksi->konfigurasiBiaya->tarif_per_km) : 0 }}"),
-        is_waktu: {{ ($itemProduksi->konfigurasiBiaya && $itemProduksi->konfigurasiBiaya->is_biaya_waktu_aktif) ? 'true' : 'false' }},
-        batas_hari_zona_merah: parseFloat("{{ $itemProduksi->konfigurasiBiaya ? ($itemProduksi->konfigurasiBiaya->getRawOriginal('batas_hari_zona_merah') ?? $itemProduksi->konfigurasiBiaya->batas_hari_zona_merah) : 0 }}"),
-        batas_hari_zona_kuning: parseFloat("{{ $itemProduksi->konfigurasiBiaya ? ($itemProduksi->konfigurasiBiaya->getRawOriginal('batas_hari_zona_kuning') ?? $itemProduksi->konfigurasiBiaya->batas_hari_zona_kuning) : 0 }}"),
-        biaya_urgensi: parseFloat("{{ $itemProduksi->konfigurasiBiaya ? ($itemProduksi->konfigurasiBiaya->getRawOriginal('biaya_urgensi') ?? $itemProduksi->konfigurasiBiaya->biaya_urgensi) : 0 }}"),
         workshop_lat: parseFloat("{{ $workshopCoord ? $workshopCoord->latitude : '-3.2994' }}"),
         workshop_lon: parseFloat("{{ $workshopCoord ? $workshopCoord->longitude : '114.5933' }}")
     };
@@ -594,30 +576,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        let globalBiayaWaktu = 0;
-        const urgencyWarningEl = document.getElementById('urgency-warning');
-        if (urgencyWarningEl) urgencyWarningEl.style.display = 'none';
-
-        if (configBiaya.is_waktu) {
-            const jadwalInput = document.getElementById('jadwalPemasangan')?.value;
-            if (jadwalInput) {
-                const now = new Date();
-                now.setHours(0,0,0,0);
-                const jadwalDate = new Date(jadwalInput);
-                if (!isNaN(jadwalDate.getTime())) {
-                    jadwalDate.setHours(0,0,0,0);
-                    const diffTime = jadwalDate - now;
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                    const batasAkhirKuning = configBiaya.batas_hari_zona_merah + configBiaya.batas_hari_zona_kuning - 1;
-                    if (diffDays >= configBiaya.batas_hari_zona_merah && diffDays <= batasAkhirKuning) {
-                        globalBiayaWaktu = configBiaya.biaya_urgensi;
-                        if (urgencyWarningEl) urgencyWarningEl.style.display = 'block';
-                    }
-                }
-            }
-        }
-
-        const grandTotal = Math.round(subtotal + globalBiayaJarak + globalBiayaWaktu);
+        const grandTotal = Math.round(subtotal + globalBiayaJarak);
         const formattedSubtotal = formatRupiah(grandTotal);
 
         if (subtotalTextTop) subtotalTextTop.textContent = formattedSubtotal;
@@ -645,14 +604,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
         
-        if (elRincianWaktu && elRincianWaktuRow) {
-            if (globalBiayaWaktu > 0) {
-                elRincianWaktu.textContent = formatRupiah(globalBiayaWaktu);
-                elRincianWaktuRow.style.setProperty('display', 'flex', 'important');
-            } else {
-                elRincianWaktuRow.style.setProperty('display', 'none', 'important');
-            }
-        }
+        if (elRincianWaktuRow) elRincianWaktuRow.style.setProperty('display', 'none', 'important');
 
         // Update DP Info Section
         const dpSection = document.getElementById('dp-info-section');

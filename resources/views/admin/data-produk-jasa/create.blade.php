@@ -174,22 +174,26 @@
                     </div>
                     
                     <div class="col-md-6">
-                        <div class="custom-control custom-switch mb-3">
-                            <input type="checkbox" class="custom-control-input" id="is_biaya_waktu_aktif" name="is_biaya_waktu_aktif" value="1" {{ old('is_biaya_waktu_aktif') ? 'checked' : '' }}>
-                            <label class="custom-control-label font-weight-bold" for="is_biaya_waktu_aktif">Aktifkan Biaya Waktu/Urgensi</label>
+                        <div class="form-group mb-3">
+                            <label class="font-weight-bold">Tipe Penentuan Waktu</label>
+                            <select class="form-control" name="tipe_penentuan_waktu" id="tipe_penentuan_waktu">
+                                <option value="tanggal" {{ old('tipe_penentuan_waktu') == 'tanggal' ? 'selected' : '' }}>Menggunakan Tanggal</option>
+                                <option value="estimasi" {{ old('tipe_penentuan_waktu', 'estimasi') == 'estimasi' ? 'selected' : '' }}>Menggunakan Estimasi Pengerjaan</option>
+                            </select>
                         </div>
-                        <div id="form-biaya-waktu" class="pl-4 {{ old('is_biaya_waktu_aktif') ? '' : 'd-none' }}">
+                        
+                        <div id="form-tipe-tanggal" class="pl-4 {{ old('tipe_penentuan_waktu') == 'tanggal' ? '' : 'd-none' }}">
                             <div class="form-group mb-2">
-                                <label>Batas Hari Zona Merah (Blokir Pesanan) :</label>
-                                <input type="number" name="batas_hari_zona_merah" class="form-control" placeholder="Contoh: 1 (Untuk H-1)" value="{{ old('batas_hari_zona_merah') }}">
+                                <label>Batas Minimal Waktu Pemesanan (Hari) :</label>
+                                <input type="number" name="batas_hari_zona_merah" class="form-control" placeholder="Contoh: 2 (Untuk H-2)" value="{{ old('batas_hari_zona_merah') }}">
+                                <small class="text-muted">Jumlah hari dari sekarang sebagai batas sebelum klien bisa memesan pada kalender.</small>
                             </div>
+                        </div>
+
+                        <div id="form-tipe-estimasi" class="pl-4 {{ old('tipe_penentuan_waktu', 'estimasi') == 'estimasi' ? '' : 'd-none' }}">
                             <div class="form-group mb-2">
-                                <label>Batas Hari Zona Kuning (Dikenakan Urgensi) :</label>
-                                <input type="number" name="batas_hari_zona_kuning" class="form-control" placeholder="Contoh: 3 (Untuk H-3)" value="{{ old('batas_hari_zona_kuning') }}">
-                            </div>
-                            <div class="form-group mb-2">
-                                <label>Tarif Tambahan Urgensi (Rp) :</label>
-                                <input type="text" name="biaya_urgensi" class="form-control harga" placeholder="Contoh: 50.000" value="{{ old('biaya_urgensi') }}">
+                                <label>Estimasi Pengerjaan :</label>
+                                <input type="text" name="estimasi_pengerjaan" class="form-control" placeholder="Contoh: 1-7 hari" value="{{ old('estimasi_pengerjaan') }}">
                             </div>
                         </div>
                     </div>
@@ -348,21 +352,18 @@
                 });
             }
 
-            const toggleWaktu = document.getElementById('is_biaya_waktu_aktif');
-            const formWaktu = document.getElementById('form-biaya-waktu');
-            if (toggleWaktu && formWaktu) {
-                // Cek state awal
-                if (toggleWaktu.checked) {
-                    formWaktu.classList.remove('d-none');
-                } else {
-                    formWaktu.classList.add('d-none');
-                }
-                
-                toggleWaktu.addEventListener('change', function() {
-                    if (this.checked) {
-                        formWaktu.classList.remove('d-none');
+            const selectTipeWaktu = document.getElementById('tipe_penentuan_waktu');
+            const formTanggal = document.getElementById('form-tipe-tanggal');
+            const formEstimasi = document.getElementById('form-tipe-estimasi');
+            
+            if (selectTipeWaktu && formTanggal && formEstimasi) {
+                selectTipeWaktu.addEventListener('change', function() {
+                    if (this.value === 'tanggal') {
+                        formTanggal.classList.remove('d-none');
+                        formEstimasi.classList.add('d-none');
                     } else {
-                        formWaktu.classList.add('d-none');
+                        formTanggal.classList.add('d-none');
+                        formEstimasi.classList.remove('d-none');
                     }
                 });
             }

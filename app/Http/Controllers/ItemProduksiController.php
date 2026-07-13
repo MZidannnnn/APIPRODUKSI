@@ -139,10 +139,9 @@ class ItemProduksiController extends Controller
                 'id_item_produksi' => $itemProduksi->id_item_produksi,
                 'is_biaya_jarak_aktif' => $request->has('is_biaya_jarak_aktif'),
                 'tarif_per_km' => $request->has('is_biaya_jarak_aktif') && $request->tarif_per_km ? str_replace('.', '', $request->tarif_per_km) : null,
-                'is_biaya_waktu_aktif' => $request->has('is_biaya_waktu_aktif'),
-                'batas_hari_zona_merah' => $request->has('is_biaya_waktu_aktif') ? $request->batas_hari_zona_merah : null,
-                'batas_hari_zona_kuning' => $request->has('is_biaya_waktu_aktif') ? $request->batas_hari_zona_kuning : null,
-                'biaya_urgensi' => $request->has('is_biaya_waktu_aktif') && $request->biaya_urgensi ? str_replace('.', '', $request->biaya_urgensi) : null,
+                'batas_hari_zona_merah' => $request->tipe_penentuan_waktu === 'tanggal' ? $request->batas_hari_zona_merah : null,
+                'tipe_penentuan_waktu' => $request->tipe_penentuan_waktu ?? 'estimasi',
+                'estimasi_pengerjaan' => $request->tipe_penentuan_waktu === 'estimasi' ? $request->estimasi_pengerjaan : null,
             ]);
 
             DB::commit();
@@ -235,18 +234,40 @@ class ItemProduksiController extends Controller
                 'status_aktif'   => $request->status_aktif,
             ]);
 
-            // hapus detail lama
-            DetailProduk::where('id_item_produksi', $itemProduksi->id_item_produksi)->delete();
-
-            // simpan detail baru
-            foreach ($request->harga_dasar as $index => $hargaDasar) {
-                DetailProduk::create([
-                    'id_item_produksi' => $itemProduksi->id_item_produksi,
-                    'ukuran'           => $request->ukuran[$index] ?? null,
-                    'harga_dasar'      => str_replace('.', '', $hargaDasar),
-                ]);
+            $existingDetails = DetailProduk::where('id_item_produksi', $itemProduksi->id_item_produksi)->get();
+            $newHargaDasar = collect($request->harga_dasar);
+            
+            // simpan detail baru atau update yang lama
+            foreach ($newHargaDasar as $index => $hargaDasar) {
+                if ($index < $existingDetails->count()) {
+                    // Update existing
+                    $existingDetails[$index]->update([
+                        'ukuran'      => $request->ukuran[$index] ?? null,
+                        'harga_dasar' => str_replace('.', '', $hargaDasar),
+                    ]);
+                } else {
+                    // Create new
+                    DetailProduk::create([
+                        'id_item_produksi' => $itemProduksi->id_item_produksi,
+                        'ukuran'           => $request->ukuran[$index] ?? null,
+                        'harga_dasar'      => str_replace('.', '', $hargaDasar),
+                    ]);
+                }
             }
 
+            // Hapus detail lama jika variannya dikurangi
+            if ($newHargaDasar->count() < $existingDetails->count()) {
+                for ($i = $newHargaDasar->count(); $i < $existingDetails->count(); $i++) {
+                    try {
+                        $existingDetails[$i]->delete();
+                    } catch (\Illuminate\Database\QueryException $e) {
+                        DB::rollBack();
+                        return redirect()->back()
+                            ->with('error', 'Tidak dapat menghapus varian produk yang sudah pernah dipesan oleh pelanggan.')
+                            ->withInput();
+                    }
+                }
+            }
             // hapus foto lama jika ada yang dipilih untuk dihapus
             if ($request->has('hapus_foto')) {
                 $fotoLama = FotoProduk::whereIn('id_foto_produk', $request->hapus_foto)
@@ -280,10 +301,9 @@ class ItemProduksiController extends Controller
                 [
                     'is_biaya_jarak_aktif' => $request->has('is_biaya_jarak_aktif'),
                     'tarif_per_km' => $request->has('is_biaya_jarak_aktif') && $request->tarif_per_km ? str_replace('.', '', $request->tarif_per_km) : null,
-                    'is_biaya_waktu_aktif' => $request->has('is_biaya_waktu_aktif'),
-                    'batas_hari_zona_merah' => $request->has('is_biaya_waktu_aktif') ? $request->batas_hari_zona_merah : null,
-                    'batas_hari_zona_kuning' => $request->has('is_biaya_waktu_aktif') ? $request->batas_hari_zona_kuning : null,
-                    'biaya_urgensi' => $request->has('is_biaya_waktu_aktif') && $request->biaya_urgensi ? str_replace('.', '', $request->biaya_urgensi) : null,
+                    'batas_hari_zona_merah' => $request->tipe_penentuan_waktu === 'tanggal' ? $request->batas_hari_zona_merah : null,
+                    'tipe_penentuan_waktu' => $request->tipe_penentuan_waktu ?? 'estimasi',
+                    'estimasi_pengerjaan' => $request->tipe_penentuan_waktu === 'estimasi' ? $request->estimasi_pengerjaan : null,
                 ]
             );
 
