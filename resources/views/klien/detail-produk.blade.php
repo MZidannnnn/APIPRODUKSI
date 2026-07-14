@@ -81,7 +81,7 @@
         
         $minDate = now()->toDateString();
         if ($itemProduksi->konfigurasiBiaya && $itemProduksi->konfigurasiBiaya->tipe_penentuan_waktu === 'tanggal' && $itemProduksi->konfigurasiBiaya->batas_hari_zona_merah !== null) {
-            $minDate = now()->addDays($itemProduksi->konfigurasiBiaya->batas_hari_zona_merah)->toDateString();
+            $minDate = now()->addDays((int) $itemProduksi->konfigurasiBiaya->batas_hari_zona_merah)->toDateString();
         }
     @endphp
 
