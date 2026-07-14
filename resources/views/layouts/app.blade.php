@@ -71,7 +71,7 @@
                                         {{-- Khusus Admin --}}
                                         <div class="badge badge-info justify-content-center d-flex flex-column align-items-center">
                                             <span>{{ Auth::user()->nama_role }}</span>
-                                            <small>{{ Auth::user()->kategori->nama_kategori ?? '-' }}</small>
+                                            <!-- <small>{{ Auth::user()->kategori->nama_kategori ?? '-' }}</small> -->
                                         </div>
 
                                         <div class="dropdown-divider"></div>

@@ -73,7 +73,7 @@ class LaporanPenjualanController extends Controller
             ->where('sp.nama_status_pesanan', 'Pesanan Selesai');
 
         if ($tanggalMulai && $tanggalSelesai) {
-            $query->whereBetween('ps.tanggal_pesan', [
+            $query->whereBetween('ps.tanggal_pesan', [ //menentukan pengambilan data yabg di tanggal mulai dan tanggal selesai
                 $tanggalMulai,
                 $tanggalSelesai
             ]);

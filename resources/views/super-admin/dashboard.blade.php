@@ -163,7 +163,7 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('assets/vendor/chart.js/Chart.min.js') }}"></script>
+<script src="{{ asset('sbadmin2/vendor/chart.js/Chart.min.js') }}"></script>
 
 <script>
     // --- 1. SETTING CHART GRAFIK PENJUALAN ---
